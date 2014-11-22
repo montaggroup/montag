@@ -1,0 +1,8 @@
+{{extend 'layout.html'}}
+{{include 'stats/check_snippets.html' }}
+
+
+
+{{ for dbname in sorted(check_result.iterkeys(), reverse=True):}}
+{{ print_check_results(dbname, check_result[dbname]) }}
+{{ pass }}

@@ -1,0 +1,10 @@
+{{extend 'layout.html'}}
+<h1>Create a new author to tome relationship for {{=tome_link(tome)}}:</h1>
+{{ =form }}<br>
+
+<h2>All authors currently related to {{=tome_link(tome)}}:</h2>
+<ul>
+{{for author in authors:}}
+<li><span class="author_name">{{=author_link(author)}}</span> with order value {{=author['author_order']}} {{ =A("edit", _href=URL( 'edit_tome_author_link',args=[tome['id'], author['id']] ))}}</li>
+{{pass}}    
+</ul>

@@ -1,0 +1,31 @@
+{{extend 'layout.html'}}
+{{include 'default/snippets.html'}}
+
+{{ if first_tome is not None and second_tome is not None: }}
+<table>
+<tr>
+    <td>
+        <ul>
+        {{show_tome_info_block(first_tome, show_edit_button=False)}}
+ 
+        </ul>
+    </td>    
+    <td>
+        <ul>
+        {{show_tome_info_block(second_tome, show_edit_button=False)}}
+        </ul>
+    </td>    
+</tr>    
+<tr>
+    <td>
+        {{=A("Use This Entry", _class='button', _href=URL( 'execute_merge_tomes',args=[first_tome['guid'], second_tome['guid'], True] )) }}
+    </td>
+    <td>
+        {{=A("Use This Entry", _class='button', _href=URL( 'execute_merge_tomes',args=[first_tome['guid'], second_tome['guid'], False] )) }}
+    </td>
+</tr>
+</table>
+{{else:}}
+Tomes not found, please go back.
+
+{{ pass}}

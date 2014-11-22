@@ -1,0 +1,8 @@
+{{extend 'layout.html'}}
+{{include 'default/snippets.html'}}
+
+{{if is_secure_channel(request):}}
+	{{=form}}
+
+{{ =A("Delete", _class='button', _href=URL('remove_friend', args=[friend_id] )) }}
+	{{pass}}

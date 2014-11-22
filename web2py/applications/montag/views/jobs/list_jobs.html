@@ -1,0 +1,39 @@
+{{extend 'layout.html'}}
+<table class="jobs">
+    <tr>
+        <th>
+        ID
+        </th>
+        <th>
+        Name
+        </th>
+        <th>
+        Friend
+        </th>
+        <th>
+        Running
+        </th>
+        <th>
+        Progress
+        </th>
+    </tr>
+    {{ for job_info in job_infos: }}
+    <tr>
+        <td>{{ =job_info['id'] }} </td>
+        <td>{{ =job_info['name'] }} </td>
+        <td>{{ =job_info['friend_name'] }} </td>
+        <td>{{ =job_info['is_running'] }} </td>
+        <td>{{ =format_job_status(job_info) }}</td>
+        <td>{{ if job_info['is_running']:
+                    =A("Cancel", _class='button', _href=URL('cancel_job', args=[job_info['id']] ))
+            else:
+                pass
+            }}
+        </td>
+    </tr>
+    {{pass}}
+</table>
+<br>
+<div class="joblist">
+    <span style="margin:5px;">{{ =A("Refresh", _class='button', _href=URL( 'list_jobs')) }}</span><span style="margin:5px;">{{ =A("Clear completed jobs", _class='button', _href=URL( 'clear_completed')) }}</span>
+</div>

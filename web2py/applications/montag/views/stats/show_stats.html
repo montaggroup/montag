@@ -1,0 +1,32 @@
+{{extend 'layout.html'}}
+
+<h1> Overview of item counts </h1>
+
+<table class='stats'>
+    <tr><th></th><th>Total</th><th>Local</th></tr>
+    <tr><th>Authors</th> <td>{{=merge_stats['authors']}}</td><td>{{=local_stats['authors']}}</td></tr>
+    <tr><th>Tomes</th>  <td>{{=merge_stats['tomes']}}</td><td>{{=local_stats['tomes']}}</td></tr>
+    <tr><th>File Links</th><td>{{=merge_stats['files']}}</td><td>{{=local_stats['files']}}</td></tr>
+    <tr><th>Files</th><td></td><td>{{=local_stats['local_files']}}</td></tr>
+</table>
+
+<h1> Breakdown of known tomes by type and language </h1>
+{{if tome_stats: }}
+<table class='stats'>
+    <tr><th>Language</th><th>Fiction</th><th>Non-Fiction</th><th>Unknown</th></tr>
+{{ langs = sorted(tome_stats.keys())
+    for lang in langs:
+    stat = tome_stats[lang]
+    }}
+    <tr>
+        <th>{{=lang}}</th>
+        <td>{{=stat[pydb.TomeType.Fiction]}}</td>
+        <td>{{=stat[pydb.TomeType.NonFiction]}}</td>
+        <td>{{=stat[None]}}</td>
+    </tr>
+    {{pass}}
+    
+</table>
+
+
+{{pass}}

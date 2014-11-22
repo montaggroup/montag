@@ -1,0 +1,67 @@
+{{extend 'layout.html'}}
+{{ include 'default/snippets.html' }}
+{{ import time }}
+
+{{if is_locked: }}
+<div class='lock_notice'>
+    Communication with friends is currently <b>locked</b>.
+    Please go to {{ =A("Unlock Comm Data", _href=URL( 'unlock_comm_data',args=[])) }} to unlock the comm database.
+</div>
+
+{{pass}}
+
+<table class="friends">
+    <tr>
+        <th>
+        Name
+        </th>
+        {{ if is_secure_channel(request): }}
+            <th>
+            </th>
+        {{pass}}
+        <th>
+        Last author change
+        </th>
+        <th>
+        Last tome change
+        </th>
+    </tr>
+    {{ for friend, update_info in zip(friends, update_infos): }}
+    <tr class="friend">
+        <td>{{ =friend['name'] }} </td>
+        {{ if is_secure_channel(request): }}
+            <td>{{ if not is_locked: }}{{ =A("Edit", _class='edit', _href=URL( 'edit_friend',args=[friend['id']] )) }}{{pass}}</td>
+        {{pass}}
+        <td>{{ =human_readble_time_elapsed_since(update_info[0]) }} </td>
+        <td>{{ =human_readble_time_elapsed_since(update_info[1]) }}</td>
+  
+        <td>{{ if not is_locked: }}{{ =A("Update", _class='button', _href=URL('fetch_updates',args=[friend['id']] )) }}{{pass}}</td>
+    
+        {{ for job_info in friend['jobs']: }}
+        </tr>
+    
+        <tr>
+            <td></td>
+            <td class="job_info" colspan=3>{{ =human_readble_time_elapsed_since(job_info['start_time']) }}:
+                {{ = format_job_status(job_info) }}
+        {{pass}}
+    </tr>
+    {{pass}}
+</table>
+
+
+{{ if not is_locked: }}
+{{ =A("Update All", _class='button', _href=URL('fetch_updates_all' )) }}
+{{ pass }}
+
+
+<br>
+<br>
+{{ if is_secure_channel(request): }}
+{{ if not is_locked: }}{{ =A("Add friend", _class='button', _href=URL( 'add_friend')) }}{{pass}}
+{{pass}}
+<br/>
+<br/>
+<br/>
+{{ =A("Refresh", _class='button', _href=URL( 'list_friends')) }}
+{{ =A("Clear completed jobs", _class='button', _href=URL( 'clear_completed_jobs')) }}

@@ -1,0 +1,17 @@
+{{extend 'layout.html'}}
+<h1>Edit details for file link</h1>
+
+<h2> {{=tome_link(tome)}} </h2>
+<ul>
+<li>  {{ if file['has_local_copy']: 
+           =A(tome['title']+"."+file['file_extension'], _href=URL( 'getfile',args=[tome['id'],file['hash']] ))  
+          else:
+          = tome['title']+"."+file['file_extension']
+          pass}}
+        
+</li>
+</ul>
+
+{{=form}}
+
+<span class="hash">Hash: {{ =file['hash'] }}</span>

@@ -1,0 +1,22 @@
+{{extend 'layout.html'}}
+{{ include 'default/snippets.html' }}
+{{show_author_info_block(author_info, allow_edit=True) }}
+
+{{if tome_info:}}
+{{hide_all_files()}}
+{{pass}}
+{{number_tomes=len(tome_info) }}
+{{if number_tomes==1: }}
+<h2>One Tome by this author:</h2>
+{{else:}}
+<h2>{{=number_tomes}} Tomes by this author:</h2>      
+{{pass}}
+      
+      
+      
+<ul class="tomes">
+  {{ for tome in tome_info: }}
+      {{ show_tome_info_block(tome) }}
+  {{pass}}
+</ul>
+{{pass}}

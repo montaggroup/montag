@@ -1,0 +1,234 @@
+.edit {
+  font-size: smaller;
+}
+
+
+a.author_link { 
+    color:black;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+a.tome_link {
+    color:black;
+    font-weight: bold;
+}
+
+a.tag_link {
+    color:black;
+}
+
+a.synopsis_link {
+    color:black;
+}
+
+
+
+a.button {
+    color: black;
+}
+
+span.select_merge_partner a.button {
+    font-size: smaller;
+    padding-top: 0px;
+    padding-bottom: 0px;
+    margin-bottom: 0px;
+    margin-left: 10px;
+}
+
+
+a.edit_author { font-size: smaller; }
+
+.guid {color: #d0d0d0;}
+.hash {color: #d0d0d0;}
+
+.tome_search select { width: 100px}
+
+.tome h3 {
+    margin-bottom: 0;
+}
+
+h1 {
+    clear: both;
+    font-size: 2em;
+    line-height: 30px;
+}
+
+h1.room_above {
+    padding-top: 20px;   
+}
+
+h2 {
+    font-size: 1.5em;
+    line-height: 25px;
+}
+
+.tome_info_block {
+    font-size: larger;
+}
+
+
+.hide_show_button {
+  cursor: pointer;
+}
+
+.synopsis {
+    font-style: italic;
+}
+
+.page_info {
+     margin-top: 5px;
+     margin-bottom: 10px;
+     display: inline-block;
+}
+
+.unselectable {
+    user-select: none;
+    -moz-user-select: none;
+    -khtml-user-select: none;
+}
+
+.prevlink {
+
+}
+
+.nextlink {
+
+}
+
+.lock_notice {
+    max-width: 300px;
+    border: 2px solid black;
+    padding: 5px;
+    margin-bottom: 20px;
+}
+
+.stats td {
+    text-align: right;
+}
+
+#toc_container {
+    margin-top: 100px;
+    float: left;
+}
+
+#toc_container a {
+    cursor: pointer;
+}
+
+#reader_prev {
+  font-size: 500%;
+  float: left;
+  margin: 20px;
+  margin-top: 100px;
+  cursor: pointer;
+}
+
+#reader_area {
+  width: 80%;
+  height: 800px;
+  float: left;
+}
+
+#reader_next {
+  font-size: 500%;
+  float: left;
+  margin: 20px;
+  margin-top: 100px;
+  cursor: pointer;
+}
+
+
+#loader {
+  position: absolute;
+  z-index: 10;
+  left: 60%;
+  top: 40%;
+  margin: -33px 0 0 -33px;
+}
+
+
+.tome_text_container {
+  float: left;
+  width: 660px;
+  margin-right: 50px;
+}
+
+.tome_cover_container {
+  float: left;
+}
+
+
+.tome_file_info {
+  clear: left;
+}
+
+.change_info {
+ 
+}
+
+.current_cover {
+  text-align: center;
+  float: left;
+
+}
+
+.large_cover img,.current_cover img {
+  max-height: 300px;
+  max-width: 200px;
+  width: auto;
+}
+
+.small_cover img {
+  height: 150px;
+  max-width: 150px;
+  width: auto;
+}
+
+.small_cover {
+  width: 160px;
+  text-align: center;
+}
+
+
+.cover_list {
+  clear: both;
+  margin-top: 5;
+  margin-bottom: 50px;
+}
+
+.cover_list .small_cover {
+  float: left;
+  margin: 10px;
+}
+
+.list_item_cover {
+  float: left;
+  width: 75px;
+  text-align: right;
+  margin-right: 10px;
+}
+
+.list_item_cover img {
+  height: 75px;
+  max-width: 80px;
+  width: auto;
+}
+
+.tome_info_paragraph {
+    
+}
+
+.friend td {
+    vertical-align: center;   
+}
+
+.job_info {
+  text-align: right;
+  font-size: smaller;
+}
+
+
+.clearfix {
+  clear: both;
+}

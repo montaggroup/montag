@@ -1,0 +1,20 @@
+{{def show_paging_controls(): }}
+    {{if page_start > 0:
+        prevvars=request.vars
+        prevvars['page']=page-1
+        }}
+<a class="prevlink" href="{{=URL(vars=prevvars, args=request.args)}}">prev</a>
+    {{pass}}
+
+    {{if number_results_total > 1:}}
+<span class="page_info">Showing {{=page_start+1}} - {{=page_end}} of {{=number_results_total}} items.</span>
+    {{pass}}
+
+    {{if page_end < number_results_total:
+
+        nextvars=request.vars
+        nextvars['page']=page+1
+        }}
+<a class="nextlink" href="{{=URL(vars=nextvars, args=request.args)}}">next</a>
+    {{pass}}
+{{pass}}

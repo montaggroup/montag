@@ -1,0 +1,23 @@
+{{extend 'layout.html'}}
+{{include 'default/snippets.html'}}
+{{include 'default/paging_controls.html'}}
+
+Select merge partner for {{=first_author['name']}}
+
+{{=form}}
+
+{{if query:}}
+    {{show_paging_controls()}}
+<ul class="authors">
+    {{for author in author_info:
+    if author['guid'] != first_author_guid:
+        select_button = SPAN(A("Select", _class='button', _href=URL('confirm_merge_authors',args=[first_author_guid, author['guid']] )), _class='select_merge_partner')
+        show_author_info_block(author,
+                               allow_edit=False,
+                               additional_author_button_html=select_button )}}
+    {{pass}}
+    {{pass}}
+</ul>
+    {{show_paging_controls()}}
+    {{hide_all_files()}}
+{{pass}}

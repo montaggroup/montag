@@ -1,0 +1,11 @@
+{{extend 'layout.html'}}
+<h1> Relationship between {{=tome_link(tome)}} and {{=author_link(author)}}:</h1>
+
+{{ =form }}<br>
+
+<h2>All authors related to {{=tome_link(tome)}}:</h2>
+<ul>
+{{for author in authors:}}
+<li><span class="author_name">{{=author_link(author)}}</span> with order value {{=author['author_order']}} {{ =A("edit", _href=URL( 'edit_tome_author_link',args=[tome['id'], author['id']] ))}}</li>
+{{pass}}    
+</ul>

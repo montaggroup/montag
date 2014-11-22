@@ -1,0 +1,2 @@
+The file routes.py should be copied to /usr/share/web2py/ .
+web2py will then direct from / to montag application automatically.

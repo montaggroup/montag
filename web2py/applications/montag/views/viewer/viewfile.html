@@ -1,0 +1,79 @@
+{{
+response.files.append(URL(c='static',f='/js/epub/epub.min.js'))
+response.files.append(URL(c='static',f='/js/epub/zip.min.js'))
+book_url = URL('default', 'getfile_as_epub',args=[tome_id,file_hash,'.epub'])
+response.title="View: {}".format(tome['title'].encode('utf-8'))
+response.breadcrumb_bar = XML("View {} by {}".format(tome_link(tome), authors_links(tome['authors'])))
+left_sidebar_enabled=True
+}}
+
+{{extend 'layout.html'}}
+
+<script>
+    EPUBJS.filePath = "{{=URL(r=request,c='static',f='/js/epub/') }}";
+    var Book = ePub("{{=book_url}}");
+    
+    Book.getToc().then(function(toc){
+        var toc_ul= document.getElementById("toc");
+
+        toc.forEach(function(chapter) {
+            var li = document.createElement("li");
+            var a = document.createElement("a");
+            a.textContent = chapter.label;
+
+            li.appendChild(a);
+            toc_ul.appendChild(li);
+            a.onclick = function() {
+                Book.goto(chapter.href);
+                return false;
+            }
+        });
+
+    });
+    
+     Book.ready.all.then(function(){
+         document.getElementById("loader").style.display = "none";
+     });
+    
+    
+</script>
+
+
+<div id="reader_prev" class="unselectable" onclick="Book.prevPage();">‹</div>
+<div id="reader_area"></div>
+<div id="reader_next" class="unselectable" onclick="Book.nextPage();">›</div>
+
+<div id="loader"><img src="{{=URL(r=request,c='static',f='/images/loader.gif') }}"></div>
+<script>
+
+$("body").on("keydown", function(e){
+    var thisIndex = $(".selected").index();
+    var newIndex = null;
+    if(e.keyCode === 38 // up
+      || e.keyCode === 37 // left
+      ) {
+        
+       Book.prevPage();
+    }
+    else if(e.keyCode === 40 // down
+            || e.keyCode === 39 // right
+            || e.keyCode === 32 // space
+           ) {
+        
+       Book.nextPage();      
+    }
+})
+    
+
+
+    Book.renderTo("reader_area");
+</script>
+
+
+{{block left_sidebar}}
+<div id="toc_container">
+<ul id="toc">
+    
+</ul>    
+</div>
+{{end}}

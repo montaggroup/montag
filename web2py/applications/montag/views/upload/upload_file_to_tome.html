@@ -1,0 +1,11 @@
+{{extend 'layout.html'}}
+
+{{if tome is None: }}
+No such tome
+{{else:}}
+<h2>
+    Upload file to {{=tome['title']}}
+</h2>
+
+{{=form}}
+{{pass}}

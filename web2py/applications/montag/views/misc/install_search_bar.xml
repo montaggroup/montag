@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/"
+                       xmlns:moz="http://www.mozilla.org/2006/browser/search/">
+  <ShortName><strong>Montag</strong></ShortName>
+  <Description><strong>Search your own Montag database</strong></Description>
+  <InputEncoding><strong>UTF-8</strong></InputEncoding>
+  <Image width="16" height="16">data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAABmJLR0QA/wD/AP+gvaeTAAAEG0lE
+QVQ4EQEQBO/7Af///wAAAAAOAAAAfQD+/1oA7/IaALe4AADu7AAA8/MAAAICAAAHCAAAERAAAERJ
+/wAaEuYAAwOlAAAAjgAAAOkB////DwCXm8bBkpIq4e3tAAEAAgABBAIAPyAgAL/b3AACAwMA////
+AAABAQAA/v4A/wD/ABoSEgBBQEDGA5iUWwIAAAB+r4iJKuPv8AAEBQUAQCMhAAICAgANBgYABwkI
+AE0uLQAJCgoATzEwAP8A/wACAwQA5u7uAObR0joAxtB9AgD5+ln09/cAAAEBAAAAAAAKBwYAEgkJ
+AAwkIwD9/f0AAQMDAAD+/QD/+/sAAAAAAAAAAAABAAIA3vLxAADKwkMCALO5GQABAQAAAAAAAAAA
+AAQGBwAOCAkA69bXAAMCAgD18/MADAcGAAcTFAAA//8AAAAAAAACAQDo8/MAAPP1HwIA29cAAAAA
+AAAAAAAAAAAA8vP0APL59wARHRwA/f7+APz+/gD0+fsA8+fmAAEBAgAAAAAAAQEBAPr4+AD+6eoA
+Av/u7wAAAAEAAAAAAAABAQAUGhkAGAoLAO/m5wAGAwQAERERAAMCAgAHCQkA////AAAAAAAAAAAA
+/fz8APz09AAC/vX2AAAA/wAAAAAACQYHAPDn5wDZ7e0AERsaAP3+/QD+/f0A+v38APHz8wAEBgUA
+//7+AAAAAAAAAAAA//r5AAQAAQAACQgHABULCwAiDxAACgwMAAoFBgD78/MAAwIDAAUPDgAAAAEA
+Dw4OACoUFADj9fUA8fb2AP/+/wAAAQAAAgEIBwBLODgANignAMDf3wD29fUACQYFAP34+gD6/PsA
+3t3dAAoFBAAFDw8AAAICAEc6OQBHJCQABAgIAAEEBAACAhMUAAk3NgAAAQIAAQEBAPP5+QD3/fwA
+/fv6AAYGBgAeGBkADggIAOzj5AAiFxcAAP8AABVKSgBVQUAABBEQAAQAGhoA9KurAAxCQgAs3d0A
+xt/fABgUEwADAgMAJBIRAAkZGAA/Y2gAAMvFAP3w8gD99fMA/uXmAAgzMwAABAT+AgBXVearx8gA
+AO3sAC9ERAA6ISEAPSYnABBCQAAuPj4AAP/+AABHPwD+9vYAAg4MAAAAAgD02tkA8be3AAAGBuUB
+////h7MlKXgFAQEASHp5AAD39wD91dYAAg0MAP7y8wDu1NQA1urrAN3m5QAAAAEAAAAAAP/+/QA4
+JyYAK5yjmQQAAACURzs7Nffl5UP+0NAAAPz9APDV1QCwzMwA/Pr6AAIEBAACAQEAAgUGAAoLCgAi
+EhIAJhcXAAkcHLYAMCaUAf///wAAAAAmALO8bgDo41IA+voZAO3tAAD5+QD/+voAAAAAAAEHBwAA
+EBAAABEQ/wAGBuYAQEGxAB0ZmQAAANLCYTjY88xw+AAAAABJRU5ErkJggg==</Image>
+    
+    {{ search_url = URL( 'default', 'tomesearch',args=[], scheme=True, host=True, extension='html' ) }}
+    <Url type="text/html" method="GET" template="{{=search_url}}" resultdomain="">
+    <Param name="query" value="{searchTerms}"/>
+    <Param name="principal_language" value=""/>
+    <Param name="tome_type" value="Z"/>
+    <Param name="_formname" value="search"/>
+</Url>
+  <moz:SearchForm>{{=search_url}}/</moz:SearchForm>
+</OpenSearchDescription>

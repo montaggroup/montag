@@ -1,0 +1,190 @@
+{{ from pydb import FileType }}
+
+{{ tome_block_id=1 }}
+{{ tome_synopsis_id=1 }}
+
+{{ def next_tome_block_id(): 
+    global tome_block_id
+    tome_block_id+=1
+    return tome_block_id-1
+}}
+
+{{ def next_tome_synopsis_id(): 
+    global tome_synopsis_id
+    tome_synopsis_id+=1
+    return tome_synopsis_id-1
+}}
+
+{{ from operator import itemgetter }}
+
+
+{{def show_tome_file_block(tome, show_edit_button=True):}}
+    <ul class="files" id="tome_file_block_{{=next_tome_block_id()}}" >
+      {{
+        relevant_files = filter(lambda f: f['file_type']==pydb.FileType.Content and f['fidelity'] >  pydb.network_params.Min_Relevant_Fidelity, tome['files'])
+        for file in relevant_files:}}
+      <li> 
+      {{if 'has_local_copy' in file and file['has_local_copy']:
+       =A(tome['title']+"."+file['file_extension'], _href=URL( 'getfile',args=[tome['id'],file['hash']]))
+       if pydb.config.has_ebook_convert():
+          =' '
+          =A('MOBI', _href=URL( 'getfile_as_mobi',args=[tome['id'],file['hash']] ))
+       pass
+       =' '
+          if file['file_extension']=='epub':
+              =A('VIEW', _href=URL( c='viewfile', a='viewer',args=[tome['id'],file['hash']] ))
+          elif pydb.config.has_ebook_convert():
+              =A('VIEW*', _href=URL( c='viewfile', a='viewer',args=[tome['id'],file['hash']] ))
+          pass
+
+      else:
+      = tome['title']+"."+file['file_extension']
+      pass}}
+      {{=int(file['fidelity']) }}/100
+          {{ if show_edit_button: }}
+          <span class="edit"> {{ =A("edit", _href=URL( 'edit_tome_file_link',args=[tome['id'],file['hash']], ))}}  </span>
+          {{pass}}
+        </li>
+    {{pass}}
+    </ul>
+
+{{return}}
+
+
+{{def hide_all_files():}}
+<script>
+jQuery(document).ready(function(){
+   jQuery('.files').hide();
+});
+</script>
+{{return}}
+
+{{def hide_all_synopses():}}
+<script>
+jQuery(document).ready(function(){
+   jQuery('.synopsis_full').hide();
+});
+</script>
+{{return}}
+
+
+{{def _show_tome_edition_line(tome):
+    edition_info_line = string_or_empty(tome['edition'])+" "+string_or_empty(tome['publication_year'])
+    edition_info_line = edition_info_line.strip()
+    if edition_info_line: }}
+        <span>
+        {{=edition_info_line}}
+        </span><br>
+    {{pass}}
+{{return}}
+
+
+
+{{def show_tome_info_block(tome, include_change_info=False, show_edit_button=True, show_file_edit_button=True, additional_tome_button_html=None):}}
+<li class="tome">
+    {{if include_change_info:
+        change_info = db.get_latest_tome_related_change(tome['guid'])
+        friend = friend_name(change_info['friend_id'])
+        }}
+    <span class="change_info">{{=friend}} edited:</span><br>
+    {{pass}}
+    <div class="tome_info_paragraph">
+    <span class="tome_info_block"> {{=tome_link(tome)}} by {{=authors_links(tome['authors'])}}
+    {{ if show_edit_button: }}
+            <span class="edit"> {{ =A("edit", _href=URL( 'edit_tome',args=[tome['guid']] )) }} </span>
+    {{pass}}
+    {{ if additional_tome_button_html is not None: }}
+        {{=additional_tome_button_html}}
+    {{pass}}
+    </span><br>
+        
+        
+    {{ _show_tome_edition_line(tome) }}
+    {{=tome['principal_language']}} {{=pydb.tome_type_text(tome['type'])}} — {{=int(tome['fidelity'])}}/100
+    {{ if tome['tags']: }} —
+        {{ = tome_tag_links(tome) }}
+    {{pass}}<br>
+
+    {{ if tome['synopses']: }}
+        {{ relevant_synopsis = sorted(tome['synopses'], key=itemgetter('fidelity'), reverse=True)[0] }}
+        <span class="synopsis">
+        {{ if relevant_synopsis and relevant_synopsis['fidelity'] > cfg_tags_minimum_display_fidelity :}} 
+            {{ =short_synopsis(tome, relevant_synopsis) }} <br>
+        {{pass}} 
+        </span>
+    {{pass}}
+
+    {{ relevant_files = filter(lambda f: f['fidelity'] > pydb.network_params.Min_Relevant_Fidelity and f['file_type']==FileType.Content, tome['files'])}}
+    {{if relevant_files: }}
+        <span class='hide_show_button unselectable' onclick="jQuery('#tome_file_block_{{=tome_block_id}}').slideToggle(100)" > Show {{=len(relevant_files)}} Files </span>
+        <div class="clearfix"></div>
+    {{show_tome_file_block(tome, show_file_edit_button)}}
+
+    {{else:}}
+          No file information found
+    {{pass}}
+    </div>
+    <div class="clearfix"></div>
+</li>
+{{ return}}
+
+
+{{def show_tome_synopses_block(tome):}}
+
+    <ul class="synopses" >
+      {{
+        syn_idx=0
+        for synopsis in tome['synopses']:}}
+      <li> <span class="synopsis">
+      {{
+        = short_synopsis_content(synopsis)
+      }}  </span>
+      {{=int(synopsis['fidelity']) }}/100
+          <br>
+          <span class='hide_show_button' onclick="jQuery('#tome_synopsis_block_{{=tome_synopsis_id}}').slideToggle(100)"> Show / edit full synopsis </span> 
+          {{if synopsis['content']:}}
+              <span class="synopsis_full" id="tome_synopsis_block_{{=next_tome_synopsis_id()}}" > {{ =synforms[syn_idx] }} </span>
+          {{else:}}
+              <span class="synopsis_empty" id="tome_synopsis_block_{{=next_tome_synopsis_id()}}" > {{ =synforms[syn_idx] }} </span>
+          {{pass}}
+      </li>
+        {{syn_idx+=1}}
+    {{pass}}
+    </ul>
+
+{{return}}
+
+{{def is_secure_channel(request):}}
+    {{return request.is_local}}
+
+
+{{def show_author_info_block(author_info, allow_edit=False, additional_author_button_html=None):}}
+    <h1>{{=author_link(author_info) }} 
+        {{ if allow_edit:
+        =A("edit", _class='edit_author', _href=URL( 'edit_author',args=[author_info['guid']] )) 
+        pass}}
+    {{ if additional_author_button_html is not None: }}
+        {{=additional_author_button_html}}
+    {{pass}}
+
+    </h1>
+
+    {{ if author_info['date_of_birth']: }}
+    Born {{=author_info['date_of_birth'] }} 
+    {{ else: }}
+    No date of birth provided yet
+    {{ pass }}
+
+    {{ if author_info['date_of_death']: }}
+    , died {{=author_info['date_of_death'] }} 
+    {{ else: }}
+        {{ if author_info['date_of_birth']: }}
+        , no date of death provided yet.
+        {{ else: }}
+        , nor date of death.
+        {{ pass }}
+    {{ pass }}
+
+    <br/>
+    Fidelity = {{=int(author_info['fidelity']) }}/100
+{{return}}

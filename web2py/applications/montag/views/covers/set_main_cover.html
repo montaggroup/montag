@@ -1,0 +1,14 @@
+{{extend 'layout.html'}}
+
+{{ if tome is None: }}
+Tome not found in database.
+{{ else:}}
+<div class='tome_cover_container'>
+
+  <div class='original_size_cover'>
+     <img src="{{=URL( 'get_cover_image', args=[ file_hash, file_extension ]) }}" alt="Cover" />
+  </div>
+  {{ = form }}
+
+</div>
+{{ pass }}

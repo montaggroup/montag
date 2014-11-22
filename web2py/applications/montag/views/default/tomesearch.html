@@ -1,0 +1,24 @@
+{{extend 'layout.html'}}
+
+{{include 'default/snippets.html'}}
+{{include 'default/paging_controls.html'}}
+
+{{=form}}
+
+{{if query:}}
+<h1>Results for {{=query}}:</h1>
+    {{show_paging_controls()}}
+<ul class="tomes">
+    {{for tome in tome_info:}}
+        {{show_tome_info_block(tome)}}
+    {{pass}}
+</ul>
+    {{show_paging_controls()}}
+    {{hide_all_files()}}
+{{pass}}
+
+<script>
+jQuery(document).ready(function(){
+   $("#no_table_query").focus();
+});
+</script>

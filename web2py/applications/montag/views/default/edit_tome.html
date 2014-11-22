@@ -1,0 +1,44 @@
+{{extend 'layout.html'}}
+{{ include 'default/snippets.html' }}
+<script src="{{=URL('static', 'js/title_case_guessing.js')}}" type="text/javascript"></script>
+
+<h1> {{=tome_link(tome)}} by {{=authors_links(tome['authors'])}} </h1>
+<span class="guid"> GUID: {{ =tome['guid'] }} </span>
+
+{{ =form }}
+
+<h2 id='authors'> Authors: </h2>
+<ul>
+{{for author_link_info in tome['authors']:
+    author = author_link_info['detail']
+}}
+    <li> {{=author_link(author)}} {{=int(author_link_info['fidelity'])}}/100 {{ =A("edit", _href=URL( 'edit_tome_author_link',args=[tome_id, author['id']] ))}}</li>
+{{pass}}
+</ul>
+{{=A("Add author link", _href=URL( 'link_tome_to_author',args=[tome_id] ))}}
+
+<h2 id='files'> Files: </h2>
+{{show_tome_file_block(tome)}}
+{{=A("Upload file", _href=URL( 'upload', 'upload_file_to_tome',args=[tome['guid']] ))}}<br/>
+{{=A("Add file link", _href=URL( 'link_tome_to_file',args=[tome_id] ))}}
+
+<br>
+
+<h2 id='synopses'> Synopses: </h2>
+{{show_tome_synopses_block(tome)}}
+{{hide_all_synopses()}}
+{{=A("Add synopsis", _href=URL( 'add_synopsis_to_tome',args=[tome['guid']], anchor='synopses' ))}}
+<br>
+
+<h2> Operations </h2>
+{{=A("Merge", _href=URL( 'fusion', 'select_tome_merge_partner',args=[tome['guid']]))}}<br>
+
+
+<script>
+jQuery(document).ready(function(){
+   $("#no_table_title").focus();
+});
+    
+    
+    
+</script>

@@ -1,0 +1,29 @@
+{{extend 'layout.html'}}
+{{include 'default/snippets.html'}}
+{{include 'default/paging_controls.html'}}
+
+Select merge partner for {{=first_tome['title']}}
+
+{{=form}}
+
+{{if query:}}
+    {{show_paging_controls()}}
+<ul class="tomes">
+    {{for tome in tome_info:
+    if tome['guid'] != first_tome_guid:
+        select_button = SPAN(A("Select", _class='button', _href=URL('confirm_merge_tomes',args=[first_tome_guid, tome['guid']] )), _class='select_merge_partner')
+        show_tome_info_block(tome,
+                               show_edit_button=False,
+    additional_tome_button_html=select_button )}}
+    {{pass}}
+    {{pass}}
+</ul>
+    {{show_paging_controls()}}
+    {{hide_all_files()}}
+{{pass}}
+
+<script>
+jQuery(document).ready(function(){
+   $("#no_table_query").focus();
+});
+</script>

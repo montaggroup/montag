@@ -1,0 +1,27 @@
+{{extend 'layout.html'}}
+{{include 'default/snippets.html'}}
+
+
+{{ if first_author is not None and second_author is not None: }}
+<table>
+<tr>
+    <td>
+        {{show_author_info_block(first_author)}}
+    </td>    
+    <td>
+        {{show_author_info_block(second_author)}}
+    </td>    
+</tr>    
+<tr>
+    <td>
+        {{=A("Use This Entry", _class='button', _href=URL( 'execute_merge_authors',args=[first_author['guid'], second_author['guid'], True] )) }}
+    </td>
+    <td>
+        {{=A("Use This Entry", _class='button', _href=URL( 'execute_merge_authors',args=[first_author['guid'], second_author['guid'], False] )) }}
+    </td>
+</tr>
+</table>
+{{else:}}
+Authors not found, please go back.
+
+{{ pass}}
