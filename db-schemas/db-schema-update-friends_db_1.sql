@@ -1,0 +1,8 @@
+BEGIN TRANSACTION;
+
+ALTER TABLE friends ADD COLUMN can_connect_to INTEGER DEFAULT 1;
+
+PRAGMA user_version=1;
+
+COMMIT;
+
