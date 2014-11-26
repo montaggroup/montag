@@ -5,13 +5,28 @@ from pydb import network_params
 logger = logging.getLogger("documents")
 
 
+def _prepare_fusion_sources(document, guid):
+    new_fusion_sources = []
+    if 'fusion_sources' in document:
+        for i in document['fusion_sources']:
+            i['fidelity'] = float(i['fidelity'])
+            source_guid = i['source_guid']
+            if source_guid > guid:
+                logger.error("Document {} has a fusion source {} "
+                             "which has a greater guid than the target - "
+                             "this is a protocol violation, ignoring fusion source").format(guid, source_guid)
+            else:
+                new_fusion_sources.append(i)
+    return new_fusion_sources
+
+
 def prepare_tome_document(original_tome_doc, local_db):
     """ returns a new tome document with many corrections and checks applied """
     tome_doc = copy.deepcopy(original_tome_doc)
     if 'prepared' in tome_doc:
-        raise ValueError("Tome document already prepared: %s" % tome_doc)
+        raise ValueError("Tome document already prepared: {}".format(tome_doc))
     if not 'guid' in tome_doc:
-        raise ValueError("Tome document did not contain a guid" % tome_doc)
+        raise ValueError("Tome document did not contain a guid: {}".format(tome_doc))
     # it's not a deleted tome
     tome_guid = tome_doc['guid']
     if 'title' in tome_doc:
@@ -55,23 +70,28 @@ def prepare_tome_document(original_tome_doc, local_db):
                 syn['fidelity'] = float(syn['fidelity'])
                 tome_doc['synopses'].append(syn)
 
-        new_fusion_sources = []
-        if 'fusion_sources' in tome_doc:
-            for i in tome_doc['fusion_sources']:
-                i['fidelity'] = float(i['fidelity'])
-                source_guid = i['source_guid']
-                if source_guid > tome_guid:
-                    logger.error("Tome {} has a fusion source {} "
-                                 "which has a greater guid than the target - "
-                                 "this is a protocol violation, ignoring fusion source").format(tome_guid, source_guid)
-                else:
-                    new_fusion_sources.append(i)
-
-        tome_doc['fusion_sources'] = new_fusion_sources
+        tome_doc['fusion_sources'] = _prepare_fusion_sources(tome_doc, tome_guid)
 
     tome_doc['prepared'] = True
 
     return tome_doc
+
+
+def prepare_author_document(original_author_doc):
+    """ returns a new author document with many corrections and checks applied """
+    author_doc = copy.deepcopy(original_author_doc)
+    if 'prepared' in author_doc:
+        raise ValueError("Author document already prepared: {}".format(author_doc))
+    if not 'guid' in author_doc:
+        raise ValueError("Author document did not contain a guid: {}".format(author_doc))
+
+    # it's not a deleted author
+    guid = author_doc['guid']
+    if 'name' in author_doc:
+        author_doc['fidelity'] = float(author_doc['fidelity'])
+        author_doc['fusion_sources'] = _prepare_fusion_sources(author_doc, guid)
+
+    return author_doc
 
 
 def _wrap_language(lan):
