@@ -736,7 +736,8 @@ class MainDB:
         db = self.foreign_dbs[friend_id]
 
         with Transaction(db):
-            for author_doc in author_docs:
+            for original_author_doc in author_docs:
+                author_doc = documents.prepare_author_document(original_author_doc)
                 author_guid = author_doc['guid']
 
                 if not 'name' in author_doc:  # delete request
@@ -807,8 +808,9 @@ class MainDB:
 
     def load_own_author_document(self, author_doc):
         with Transaction(self.local_db):
-            author_guid = author_doc['guid']
-            self.local_db.apply_author_document(author_doc)
+            prepared_author_doc = documents.prepare_author_document(author_doc)
+            author_guid = prepared_author_doc['guid']
+            self.local_db.apply_author_document(prepared_author_doc)
 
         with Transaction(self.merge_db):
             self.merge_db.request_complete_author_update(author_guid)
