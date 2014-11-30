@@ -87,3 +87,7 @@ def friend_name(friend_id):
         _friend_name_cache[friend_id] = friend['name']
 
     return _friend_name_cache[friend_id]
+
+
+def get_used_languages():
+    return db.get_used_languages()
