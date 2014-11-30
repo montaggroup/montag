@@ -16,13 +16,11 @@ def getfile():
     file_hash = request.args[1]
 
     tome_file = db.get_tome_file(tome_id, file_hash)
-    print tome_file
-    extension=tome_file['file_extension']
 
     fp = db.get_local_file_path(file_hash)
     plain_file = open(fp,"rb")
 
-    return _stream_tome_file(tome_id, extension, plain_file)
+    return _stream_tome_file(tome_id, tome_file, plain_file)
 
 def getfile_as_mobi():
     tome_id = request.args[0]
@@ -42,19 +40,19 @@ def _get_converted_file(tome_id, file_hash, target_extension):
     session.forget(response)
 
     tome_file = db.get_tome_file(tome_id, file_hash)
-    extension=tome_file['file_extension']
+    extension = tome_file['file_extension']
 
     fp = db.get_local_file_path(file_hash)
     with open(fp,"rb") as source_file:
         if extension == target_extension:    
-            return _stream_tome_file(tome_id, extension, source_file)
+            return _stream_tome_file(tome_id, tome_file, source_file)
         else:
             contents = source_file.read()
 
     # write into a temp file as to prevent ebook_convert from accessing the file store directly
     # this way we are sure that the file has the correct extension
-    fd_orig, path_orig=tempfile.mkstemp('.'+extension)
-    orig_file=os.fdopen(fd_orig,'wb')
+    fd_orig, path_orig = tempfile.mkstemp('.'+extension)
+    orig_file = os.fdopen(fd_orig,'wb')
     orig_file.write(contents)
     del contents
     orig_file.close()
@@ -62,27 +60,22 @@ def _get_converted_file(tome_id, file_hash, target_extension):
     fd_target, path_target=tempfile.mkstemp('.'+target_extension)
     os.close(fd_target)
     
-    print "Converting {} to {}".format(path_orig, path_target)
-    convert_result=subprocess.call(['ebook-convert',path_orig, path_target])
-    print "cv is",convert_result
+    convert_result = subprocess.call(['ebook-convert',path_orig, path_target])
     converted_content = open(path_target, 'rb')
     
-    return _stream_tome_file(tome_id, target_extension, converted_content)
+    tome_file['file_extension'] = target_extension
+    return _stream_tome_file(tome_id, tome_file, converted_content)
     
 
-def _stream_tome_file(tome_id, extension, contents_stream):
+def _stream_tome_file(tome_id, tome_file, contents_stream):
     # \todo error handling for tome or tome_file not found    
     tome = db.get_tome(tome_id)
     tome_doc = db.get_tome_document_by_guid(tome['guid'])
 
     author_docs = [db.get_author_document_by_guid(author['guid']) for author in tome_doc['authors']]
 
-    title=  tome['title'].encode("ascii", errors='ignore')
-    filename = '%s.%s' % (title, extension.encode('utf-8'))
-
-    
     enriched_file = cStringIO.StringIO()
-    added=pydb.ebook_metadata_tools.add_plain_metadata(contents_stream, extension, enriched_file, author_docs, tome_doc)
+    added = pydb.ebook_metadata_tools.add_plain_metadata(contents_stream, tome_file, enriched_file, author_docs, tome_doc)
     if not added: #use the file stream just as was passed, no metadata could be added.
         enriched_file = contents_stream
 
@@ -92,11 +85,13 @@ def _stream_tome_file(tome_id, extension, contents_stream):
     file_size = enriched_file.tell()
     enriched_file.seek(0)
     
+
+    filename = generate_download_filename(tome, tome_file)
     
     # \note: the kindle paperwhite only accepts our download if we stream it in chucks and omit the content-length header 
     response.headers['Content-Type'] = 'application/octet-stream'
     response.headers['Content-Length'] = file_size
-    response.headers['Content-Disposition'] = 'attachment;filename="%s"' % filename
+    response.headers['Content-Disposition'] = u'attachment;filename="{}"'.format(filename).encode('utf-8')
 
     return response.stream(enriched_file, chunk_size=20000)
 

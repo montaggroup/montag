@@ -18,6 +18,23 @@
 {{ from operator import itemgetter }}
 
 
+{{
+def show_file_operation_links(tome, file):
+    =A(generate_download_filename(tome, file), _href=URL( 'getfile',args=[tome['id'],file['hash']]))
+    if pydb.config.has_ebook_convert():
+        =' '
+        =A('MOBI', _href=URL( 'getfile_as_mobi',args=[tome['id'],file['hash']] ))
+    pass
+    =' '
+    if file['file_extension']=='epub':
+        =A('VIEW', _href=URL( c='viewfile', a='viewer',args=[tome['id'],file['hash']] ))
+    elif pydb.config.has_ebook_convert():
+        =A('VIEW*', _href=URL( c='viewfile', a='viewer',args=[tome['id'],file['hash']] ))
+    pass
+pass
+}}
+
+
 {{def show_tome_file_block(tome, show_edit_button=True):}}
     <ul class="files" id="tome_file_block_{{=next_tome_block_id()}}" >
       {{
@@ -25,18 +42,7 @@
         for file in relevant_files:}}
       <li> 
       {{if 'has_local_copy' in file and file['has_local_copy']:
-       =A(tome['title']+"."+file['file_extension'], _href=URL( 'getfile',args=[tome['id'],file['hash']]))
-       if pydb.config.has_ebook_convert():
-          =' '
-          =A('MOBI', _href=URL( 'getfile_as_mobi',args=[tome['id'],file['hash']] ))
-       pass
-       =' '
-          if file['file_extension']=='epub':
-              =A('VIEW', _href=URL( c='viewfile', a='viewer',args=[tome['id'],file['hash']] ))
-          elif pydb.config.has_ebook_convert():
-              =A('VIEW*', _href=URL( c='viewfile', a='viewer',args=[tome['id'],file['hash']] ))
-          pass
-
+        show_file_operation_links(tome, file)
       else:
       = tome['title']+"."+file['file_extension']
       pass}}

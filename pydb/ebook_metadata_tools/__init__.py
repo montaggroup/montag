@@ -24,10 +24,10 @@ def strip_file(source_path, extension, output_stream):
     return False
 
 
-def add_plain_metadata(source_stream, extension, output_stream, author_docs, tome_doc):
-    m = responsible_module(extension)
+def add_plain_metadata(source_stream, tome_file, output_stream, author_docs, tome_doc):
+    m = responsible_module(tome_file['file_extension'])
     if m:
-        result = m.add_metadata(source_stream, output_stream, author_docs, tome_doc)
+        result = m.add_metadata(source_stream, output_stream, author_docs, tome_doc, tome_file)
         if result is None:
             raise Exception("Module did not adhere to add metadata api")
         return result
