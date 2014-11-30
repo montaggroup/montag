@@ -34,5 +34,7 @@ CREATE TABLE IF NOT EXISTS local_files (
 
 CREATE INDEX IF NOT EXISTS local_files_hash ON local_files (hash);
 CREATE INDEX IF NOT EXISTS local_files_last_modification_date ON local_files (last_modification_date);
+CREATE INDEX IF NOT EXISTS tomes_language_fidelity ON tomes (principal_language, fidelity);
+
 
 COMMIT;
