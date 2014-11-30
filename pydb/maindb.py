@@ -108,6 +108,10 @@ class MainDB:
         """ returns a dictionary of merge.db statistics: authors, tomes, files """
         return self.merge_db.get_statistics()
 
+    def get_used_languages(self):
+        """ returns a list of principal languages used in the tomes which are present in the database """
+        return self.merge_db.get_used_languages()
+
     def get_tome_statistics(self):
         """ returns a dictionary of merge.db tome statistics:
         first level: language, second level fiction/nonfiction, values: count """
@@ -118,7 +122,7 @@ class MainDB:
         return self.local_db.get_statistics()
 
     def get_tome_authors(self, tome_id):
-        """ returns a of author dicts for all authors linked to a tome, in order of priority """
+        """ returns a list of author dicts for all authors linked to a tome, in order of priority """
         return self.merge_db.get_tome_authors(tome_id)
 
     def get_tome_files(self, tome_id, include_local_file_info=False, file_type=FileType.Content):

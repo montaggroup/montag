@@ -29,9 +29,12 @@ def _build_search_query(form):
 
 
 def _build_search_form():
+    lang_list = get_used_languages()
+    lang_dict = {lang: lang for lang in lang_list}
+    lang_dict[""] = "don't care"
     form = SQLFORM.factory(
         Field('query',requires=IS_NOT_EMPTY(), default="", label="Search for"),
-        Field('principal_language', default="", requires=IS_IN_SET({'de':'de','en':'en',"":"don't care"})),
+        Field('principal_language', default="", requires=IS_IN_SET(lang_dict)),
         Field('tome_type', label="", default="Z" , widget=SQLFORM.widgets.radio.widget, requires=IS_IN_SET({TomeType.Fiction:'Fiction',TomeType.NonFiction:'Non-Fiction', "Z": "Don't Care"})),
         submit_button='Search',
         _method = 'GET')

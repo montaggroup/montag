@@ -43,6 +43,12 @@ class BaseDB(sqlitedb.SqliteDB):
                  "files": files}
         return stats
 
+    def get_used_languages(self):
+        rows = self.cur.execute(
+            "SELECT DISTINCT(principal_language) FROM tomes WHERE fidelity > ?", [network_params.Min_Relevant_Fidelity])
+        result = [row[0] for row in rows]
+        return result
+
     def get_tome_statistics(self):
         result = {}
         rows = self.cur.execute(
