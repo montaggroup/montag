@@ -149,7 +149,8 @@ def add_metadata(source_stream, output_stream, author_docs, tome_doc, tome_file)
     author_names = {author_doc['name'] for author_doc in author_docs}
     tome_title = coalesce_title(tome_doc['title'], tome_doc['subtitle'])
 
-    file_title =  u"{} - {} ({})".format(','.join(author_names), tome_title, tome_file['hash'])
+    short_file_hash = tome_file['hash'][:4]
+    file_title =  u"{} - {} ({})".format(','.join(author_names), tome_title, short_file_hash)
     clear_metadata(source_stream, output_stream, new_title=file_title)
     return True
 
