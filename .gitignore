@@ -59,3 +59,13 @@ target/
 
 # Editor Backup files
 *~
+
+*.bak
+*.pid
+
+web2py/applications/admin/sessions/
+web2py/applications/montag/databases/
+web2py/applications/montag/errors/
+web2py/applications/montag/sessions/
+web2py/parameters_8000.py
+web2py/welcome.w2p

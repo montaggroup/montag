@@ -17,7 +17,7 @@ def extract_fulltext(source_stream):
 
 
 # noinspection PyUnusedLocal
-def add_metadata(source_stream, output_stream, author_docs, tome_doc):
+def add_metadata(source_stream, output_stream, author_docs, tome_doc, tome_file):
     return False
 
 
