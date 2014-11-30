@@ -127,3 +127,9 @@ def nice_table_name(table_name):
 
 def string_or_empty( text ):
     return unicode(text) if text is not None else ""
+
+def short_hash(full_hash):
+    return full_hash[:4]
+
+def generate_download_filename(tome, file):
+    return u"{} ({}).{}".format(tome['title'],short_hash(file['hash']), file['file_extension'])

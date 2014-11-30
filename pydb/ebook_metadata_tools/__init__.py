@@ -25,7 +25,7 @@ def strip_file(source_path, extension, output_stream):
 
 
 def add_plain_metadata(source_stream, tome_file, output_stream, author_docs, tome_doc):
-    m = responsible_module(tome_file['extension'])
+    m = responsible_module(tome_file['file_extension'])
     if m:
         result = m.add_metadata(source_stream, output_stream, author_docs, tome_doc, tome_file)
         if result is None:
