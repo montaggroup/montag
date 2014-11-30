@@ -149,7 +149,7 @@ def add_metadata(source_stream, output_stream, author_docs, tome_doc):
     author_names = {author_doc['name'] for author_doc in author_docs}
     tome_title = coalesce_title(tome_doc['title'], tome_doc['subtitle'])
 
-    file_title = ','.join(author_names) + " - " + tome_title
+    file_title = ', '.join(author_names) + " - " + tome_title
     clear_metadata(source_stream, output_stream, new_title=file_title)
     return True
 
