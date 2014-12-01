@@ -1,23 +1,17 @@
 {{ from pydb import FileType }}
-
 {{ tome_block_id=1 }}
 {{ tome_synopsis_id=1 }}
-
 {{ def next_tome_block_id(): 
     global tome_block_id
     tome_block_id+=1
     return tome_block_id-1
 }}
-
 {{ def next_tome_synopsis_id(): 
     global tome_synopsis_id
     tome_synopsis_id+=1
     return tome_synopsis_id-1
 }}
-
 {{ from operator import itemgetter }}
-
-
 {{
 def show_file_operation_links(tome, file):
     =A(generate_download_filename(tome, file), _href=URL( 'getfile',args=[tome['id'],file['hash']]))
@@ -33,7 +27,6 @@ def show_file_operation_links(tome, file):
     pass
 pass
 }}
-
 
 {{def show_tome_file_block(tome, show_edit_button=True):}}
     <ul class="files" id="tome_file_block_{{=next_tome_block_id()}}" >
@@ -53,9 +46,7 @@ pass
         </li>
     {{pass}}
     </ul>
-
 {{return}}
-
 
 {{def hide_all_files():}}
 <script>
@@ -73,7 +64,6 @@ jQuery(document).ready(function(){
 </script>
 {{return}}
 
-
 {{def _show_tome_edition_line(tome):
     edition_info_line = string_or_empty(tome['edition'])+" "+string_or_empty(tome['publication_year'])
     edition_info_line = edition_info_line.strip()
@@ -83,8 +73,6 @@ jQuery(document).ready(function(){
         </span><br>
     {{pass}}
 {{return}}
-
-
 
 {{def show_tome_info_block(tome, include_change_info=False, show_edit_button=True, show_file_edit_button=True, additional_tome_button_html=None):}}
 <li class="tome">
