@@ -1,6 +1,7 @@
 from collections import deque
 import logging
 import os
+import multiprocessing
 from twisted.internet import reactor
 import traceback
 
@@ -32,6 +33,8 @@ class FileRequester(object):
         self._session = None
         self._friend_id = None
 
+        self.insert_process = None
+
         self.comservice = comservice
 
     def queue_download_file(self, file_hash):
@@ -62,6 +65,7 @@ class FileRequester(object):
         while len(self.requested_hashes) < MaxParallelFileRequests:
             if not self.hashes_to_request:
                 if not self.requested_hashes:
+                    self._wait_for_previous_insert_process_to_complete()
                     self._completion_callback()
                 return
 
@@ -98,6 +102,27 @@ class FileRequester(object):
             logger.error("Answer order error, was expecting more parts for hash %s, but got not content" %
                          self.hash_of_transfer_in_progress)
 
+    def _wait_for_previous_insert_process_to_complete(self):
+        if self.insert_process is None:
+            return
+
+        if self.insert_process.is_alive():
+            logger.debug("Process still alive, waiting for process end")
+
+        self.insert_process.join()
+        self.insert_process = None
+
+    def _insert_file_in_background(self, completed_file_name, extension, file_hash):
+        def insert_it():
+            logger.debug("Inserting {} in background".format(file_hash))
+            self.main_db.add_file_from_local_disk(completed_file_name, extension,
+                                                  only_allowed_hash=file_hash, move_file=True)
+            self.comservice.release_file_after_fetching(file_hash, success=True)
+            logger.debug("Background insert complete")
+
+        self.insert_process = multiprocessing.Process(target=insert_it)
+
+
     def _finish_multipart_transfer(self, extension, file_hash):
         self.handle_of_file_in_progress.close()
         self.handle_of_file_in_progress = None
@@ -107,9 +132,8 @@ class FileRequester(object):
         self.number_files_downloaded += 1
         logger.info("Adding file via %s" % completed_file_name)
 
-        self.main_db.add_file_from_local_disk(completed_file_name, extension,
-                                              only_allowed_hash=file_hash, move_file=True)
-        self.comservice.release_file_after_fetching(file_hash, success=True)
+        self._wait_for_previous_insert_process_to_complete()
+        self._insert_file_in_background(completed_file_name, extension, file_hash)
 
     def _start_multipart_transfer(self, extension, file_hash):
         self.hash_of_transfer_in_progress = self.requested_hashes.popleft()
@@ -165,6 +189,8 @@ class FileRequester(object):
             self._launch_file_requests()
 
     def _abort_mission(self):
+        self._wait_for_previous_insert_process_to_complete()
+
         if self.hash_of_transfer_in_progress is not None:
             self.comservice.release_file_after_fetching(self.hash_of_transfer_in_progress, False)
         for file_hash in self.requested_hashes:
