@@ -195,8 +195,8 @@ class TestClientServerInteraction(unittest.TestCase):
         encrypted_maced_message = self.messages_for_server.pop()
 
         self.assertEqual(encrypted_maced_message.encode('hex'),
-                         '76a21b69fea190b0a3c9dce0ef376248108426e1c9598f3f957135076d57de914'
-                         '97bb076b96a58df6933fc829512c8b1fc82613025f25c2e9623feda70d21965f6')
+                         '54f13f72384dd414afcc39af91b5692ce8cf0d4a670a468b79b1d9b907e871249'
+                         '05a8ca13dcae7c9b2751024fb32ce95f8888d53ae5780197e53a1566dc9999f2815')
 
         # now look at the server side decryption
         self.server_sc.message_received(encrypted_maced_message)
