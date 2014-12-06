@@ -12,7 +12,7 @@ for people to actually obtain one. Look up "student debt" for a short primer on 
 third world problem.
 
 The main idea behind Montag is to leverage the virtually nonexistent delivery cost for digital documents (think e-books,
-tutorials, guides) to increase the availability of written information for as many human being as possible.
+tutorials, guides) to increase the availability of written information for as many human beings as possible.
 
 The basic design is a massively replicated database of metadata about existing digital documents (called tomes) and 
 their authors as well as related files holding content. Transmission of database entries is done in a web of trust
