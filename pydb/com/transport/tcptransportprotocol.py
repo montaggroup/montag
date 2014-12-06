@@ -19,6 +19,7 @@ NUMBER_OF_JOBS_UPDATE_INTERVAL_SECONDS = 2
 
 logger = logging.getLogger("tcptransportprotocol")
 
+
 def memsize():
     import gc
     import psutil
@@ -31,7 +32,7 @@ def memsize():
 
 def meminfo(msg):
     if False:
-        print msg, memsize()
+        logger.info('{} {}'.format(msg,memsize()))
 
 
 class TcpTransportProtocol(Protocol):
@@ -74,7 +75,6 @@ class TcpTransportProtocol(Protocol):
 
     # noinspection PyPep8Naming
     def resumeProducing(self):
-        traceback.print_stack()
         logger.debug("Resume called, {} chunks and {} messages queued".format(len(self.chunks_to_transmit), len(self.queued_messages)))
         self.paused = False
         self._check_message_queue()

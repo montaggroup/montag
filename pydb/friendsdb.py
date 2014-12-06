@@ -79,7 +79,6 @@ class FriendsDB(sqlitedb.SqliteDB):
             return row['comm_data']
 
     def set_name(self, friend_id, name):
-        print "UPDATE friends SET name=? WHERE id=?", [name, friend_id]
         self.con.execute("UPDATE friends SET name=? WHERE id=?", [name, friend_id])
 
     def set_can_connect_to(self, friend_id, can_connect_to):
