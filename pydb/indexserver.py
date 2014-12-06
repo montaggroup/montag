@@ -1,10 +1,12 @@
 import whooshindex
 import indexthread
 import os
+import logging
+
+logger = logging.getLogger('indexserver')
 
 
 class IndexServer():
-
     def __init__(self, base_path):
         db_dir = os.path.join(base_path, "db")
         if not os.path.exists(db_dir):
@@ -20,7 +22,7 @@ class IndexServer():
         self.index_thread.start()
 
     def stop(self):
-        print "Requesting stop"
+        logger.info("Requesting stop")
         self.index_thread.request_stop()
 
     def search_tomes(self, query):

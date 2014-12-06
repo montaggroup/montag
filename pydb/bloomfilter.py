@@ -3,6 +3,9 @@ from bitarray import bitarray
 from math import ceil, log
 from hashlib import sha512
 import time
+import logging
+
+logger = logging.getLogger('bloomfilter')
 
 
 class Bloomfilter:
@@ -13,7 +16,7 @@ class Bloomfilter:
         self.k = int(ceil((float(bitsize) / float(desired_elements)) * log(2)))
         self.array = bitarray(bitsize)
         self.array.setall(False)
-        print "Set up Bloomfilter, m=%d, k=%d" % (self.m, self.k)
+        logger.debug("Set up Bloomfilter, m={}, k={}".format(self.m, self.k))
 
     def _element_to_bits_multi_seed(self, element):
         def sample_one_bit_pos(seed, max_val):
@@ -32,7 +35,6 @@ class Bloomfilter:
             slices.append(a_slice)
 
         for a_slice in slices:
-            # print slice
             bit = sample_one_bit_pos(int(a_slice, 16), self.m - 1)
             bits.append(bit)
         return bits
@@ -53,7 +55,6 @@ class Bloomfilter:
     def add(self, element):
         for b in self.element_to_bits(element):
             self.array[b] = True
-            # print "after add: %s" % self.array.to01()
 
     def is_present(self, element):
         for b in self.element_to_bits(element):

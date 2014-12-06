@@ -315,9 +315,7 @@ class MainDB:
                 local_item['friend_id'] = 0
                 items.append(local_item)
 
-        # print "items:", items
         max_fidelity_item = max(items, key=lambda x: x['fidelity'])
-        # print "winner", max_fidelity_item
 
         if max_fidelity_item is None:
             return None
@@ -512,7 +510,7 @@ class MainDB:
                         if file_id is not None:
                             result[f['source_path']] = True
                         else:
-                            print "Got error while adding: {}".format(f['source_path'])
+                            logger.error("Got error while adding: {}".format(f['source_path']))
                             result[f['source_path']] = False
 
                     except EOFError:
@@ -694,9 +692,7 @@ class MainDB:
         """ adds a new synopsis, returns the id of the synopsis """
         if not fidelity:
             fidelity = self.default_add_fidelity
-        print "syn @ pds %d" % local_db_tome_id
         synopsis_id = self.local_db.add_synopsis_to_tome(guid, content, local_db_tome_id, fidelity)
-        print "synopsis_id @ pydbserver:" + str(synopsis_id)
         return synopsis_id
 
     def add_friend(self, name):
@@ -950,7 +946,6 @@ class MainDB:
 
         for friend_id, db in self.foreign_dbs.iteritems():
             friend = self.get_friend(friend_id)
-            print "== Friend %s ==" % (friend['name'])
             friend_key = 'friend_{}'.format(friend['name'])
             result[friend_key] = db.check_for_consistency_problems()
         return result
@@ -1221,7 +1216,6 @@ def _strip_file_to_temp(source_path, extension_without_dot, remove_original=Fals
         f.close()
         if remove_original:
             os.remove(source_path)
-        # print "stripping succeeded"
         file_hash_after_stripping = _hash_file(filename_stripped)
         return filename_stripped, file_hash_after_stripping
 
