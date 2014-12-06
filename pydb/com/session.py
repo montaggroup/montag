@@ -5,6 +5,7 @@ logger = logging.getLogger("com.session")
 FILE_TRANSFER_CHUNK_SIZE = 1024 * 1024
 KEEP_ALIVE_SEND_INTERVAL_SECONDS = 120
 
+
 def send_chunked_file(session, file_extension, file_hash, file_stream):
     start_pos = 0
     chunk = file_stream.read(FILE_TRANSFER_CHUNK_SIZE)

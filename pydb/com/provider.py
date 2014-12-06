@@ -22,9 +22,9 @@ class Provider():
         self.number_documents_sent = 0
         self.number_files_sent = 0
 
-    def activate(self, session, completion_callback, failure_callback):
-        self.lower_layer = session
-        session.set_upper_layer(self)
+    def activate(self, session_layer, completion_callback, failure_callback):
+        self.lower_layer = session_layer
+        session_layer.set_upper_layer(self)
         self._completion_callback = completion_callback
         self._failure_callback = failure_callback
 
@@ -69,12 +69,12 @@ class Provider():
             yield deferred_wait(0)
 
         logger.debug("Sent documents up to Authors {}, Tomes {}".format(
-              new_min_modification_date_authors, new_min_modification_date_tomes))
+                     new_min_modification_date_authors, new_min_modification_date_tomes))
         self.lower_layer.update_modification_dates(new_min_modification_date_authors, new_min_modification_date_tomes)
 
     def command_request_file_received(self, file_hash):
         logger.debug("Request for file {} received".format(file_hash))
-        local_path=self.db.get_local_file_path(file_hash)
+        local_path = self.db.get_local_file_path(file_hash)
 
         if not local_path:
             logger.info("Sending negative reply for hash %s" % file_hash)
@@ -98,11 +98,11 @@ class Provider():
     def session_established(self):
         logger.debug("New Session for server")
 
-    #noinspection PyMethodMayBeStatic
+    # noinspection PyMethodMayBeStatic
     def session_failed(self, reason):
         logger.info("Session failed: {}".format(reason))
 
-    #noinspection PyMethodMayBeStatic
+    # noinspection PyMethodMayBeStatic
     def session_lost(self, reason):
         logger.info("Client disconnected, reason: {}".format(reason))
         self._failure_callback()

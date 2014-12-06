@@ -3,6 +3,7 @@ from . import *
 import logging
 logger = logging.getLogger('early_requester')
 
+
 class EarlyRequester(Strategy):
     def __init__(self, metadata_requester, file_requester, provider, main_db):
         """
@@ -42,7 +43,6 @@ class EarlyRequester(Strategy):
 
         self._file_requester.activate(self._session, self._friend_id,
                                       self.file_requester_completed, self.any_requester_failed)
-
 
     def file_requester_completed(self):
         self._session.request_stop_providing()

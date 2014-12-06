@@ -9,6 +9,7 @@ logger = logging.getLogger('secure_channel')
 FLAG_COMPRESSED = 'C'
 FLAG_UNCOMPRESSED = 'U'
 
+
 # NOT YET EXTERNALLY REVIEWED FOR HIGH LEVEL SECURITY!
 # secure channel using AES and HMAC-SHA-512
 class AesHmacSecureChannel():
@@ -156,7 +157,7 @@ class AesHmacSecureChannel():
                     self.preshared_secret_kex_cipher = preshared_secret_kex_cipher
                     self.preshared_secret_kex_hmac = preshared_secret_kex_hmac
                     self._derive_session_secret()
-                    #generate authenticator for final kex message
+                    # generate authenticator for final kex message
                     auth_a = calc_hmac(self.preshared_secret_kex_hmac, self.nonce_a + message)
                     auth_found = True
 

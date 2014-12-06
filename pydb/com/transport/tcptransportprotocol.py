@@ -2,7 +2,6 @@ from twisted.internet.protocol import Protocol
 from twisted.internet import reactor
 import logging
 from collections import deque
-import traceback
 from ... import config
 
 WaitingForLength = 0
@@ -32,7 +31,7 @@ def memsize():
 
 def meminfo(msg):
     if False:
-        logger.info('{} {}'.format(msg,memsize()))
+        logger.info('{} {}'.format(msg, memsize()))
 
 
 class TcpTransportProtocol(Protocol):
@@ -49,21 +48,21 @@ class TcpTransportProtocol(Protocol):
         self.queued_messages = deque([])
         self.chunks_to_transmit = deque([])
         self.delay_active = False
-        
+
         self.comservice = comservice
         self.number_of_jobs_cache = 0
-        
+
         self.update_number_of_jobs()
-        
+
         self.target_bytes_per_second = target_bytes_per_second
         self.read_timeout = config.get_int_option('comserver', 'read_timeout_seconds', READ_TIMEOUT)
 
     def do_timeout(self):
         self.lose_transport_channel("Read timeout")
-        
+
     def current_number_of_jobs(self):
         return self.number_of_jobs_cache
-        
+
     def update_number_of_jobs(self):
         self.number_of_jobs_cache = self.comservice.get_number_of_running_jobs()
         reactor.callLater(NUMBER_OF_JOBS_UPDATE_INTERVAL_SECONDS, self.update_number_of_jobs)
@@ -71,24 +70,26 @@ class TcpTransportProtocol(Protocol):
     # noinspection PyPep8Naming
     def pauseProducing(self):
         self.paused = True
-        logger.debug("Pause called, {} chunks and {} messages queued".format(len(self.chunks_to_transmit), len(self.queued_messages)))
+        logger.debug("Pause called, {} chunks and {} messages queued".format(len(self.chunks_to_transmit),
+                                                                             len(self.queued_messages)))
 
     # noinspection PyPep8Naming
     def resumeProducing(self):
-        logger.debug("Resume called, {} chunks and {} messages queued".format(len(self.chunks_to_transmit), len(self.queued_messages)))
+        logger.debug("Resume called, {} chunks and {} messages queued".format(
+            len(self.chunks_to_transmit), len(self.queued_messages)))
         self.paused = False
         self._check_message_queue()
 
-    #noinspection PyPep8Naming
+    # noinspection PyPep8Naming
     def stopProducing(self):
         logger.debug("Stop called")
         self.transport.loseConnection()
 
     def set_max_data_length(self, new_max_data_length):
         self.max_data_length = new_max_data_length
-        
+
     def get_delay_after_chunk(self, chunk_size):
-        return ( chunk_size*1.0 / self.target_bytes_per_second ) * self.current_number_of_jobs()
+        return (chunk_size * 1.0 / self.target_bytes_per_second) * self.current_number_of_jobs()
 
     def _check_message_queue(self):
         if self.delay_active:
@@ -97,19 +98,19 @@ class TcpTransportProtocol(Protocol):
 
     def _really_pump_message_queue(self):
         self.delay_active = False
-        
+
         if not self.paused:
             if not self.chunks_to_transmit and self.queued_messages:
                 next_message = self.queued_messages.popleft()
                 self.chunks_to_transmit = package_and_split_message(next_message)
-            
-            if self.chunks_to_transmit:   
+
+            if self.chunks_to_transmit:
                 next_chunk = self.chunks_to_transmit.popleft()
                 self.transport.write(next_chunk)
                 chunk_delay = self.get_delay_after_chunk(len(next_chunk))
-                
+
                 # logger.debug("{} bytes written, waiting {} seconds".format(len(next_chunk), chunk_delay))
-                
+
                 self.delay_active = True
                 reactor.callLater(chunk_delay, self._really_pump_message_queue)
         else:
@@ -126,7 +127,7 @@ class TcpTransportProtocol(Protocol):
     def connectionMade(self):
         # register this class as a producer to allow the transport to tell us to pause
         self.transport.registerProducer(self, True)
-         
+
         self.upper_layer.transport_channel_established()
         self.transport.bufferSize = 1024 * 1024 * 5
 
@@ -170,7 +171,7 @@ class TcpTransportProtocol(Protocol):
 
 def package_and_split_message(message):
     """ splits the message into evenly sized chunks and prepend message size header to first chunk """
-    chunks = [ message[i:i+CHUNK_SIZE] for i in range(0, len(message), CHUNK_SIZE)]
+    chunks = [message[i:i + CHUNK_SIZE] for i in range(0, len(message), CHUNK_SIZE)]
     len_info = "{}\n".format(len(message))
     chunks[0] = len_info + chunks[0]
     return deque(chunks)

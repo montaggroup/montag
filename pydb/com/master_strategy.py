@@ -6,6 +6,7 @@ import background_file_inserter
 import provider
 import pydb.config
 
+
 def construct_master_client_strategy(main_db, comservice):
     metadata_requester_to_use = metadata_requester.MetadataRequester(main_db)
     file_inserter = background_file_inserter.BackgroundFileInserter()

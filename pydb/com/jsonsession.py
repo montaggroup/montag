@@ -6,6 +6,7 @@ from .. import config
 
 logger = logging.getLogger('session')
 
+
 class JsonSession():
     def __init__(self, upper_layer):
         self.upper_layer = upper_layer
@@ -42,7 +43,8 @@ class JsonSession():
 
     def deliver_file(self, file_hash, extension, content, more_parts_follow=False):
         encoded_content = content.encode('base64')
-        self._send_message({'command': 'deliverFile', 'args': [file_hash, extension, encoded_content, more_parts_follow]})
+        self._send_message({'command': 'deliverFile', 'args':
+                           [file_hash, extension, encoded_content, more_parts_follow]})
 
     def request_stop_providing(self):
         self._send_message({'command': 'stopProviding', 'args': []})
@@ -64,7 +66,7 @@ class JsonSession():
     def message_received(self, message):
         # print "Trying to decode message '%s'" %(message)
         msg = json.loads(message)
-        if not 'command' in msg:
+        if 'command' not in msg:
             logger.error("No command in {}".format(msg))
             self.lower_layer.lose_secure_channel("No command sent")
 
@@ -76,7 +78,7 @@ class JsonSession():
             min_modification_date_authors = args[0]
             min_modification_date_tomes = args[1]
             self.upper_layer.command_get_database_entries_received(min_modification_date_authors,
-                                                         min_modification_date_tomes)
+                                                                   min_modification_date_tomes)
         elif command == "setNumberDocuments":
             number_entries_batch = args[0]
             number_entries_total = args[1]

@@ -1,5 +1,4 @@
 from twisted.internet import reactor
-from jsonsession import JsonSession
 from json_and_binary_session import JsonAndBinarySession
 
 import logging
@@ -10,6 +9,7 @@ from securechannel.aeshmacsecurechannel import AesHmacSecureChannel
 from transport.tcpclient import TcpClient
 import bulk_inserter
 from .. import config
+
 
 class ComClient():
     def __init__(self, main_db, friend_id, friend_comm_data, comservice):

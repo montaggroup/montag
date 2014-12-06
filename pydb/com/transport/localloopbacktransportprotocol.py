@@ -2,6 +2,7 @@ import logging
 
 logger = logging.getLogger("localllopbacktransportprotocol")
 
+
 class LocalLoopBackTransportProtocol():
     """ used to emulate network transfer.
     """
@@ -27,9 +28,8 @@ class LocalLoopBackTransportProtocol():
         self.connected = True
         self.upper_layer.transport_channel_established()
 
-
     def send_message(self, msg):
-        assert(self.connected)
+        assert self.connected
         self._bytes_sent += len(msg)
         self.partner.message_received(msg)
 
@@ -41,9 +41,10 @@ class LocalLoopBackTransportProtocol():
         self.partner.connectionLost('Connection closed by peer')
 
     def message_received(self, data=""):
-        assert(self.connected)
+        assert self.connected
         self.upper_layer.message_received(data)
 
+    # noinspection PyPep8Naming
     def connectionLost(self, reason):
         self.upper_layer.transport_channel_lost(reason)
 
