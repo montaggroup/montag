@@ -7,7 +7,8 @@ class TestFileRequester(unittest.TestCase):
     def setUp(self):
         self.db = None
         self.comservice = mock.MagicMock()
-        self.requester = pydb.com.file_requester.FileRequester(self.db, self.comservice)
+        self.file_inserter = mock.MagicMock()
+        self.requester = pydb.com.file_requester.FileRequester(self.db, self.comservice, self.file_inserter)
         self.friend_id = 1
         self.session = mock.MagicMock()
         self.callback = mock.MagicMock()

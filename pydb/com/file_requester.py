@@ -11,7 +11,7 @@ from tempfile import mkstemp
 
 
 class FileRequester(object):
-    def __init__(self, main_db, comservice):
+    def __init__(self, main_db, comservice, file_inserter):
         self.main_db = main_db
         self.hashes_to_request_set = set()
         self.hashes_to_request = deque([])
@@ -32,10 +32,12 @@ class FileRequester(object):
         self._session = None
         self._friend_id = None
 
+        self.file_inserter = file_inserter
+
         self.comservice = comservice
 
     def queue_download_file(self, file_hash):
-        if not file_hash in self.hashes_to_request_set:
+        if file_hash not in self.hashes_to_request_set:
             self.hashes_to_request.append(file_hash)
             self.hashes_to_request_set.add(file_hash)
             self.number_files_requested_total += 1
@@ -62,6 +64,7 @@ class FileRequester(object):
         while len(self.requested_hashes) < MaxParallelFileRequests:
             if not self.hashes_to_request:
                 if not self.requested_hashes:
+                    self.file_inserter.wait_for_insert_to_complete()
                     self._completion_callback()
                 return
 
@@ -106,10 +109,7 @@ class FileRequester(object):
         self.name_of_file_in_progress = None
         self.number_files_downloaded += 1
         logger.info("Adding file via %s" % completed_file_name)
-
-        self.main_db.add_file_from_local_disk(completed_file_name, extension,
-                                              only_allowed_hash=file_hash, move_file=True)
-        self.comservice.release_file_after_fetching(file_hash, success=True)
+        self.file_inserter.insert_file_in_background(completed_file_name, extension, file_hash)
 
     def _start_multipart_transfer(self, extension, file_hash):
         self.hash_of_transfer_in_progress = self.requested_hashes.popleft()
@@ -165,6 +165,8 @@ class FileRequester(object):
             self._launch_file_requests()
 
     def _abort_mission(self):
+        self.file_inserter.wait_for_insert_to_complete()
+
         if self.hash_of_transfer_in_progress is not None:
             self.comservice.release_file_after_fetching(self.hash_of_transfer_in_progress, False)
         for file_hash in self.requested_hashes:
