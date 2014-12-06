@@ -69,7 +69,7 @@ class Provider():
             yield deferred_wait(0)
 
         logger.debug("Sent documents up to Authors {}, Tomes {}".format(
-              (new_min_modification_date_authors, new_min_modification_date_tomes))
+              new_min_modification_date_authors, new_min_modification_date_tomes))
         self.lower_layer.update_modification_dates(new_min_modification_date_authors, new_min_modification_date_tomes)
 
     def command_request_file_received(self, file_hash):
