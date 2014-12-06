@@ -10,6 +10,7 @@ TargetIndexingBatchSize = 10000
 
 logger = logging.getLogger('indexthread')
 
+
 class IndexThread(threading.Thread):
     def __init__(self, schema_path, db_dir, progress_file):
         threading.Thread.__init__(self)

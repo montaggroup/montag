@@ -161,7 +161,7 @@ def remove_duplicates_in_list(a_list):
     seen = set()
 
     for el in a_list:
-        if not el in seen:
+        if el not in seen:
             seen.add(el)
             result.append(el)
 

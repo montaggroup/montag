@@ -112,7 +112,8 @@ def get_current_services_status():
                             services_status[srv] = {'status': p.status, 'pid': pid, 'process': p}
             else:
                 name = pinfo['name']
-                if (name == 'python' or name == 'python2.7' or name == 'python.exe') and process_username == getpass.getuser():
+                if (name == 'python' or name == 'python2.7' or name == 'python.exe') and \
+                                process_username == getpass.getuser():
                     for arg in pinfo['cmdline']:
                         for srv in names:
                             if srv in arg:

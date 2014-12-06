@@ -49,14 +49,15 @@ class BaseDB(sqlitedb.SqliteDB):
     def get_tome_statistics(self):
         result = {}
         rows = self.cur.execute(
-            "SELECT type, principal_language, count(*) FROM tomes WHERE fidelity > ? GROUP BY type, principal_language", [network_params.Min_Relevant_Fidelity])
+            "SELECT type, principal_language, count(*) FROM tomes WHERE fidelity > ? GROUP BY type, principal_language",
+            [network_params.Min_Relevant_Fidelity])
         for row in rows:
             tome_type, lang, count = row
-            if not lang in result:
+            if lang not in result:
                 result[lang] = {None: 0, pydb.TomeType.Fiction: 0, pydb.TomeType.NonFiction: 0}
 
             # \todo make a check for that in the check tool
-            if not tome_type in result[lang]:
+            if tome_type not in result[lang]:
                 logger.error("Invalid tome type '{}' found in database, skipping count".format(tome_type))
                 continue
             result[lang][tome_type] = count
@@ -577,13 +578,14 @@ class BaseDB(sqlitedb.SqliteDB):
 
     def apply_tome_document(self, doc):
         """ applies a new tome document to the database
-            note: currently this document deletes all stuff associated with the tome from the database and imports it again.
+            note: currently this document deletes all stuff associated with the tome from the database and imports
+            it again.
             In an optimisation step we could read the current stuff from the db and only write new stuff if required.
             see merge db for a way to do that.
             This also means that at the moment we have to trigger a merge db recalculation even if
             stuff might not have been changed at all - but mergedb will detect that
         """
-        if not 'prepared' in doc:
+        if 'prepared' not in doc:
             raise ValueError("Tome doc not prepared: %s", doc)
         guid = doc['guid']
 
@@ -813,7 +815,8 @@ class BaseDB(sqlitedb.SqliteDB):
                   
         add_check('files_with_strange_extension',
                   from_clause="files inner join tomes on tomes.id=files.tome_id",
-                  where_clause="file_extension not in ('epub', 'mobi', 'pdf','txt','pdb','jpg','html','lit','djvu','EPUB', 'rtf', 'azw3', 'png', 'gif') "
+                  where_clause="file_extension not in "
+                               "('epub', 'mobi', 'pdf','txt','pdb','jpg','html','lit','djvu','EPUB', 'rtf', 'azw3', 'png', 'gif') "
                                "AND files.fidelity >=?",
                   order_by_clause="files.hash",
                   params=[network_params.Min_Relevant_Fidelity])
@@ -821,7 +824,7 @@ class BaseDB(sqlitedb.SqliteDB):
         add_check('authors_with_identical_names',
                   from_clause="authors a1 inner join authors a2 ON a1.name=a2.name",
                   where_clause="a1.guid != a2.guid AND a1.fidelity >=? AND a2.fidelity >=?",
-                  order_by_clause = "a1.name",
+                  order_by_clause="a1.name",
                   params=[network_params.Min_Relevant_Fidelity, network_params.Min_Relevant_Fidelity])
 
         add_check('authors_with_multiple_spaces_in_name',

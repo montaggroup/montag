@@ -99,28 +99,21 @@ if __name__ == "__main__":
         print bf.element_to_bits(number_to_hash(1))
         print bf.element_to_bits(number_to_hash(2))
 
-        # sys.exit(0)
-
         print "running..."
 
         for i in xrange(actual - snapshot_delta):
             bf.add(number_to_hash(i))
             if not bf.is_present(number_to_hash(i)):
-                #print "False negative at %d" % i
                 false_neg += 1
-
-        #snap1bytes=bf.snapshot().tobytes()
 
         for i in xrange(actual - snapshot_delta, actual):
             bf.add(number_to_hash(i))
             if not bf.is_present(number_to_hash(i)):
-                #print "False negative at %d" % i
                 false_neg += 1
 
         print "filled"
         for i in xrange(actual, number_of_false_positive_tests + actual):
             if bf.is_present(number_to_hash(i)):
-                #print "False positive at %d" % i
                 false_pos += 1
 
         t_end = time.time()

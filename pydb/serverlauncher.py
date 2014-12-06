@@ -34,7 +34,7 @@ def create_server(data_dir=None, port="4510", sync_mode=True, debug=False, based
     db = Pyro4.Proxy('PYRO:pydb_server@localhost:%s' % port)    # use name server object lookup uri shortcut
     db.testing_server = server
     while True:
-        #noinspection PyBroadException
+        # noinspection PyBroadException
         try:
             if db.ping() != "pong":
                 print >> sys.stderr, "Unable to talk"
@@ -59,6 +59,6 @@ class Server:
         self.db = create_server(*self.args, **self.kwargs)
         return self.db
 
-    #noinspection PyUnusedLocal,PyShadowingBuiltins
+    # noinspection PyUnusedLocal,PyShadowingBuiltins
     def __exit__(self, type, value, traceback):
         stop_server(self.db)
