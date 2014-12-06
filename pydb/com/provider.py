@@ -96,13 +96,13 @@ class Provider():
 
     # noinspection PyMethodMayBeStatic
     def session_established(self):
-        print "New Session for server"
+        logger.debug("New Session for server")
 
     #noinspection PyMethodMayBeStatic
     def session_failed(self, reason):
-        print "Session failed", reason
+        logger.info("Session failed: {}".format(reason))
 
     #noinspection PyMethodMayBeStatic
     def session_lost(self, reason):
-        print "Client disconnected, reason:", reason
+        logger.info("Client disconnected, reason: {}".format(reason))
         self._failure_callback()

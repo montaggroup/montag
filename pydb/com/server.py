@@ -22,7 +22,7 @@ class Server():
         tcp_server_factory = TcpServer(self.build_stack, self.comservice, upload_rate_limit_kbps * 1000)
         
         reactor.listenTCP(tcp_port_number, tcp_server_factory)
-        print "Server listening on port", tcp_port_number
+        logger.info("Server listening on port {}".format(tcp_port_number))
 
     def build_stack(self):
 

@@ -1,6 +1,9 @@
 from twisted.internet.protocol import Factory
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from tcptransportprotocol import TcpTransportProtocol
+import logging
+
+logger = logging.getLogger('tcpclient')
 
 class TcpClient():
     def __init__(self, upper_layer, reactor_, target_host, target_port, comservice, target_bytes_per_second):
@@ -38,7 +41,7 @@ class TcpClient():
         self.protocol.set_max_data_length(self.max_data_length)
 
     def handle_error(self, error):
-        print "Got error", error
+        logger.error("Got error: {}".format(error))
         self.upper_layer.transport_channel_failed(error)
 
 
