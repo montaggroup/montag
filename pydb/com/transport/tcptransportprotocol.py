@@ -108,7 +108,7 @@ class TcpTransportProtocol(Protocol):
                 self.transport.write(next_chunk)
                 chunk_delay = self.get_delay_after_chunk(len(next_chunk))
                 
-                logger.debug("{} bytes written, waiting {} seconds".format(len(next_chunk), chunk_delay))
+                # logger.debug("{} bytes written, waiting {} seconds".format(len(next_chunk), chunk_delay))
                 
                 self.delay_active = True
                 reactor.callLater(chunk_delay, self._really_pump_message_queue)
