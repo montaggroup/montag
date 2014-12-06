@@ -30,7 +30,6 @@ def create_server(data_dir=None, port="4510", sync_mode=True, debug=False, based
     if not sync_mode:
         server_args.append("--no-sync")
 
-    print server_args
     server = subprocess.Popen(server_args, env=os.environ, shell=shell)
     db = Pyro4.Proxy('PYRO:pydb_server@localhost:%s' % port)    # use name server object lookup uri shortcut
     db.testing_server = server

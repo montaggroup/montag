@@ -190,7 +190,7 @@ if __name__ == "__main__":
             clear_metadata_from_file(infile, outfile, "some_short_title")
 
         except ValueError, e:
-            print "error: %s" % e
+            print "error: {}".format(e)
             return 1
 
         return 0

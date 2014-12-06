@@ -79,8 +79,8 @@ class JsonAndBinarySession():
             return
 
         msg = json.loads(message)
-        if not 'command' in msg:
-            print "No command in ", msg
+        if 'command' not in msg:
+            logger.error("No command in {}".format(msg))
             self.lower_layer.lose_secure_channel("No command sent")
 
         del message
@@ -123,7 +123,7 @@ class JsonAndBinarySession():
         elif command == "noOp":
             pass
         else:
-            print "Unsupported command", command
+            logger.error("Unsupported command '{}'".format(command))
             self.lower_layer.lose_secure_channel("Unsupported command")
 
     def secure_channel_established(self, friend_id):

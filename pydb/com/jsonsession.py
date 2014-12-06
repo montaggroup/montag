@@ -65,7 +65,7 @@ class JsonSession():
         # print "Trying to decode message '%s'" %(message)
         msg = json.loads(message)
         if not 'command' in msg:
-            print "No command in ", msg
+            logger.error("No command in {}".format(msg))
             self.lower_layer.lose_secure_channel("No command sent")
 
         del message
@@ -105,7 +105,7 @@ class JsonSession():
             pass
         else:
             print "Unsupported command", command
-            self.lower_layer.lose_secure_channel("Unsupported command")
+            logger.error("Unsupported command '{}'".format(command))
 
     def secure_channel_established(self, friend_id):
         self.upper_layer.session_established(friend_id)

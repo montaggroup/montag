@@ -636,7 +636,6 @@ class MergeDB(pydb.basedb.BaseDB):
         return row[0] > 0
 
     def update_tomes_without_authors(self):
-
         rows = self.con.execute("SELECT tomes.guid AS guid FROM tomes_authors "
                                 "LEFT JOIN authors ON tomes_authors.author_id = authors.id "
                                 "INNER JOIN tomes ON tomes_authors.tome_id=tomes.id "
@@ -644,7 +643,7 @@ class MergeDB(pydb.basedb.BaseDB):
 
         for row in rows:
             guid = row['guid']
-            print "Updating tome authors for {}".format(guid)
+            logger.debug("Updating tome authors for {}".format(guid))
             self.request_tome_authors_update(guid)
 
 
