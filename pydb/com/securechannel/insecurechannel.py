@@ -12,7 +12,7 @@ class InsecureChannel():
     def initiate_secure_channel(self):
         self.lower_layer.initiate_transport_channel()
 
-    def send_message(self, message):
+    def send_message(self, message, skip_compression=False):
         self.lower_layer.send_message(message)
 
     def lose_secure_channel(self, message):

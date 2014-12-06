@@ -1,5 +1,6 @@
 from twisted.internet import reactor
 from jsonsession import JsonSession
+from json_and_binary_session import JsonAndBinarySession
 from transport.tcpserver import TcpServer
 from securechannel.aeshmacsecurechannel import AesHmacSecureChannel
 import logging
@@ -26,7 +27,7 @@ class Server():
     def build_stack(self):
 
         sc = SessionController(self.db, self.comservice)
-        session = JsonSession(sc)
+        session = JsonAndBinarySession(sc)
         sc.set_lower_layer(session)
 
         friends = self.db.get_friends()

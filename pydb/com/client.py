@@ -1,5 +1,7 @@
 from twisted.internet import reactor
 from jsonsession import JsonSession
+from json_and_binary_session import JsonAndBinarySession
+
 import logging
 
 logger = logging.getLogger("com.client")
@@ -18,7 +20,7 @@ class ComClient():
         self._communication_strategy = None
         self._main_db = main_db
 
-        self._session = JsonSession(self)
+        self._session = JsonAndBinarySession(self)
         self._secure_channel = AesHmacSecureChannel(self._session, self._friend_comm_data["secret"])
         self._session.set_lower_layer(self._secure_channel)
         

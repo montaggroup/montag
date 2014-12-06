@@ -47,7 +47,11 @@ class JsonAndBinarySession():
 
         self._send_message({'command': 'deliverFile', 'args': [file_hash, extension, has_content, more_parts_follow]})
         if has_content:
-            self.lower_layer.send_message(content)
+            skip_compression = True
+            if extension in ('txt', 'rtf'):
+                skip_compression = False
+
+            self.lower_layer.send_message(content, skip_compression=skip_compression)
 
     def request_stop_providing(self):
         self._send_message({'command': 'stopProviding', 'args': []})

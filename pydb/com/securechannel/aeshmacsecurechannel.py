@@ -6,6 +6,8 @@ from aeshmac_common import *
 
 logger = logging.getLogger('secure_channel')
 
+FLAG_COMPRESSED = 'C'
+FLAG_UNCOMPRESSED = 'U'
 
 # NOT YET EXTERNALLY REVIEWED FOR HIGH LEVEL SECURITY!
 # secure channel using AES and HMAC-SHA-512
@@ -54,15 +56,15 @@ class AesHmacSecureChannel():
         self._change_state("kex_waiting_on_nonceB,authB")
         self.lower_layer.send_message(self.nonce_a)
 
-    def send_message(self, message):
+    def send_message(self, message, skip_compression=False):
         if self.state != "established":
             raise RuntimeError("Trying to send message while not connected")
 
         # compress encrypt and mac
-        if self.compression_level is None:
-            compressed_message = message
+        if self.compression_level is None or skip_compression:
+            compressed_message = FLAG_UNCOMPRESSED + message
         else:
-            compressed_message = zlib.compress(message, self.compression_level)
+            compressed_message = FLAG_COMPRESSED + zlib.compress(message, self.compression_level)
         #      print "Compressed message from %d to %d Bytes" % (len(message), len(compressed_message))
         #      if len(message) > 0:
         #        print "Ratio is %f%%" % ( len(compressed_message)*100/(len(message)) )
@@ -90,15 +92,17 @@ class AesHmacSecureChannel():
             del macd_msg
 
             calculated_hmac = calc_hmac(self.session_secret_hmac, message_payload)
-            if calculated_hmac == contained_hmac:
-                if self.compression_level is None:
-                    decompressed_message = message_payload
-                else:
-                    decompressed_message = zlib.decompress(message_payload)
-                    del message_payload
-                self.upper_layer.message_received(decompressed_message)
-            else:
+            if calculated_hmac != contained_hmac:
                 raise Exception("Message HMAC verification failed!")
+
+            compression_flag = message_payload[0]
+            if compression_flag == FLAG_UNCOMPRESSED:
+                decompressed_message = message_payload[1:]
+            else:
+                decompressed_message = zlib.decompress(message_payload[1:])
+                del message_payload
+            self.upper_layer.message_received(decompressed_message)
+
         else:
             if self.role == "client":
                 self._client_message_received(message)
