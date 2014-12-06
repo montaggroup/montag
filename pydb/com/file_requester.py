@@ -64,6 +64,7 @@ class FileRequester(object):
         while len(self.requested_hashes) < MaxParallelFileRequests:
             if not self.hashes_to_request:
                 if not self.requested_hashes:
+                    logger.debug("No more files to request, waiting for last insert to complete")
                     self.file_inserter.wait_for_insert_to_complete()
                     self._completion_callback()
                 return
@@ -165,6 +166,7 @@ class FileRequester(object):
             self._launch_file_requests()
 
     def _abort_mission(self):
+        logger.debug("Abort called, waiting for last insert to complete")
         self.file_inserter.wait_for_insert_to_complete()
 
         if self.hash_of_transfer_in_progress is not None:

@@ -18,8 +18,10 @@ class BackgroundFileInserter():
 
         self.insert_process.join()
         self.insert_process = None
+        logger.debug("No more file inserts running")
 
     def insert_file_in_background(self, completed_file_name, extension, file_hash):
+        logger.debug("About to insert {} in background, checking whether previous insert is complete")
         self.wait_for_insert_to_complete()
 
         def insert_it():
