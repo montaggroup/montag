@@ -19,6 +19,7 @@ NUMBER_OF_JOBS_UPDATE_INTERVAL_SECONDS = 2
 
 logger = logging.getLogger("tcptransportprotocol")
 
+
 def memsize():
     import gc
     import psutil
