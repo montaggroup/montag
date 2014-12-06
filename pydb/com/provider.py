@@ -47,8 +47,8 @@ class Provider():
         total_changed_authors, total_changed_tomes = self.db.changed_documents_count(min_modification_date_authors,
                                                                                      min_modification_date_tomes)
 
-        print "Database entries requested: Authors %f, Tomes %f" % (
-            min_modification_date_authors, min_modification_date_tomes)
+        logger.debug("Database entries requested: Authors {}, Tomes {}".format(
+            min_modification_date_authors, min_modification_date_tomes))
 
         num_docs = len(changed_author_guids) + len(changed_tome_guids)
         num_docs_total = total_changed_authors + total_changed_tomes
@@ -68,14 +68,13 @@ class Provider():
             self._progress_made(number_documents_increment=1)
             yield deferred_wait(0)
 
-        print "Sent documents up to Authors %f, Tomes %f " % \
-              (new_min_modification_date_authors, new_min_modification_date_tomes)
+        logger.debug("Sent documents up to Authors {}, Tomes {}".format(
+              new_min_modification_date_authors, new_min_modification_date_tomes))
         self.lower_layer.update_modification_dates(new_min_modification_date_authors, new_min_modification_date_tomes)
 
-
     def command_request_file_received(self, file_hash):
-        print "Request for file %s received" % file_hash
-        local_path = self.db.get_local_file_path(file_hash)
+        logger.debug("Request for file {} received".format(file_hash))
+        local_path=self.db.get_local_file_path(file_hash)
 
         if not local_path:
             logger.info("Sending negative reply for hash %s" % file_hash)
@@ -97,13 +96,13 @@ class Provider():
 
     # noinspection PyMethodMayBeStatic
     def session_established(self):
-        print "New Session for server"
+        logger.debug("New Session for server")
 
     #noinspection PyMethodMayBeStatic
     def session_failed(self, reason):
-        print "Session failed", reason
+        logger.info("Session failed: {}".format(reason))
 
     #noinspection PyMethodMayBeStatic
     def session_lost(self, reason):
-        print "Client disconnected, reason:", reason
+        logger.info("Client disconnected, reason: {}".format(reason))
         self._failure_callback()

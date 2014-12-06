@@ -62,11 +62,11 @@ class ComService():
     def clean_jobs(self):
         for job_id, job in self.jobs.items():
             if not job.is_running():
-                print "Removing completed job {}: {}".format(job_id, str(job))
+                logger.info("Removing completed job {}: {}".format(job_id, str(job)))
                 del self.jobs[job_id]
 
     def stop(self):
-        print "Requesting stop"
+        logger.info("Requesting stop")
         for job in self.jobs.itervalues():
             job.terminate()
 

@@ -27,10 +27,7 @@ class BaseDB(sqlitedb.SqliteDB):
         except sqlite.IntegrityError, e:  # error if already exists, \todo why is that so?
             logger.info("Before rollback due to %s" % repr(e))
             self.rollback()
-            # logger.info( "Base db for %s initialised",filename )
-        # print "Sync mode: %s" %(sync_db)
         if not enable_db_sync:
-            # print "DB {}: sync mode off" .format(db_file_path)
             self.con.execute("PRAGMA synchronous = OFF ")
 
     def get_base_statistics(self):
@@ -125,8 +122,6 @@ class BaseDB(sqlitedb.SqliteDB):
                         all_target_authors_found = False
                 if all_target_authors_found:
                     result.append(fields)
-
-        # print "Rs",result
         return result
 
     def get_tomes_by_author(self, author_id):
@@ -444,7 +439,7 @@ class BaseDB(sqlitedb.SqliteDB):
             return target_tome_id
 
     def replace_tome_fusion_targets(self, old_tome_id, new_tome_id):
-        print "Replacing tome fusion source {} => {} ".format(old_tome_id, new_tome_id)
+        logger.debug("Replacing tome fusion source {} => {} ".format(old_tome_id, new_tome_id))
         self.con.execute("UPDATE tome_fusion_sources SET tome_id=? WHERE tome_id=?", [new_tome_id, old_tome_id])
 
     def get_final_author_fusion_target_guid(self, source_author_guid):
@@ -617,13 +612,10 @@ class BaseDB(sqlitedb.SqliteDB):
             'type': doc['type']
         }
 
-        # print "==> New tome data is",doc
-
         if old_tome:
             logger.debug("Updating old tome %s to %s" % (guid, repr(tome_data)))
             self.update_object('tomes', {'guid': doc['guid']}, tome_data)
             tome_id = old_tome['id']
-            # print "==> Deleting tomes_authors"
             self._delete_tome_referrers(tome_id)
         else:
             logger.debug("Creating a new tome %s for %s" % (guid, repr(tome_data)))
@@ -632,7 +624,6 @@ class BaseDB(sqlitedb.SqliteDB):
         for author_link_info, author_id in author_links:
             l = author_link_info
 
-            # print "==> Creating t<->a link %s (%s) <=> %s (%s) " % ( tome_id, guid, author_id, author_info['guid'])
             self.con.execute(
                 "INSERT INTO tomes_authors ( tome_id, author_id, author_order, fidelity, last_modification_date ) "
                 "VALUES(?,?,?,?,?)",
@@ -780,7 +771,6 @@ class BaseDB(sqlitedb.SqliteDB):
 
         def add_check(name, from_clause, where_clause, order_by_clause=None, params=()):
             items = self.get_rows(from_clause, where_clause, order_by_clause, params)
-            # print "{}: {}".format(name, len(items))
             problems[name] = items
 
         add_check('orphaned_tome_files',
@@ -814,7 +804,6 @@ class BaseDB(sqlitedb.SqliteDB):
 
         def add_check(name, from_clause, where_clause, order_by_clause=None, params=()):
             items = self.get_rows(from_clause, where_clause, order_by_clause, params)
-            print "{}: {}".format(name, len(items))
             problems[name] = items
 
         add_check('authors_with_many_name_parts_and_fidelity_smaller_70',

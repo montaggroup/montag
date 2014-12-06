@@ -8,7 +8,6 @@ def extract_fulltext(source_stream):
     content = ""
 
     for i in range(0, pdf.getNumPages()):
-        print str(i)
         extractedText = pdf.getPage(i).extractText()
         content += extractedText + "\n"
 

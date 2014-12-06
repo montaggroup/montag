@@ -19,6 +19,7 @@ NUMBER_OF_JOBS_UPDATE_INTERVAL_SECONDS = 2
 
 logger = logging.getLogger("tcptransportprotocol")
 
+
 def memsize():
     import gc
     import psutil
@@ -31,7 +32,7 @@ def memsize():
 
 def meminfo(msg):
     if False:
-        print msg, memsize()
+        logger.info('{} {}'.format(msg,memsize()))
 
 
 class TcpTransportProtocol(Protocol):
@@ -74,7 +75,6 @@ class TcpTransportProtocol(Protocol):
 
     # noinspection PyPep8Naming
     def resumeProducing(self):
-        traceback.print_stack()
         logger.debug("Resume called, {} chunks and {} messages queued".format(len(self.chunks_to_transmit), len(self.queued_messages)))
         self.paused = False
         self._check_message_queue()
@@ -108,7 +108,7 @@ class TcpTransportProtocol(Protocol):
                 self.transport.write(next_chunk)
                 chunk_delay = self.get_delay_after_chunk(len(next_chunk))
                 
-                logger.debug("{} bytes written, waiting {} seconds".format(len(next_chunk), chunk_delay))
+                # logger.debug("{} bytes written, waiting {} seconds".format(len(next_chunk), chunk_delay))
                 
                 self.delay_active = True
                 reactor.callLater(chunk_delay, self._really_pump_message_queue)
