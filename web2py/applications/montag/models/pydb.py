@@ -48,11 +48,12 @@ def add_job_infos_to_friends_dict(friends_by_id, com_service, jobs):
         job_info=copy.deepcopy(j)
         job_info['progress'] =  progress_text(com_service, job_info['id'], job_info['current_phase'])
         friend_id = int(job_info['friend_id'])
-        joblist = friends_by_id[friend_id]['jobs']
-        joblist.append(job_info)
-        if len(joblist) > 2:
-            joblist = trim_joblist(joblist, 2)
-            friends_by_id[friend_id]['jobs']=joblist
+        if friend_id in friends_by_id:
+            joblist = friends_by_id[friend_id]['jobs']
+            joblist.append(job_info)
+            if len(joblist) > 2:
+                joblist = trim_joblist(joblist, 2)
+                friends_by_id[friend_id]['jobs']=joblist
 
 
 def progress_text(com_service, job_id, current_phase):
