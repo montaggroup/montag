@@ -70,3 +70,6 @@ web2py/applications/montag/sessions/
 web2py/parameters_8000.py
 web2py/welcome.w2p
 web2py/**/errors/
+
+# Config file
+pydb.conf
