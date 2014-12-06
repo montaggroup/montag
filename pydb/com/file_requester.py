@@ -38,7 +38,7 @@ class FileRequester(object):
         self.comservice = comservice
 
     def queue_download_file(self, file_hash):
-        if not file_hash in self.hashes_to_request_set:
+        if file_hash not in self.hashes_to_request_set:
             self.hashes_to_request.append(file_hash)
             self.hashes_to_request_set.add(file_hash)
             self.number_files_requested_total += 1
@@ -121,7 +121,6 @@ class FileRequester(object):
             logger.debug("Background insert complete")
 
         self.insert_process = multiprocessing.Process(target=insert_it)
-
 
     def _finish_multipart_transfer(self, extension, file_hash):
         self.handle_of_file_in_progress.close()
