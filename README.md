@@ -20,7 +20,7 @@ fashion, so by design everybody can add and edit entries. Synchronization of dat
 node hold the full repositry of the entire web of trust's data. This may appear wasteful in terms of bandwidth and
 storage space but is a core design paradigm for several reasons, the most important of which are:
 * Access to the data is always node-local, so people do not see which documents a user reads. Who reads a book about AIDS, an "evil" foreign religion or "comunist" economic models if you know your family / employer / neighbor / government might be looking over your shoulder?
-* The data becomes massively redundant, making it hard to erase it. Montag is named after Guy Montag for a reason. Who iy Guy Montag? Look him up and read a good book!
+* The data becomes massively redundant, making it hard to erase it. Montag is named after Guy Montag for a reason. Who is Guy Montag? Look him up and read a good book!
 * The local storage also makes it useful during internet outages when you actually have time to read a good book.
 * Complete offline synchronization is possible for people without decent internet connections. Care package FTW!
 
