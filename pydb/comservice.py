@@ -93,20 +93,20 @@ class ComService():
         return self.last_job_id
 
     def is_job_running(self, job_id):
-        if not job_id in self.jobs:
+        if job_id not in self.jobs:
             return False
         job = self.jobs[job_id]
         return job.is_running()
 
     def get_job_progress(self, job_id):
-        if not job_id in self.jobs:
+        if job_id not in self.jobs:
             return None, None
         job = self.jobs[job_id]
         arr = job.progress_array
         return arr[0], arr[1]
 
     def cancel_job(self, job_id):
-        if not job_id in self.jobs:
+        if job_id not in self.jobs:
             return
 
         job = self.jobs[job_id]
@@ -126,7 +126,6 @@ class ComService():
     def get_number_of_running_jobs(self):
         return len([job for job in self.jobs.itervalues() if job.is_running()])
 
-
     def lock_file_for_fetching(self, file_hash):
         """ @returns "locked" for lock successful, "busy" for lock busy, and "completed" for download already completed
         """
@@ -143,7 +142,7 @@ class ComService():
         return "locked"
 
     def release_file_after_fetching(self, file_hash, success):
-        if not file_hash in self.locked_files:
+        if file_hash not in self.locked_files:
             raise KeyError("Hash {} not locked".format(file_hash))
 
         if success:
@@ -170,21 +169,19 @@ class ComService():
     def unregister_job(self, job_id):
         """ for externally created jobs: signals that the job is completed """
         logging.info("Unregister job called, job is {}".format(job_id))
-        if not job_id in self.jobs:
+        if job_id not in self.jobs:
             return
         job = self.jobs[job_id]
         job.is_running_if_no_process = False
 
     def update_job_progress(self, job_id, current_phase_id, current_items_to_do, current_items_done):
         """ for externally created jobs: signals progress """
-        if not job_id in self.jobs:
+        if job_id not in self.jobs:
             return
         job = self.jobs[job_id]
         job.current_phase.value = current_phase_id
         job.progress_array[0] = current_items_to_do
         job.progress_array[1] = current_items_done
-        
-        
 
 
 def exec_fetch_updates(friend_id, current_phase_store, progress_array):

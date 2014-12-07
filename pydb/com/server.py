@@ -1,5 +1,4 @@
 from twisted.internet import reactor
-from jsonsession import JsonSession
 from json_and_binary_session import JsonAndBinarySession
 from transport.tcpserver import TcpServer
 from securechannel.aeshmacsecurechannel import AesHmacSecureChannel

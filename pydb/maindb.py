@@ -166,7 +166,7 @@ class MainDB:
         """ returns a string containing the file identified by hash. The data is encoded using base64 """
 
         file_ext = self.get_file_extension(file_hash)
-        if not file_ext is None:
+        if file_ext is not None:
             cache_path = self._calculate_cache_path(file_hash) + '.' + file_ext
             logger.debug("Trying to open file " + cache_path + " for reading")
 
@@ -177,7 +177,7 @@ class MainDB:
     def get_local_file_path(self, file_hash):
         """ returns a string containing the path to the file identified by hash or None """
         file_ext = self.get_file_extension(file_hash)
-        if not file_ext is None:
+        if file_ext is not None:
             cache_path = self._calculate_cache_path(file_hash) + '.' + file_ext
             return os.path.abspath(cache_path)
 
@@ -246,7 +246,7 @@ class MainDB:
         
         merge_tome = self.get_tome_document_by_guid(tome_guid, ignore_fidelity_filter,
                                                     include_author_detail=include_author_detail, keep_id=True)
-        if not 'title' in merge_tome:
+        if 'title' not in merge_tome:
             return merge_tome                                                    
                                                     
         local_tome = self.get_local_tome_document_by_guid(tome_guid, ignore_fidelity_filter,
@@ -624,7 +624,6 @@ class MainDB:
         if move_file and os.path.exists(source_path):
             os.remove(source_path)
 
-
         return local_file_id, file_hash, size
 
     def link_tome_to_file(self, tome_id, local_file_hash, local_file_size, file_extension,
@@ -740,7 +739,7 @@ class MainDB:
                 author_doc = documents.prepare_author_document(original_author_doc)
                 author_guid = author_doc['guid']
 
-                if not 'name' in author_doc:  # delete request
+                if 'name' not in author_doc:  # delete request
                     db.delete_author_by_guid(author_guid)
                 else:
                     author_doc['last_modification_date'] = time.time()
@@ -762,7 +761,7 @@ class MainDB:
                 tome_doc = documents.prepare_tome_document(original_tome_doc, self.local_db)
                 tome_guid = tome_doc['guid']
 
-                if not 'title' in tome_doc:  # delete request
+                if 'title' not in tome_doc:  # delete request
                     db.delete_tome_by_guid(tome_guid)
                 else:
                     tome_doc['last_modification_date'] = time.time()
@@ -901,7 +900,7 @@ class MainDB:
                 tomes = list(db.get_all_tomes())
                 for tome in tomes:
                     guid = tome['guid']
-                    if not guid in processed_tome_guids:
+                    if guid not in processed_tome_guids:
                         processed_tome_guids.add(guid)
                         self.merge_db.request_complete_tome_update(guid, include_fusion_source_update=True)
 

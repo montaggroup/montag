@@ -198,7 +198,7 @@ class MergeDB(pydb.basedb.BaseDB):
             insert_item_fct(self.con, tome_id, new_item_data)
             self.update_document_modification_date_by_guid('tome', tome['guid'])
 
-    def update_LocalFileExists(self, file_hash):
+    def update_local_file_exists(self, file_hash):
         local_file_exists = 0
         if self.has_local_file(file_hash):
             local_file_exists = 1
@@ -216,7 +216,7 @@ class MergeDB(pydb.basedb.BaseDB):
         self.replace_item_linked_to_tome(table_name, item_name, item_key, databases.insert_tome_file, tome_id,
                                          new_item_data, old_item_data)
         if new_item_data:
-            self.update_LocalFileExists(new_item_data['hash'])
+            self.update_local_file_exists(new_item_data['hash'])
 
     def _replace_tome_tag(self, tome_id, old_item_data, new_item_data):
         """ either old_tome_file or new_tome_file (or both) have to be given
@@ -253,7 +253,7 @@ class MergeDB(pydb.basedb.BaseDB):
         self.replace_item_linked_to_tome(table_name, item_name, item_key, databases.insert_tome_fusion, tome_id,
                                          new_item_data, old_item_data)
 
-        if not old_item_data is None:
+        if old_item_data is not None:
             source_guid = old_item_data['source_guid']
         else:
             source_guid = new_item_data['source_guid']
@@ -333,7 +333,7 @@ class MergeDB(pydb.basedb.BaseDB):
         self.replace_item_linked_to_author(table_name, item_name, item_key, databases.insert_author_fusion, author_id,
                                            new_item_data, old_item_data)
 
-        if not old_item_data is None:
+        if old_item_data is not None:
             source_guid = old_item_data['source_guid']
         else:
             source_guid = new_item_data['source_guid']
@@ -523,7 +523,8 @@ class MergeDB(pydb.basedb.BaseDB):
     def get_statistics(self):
         return self.get_base_statistics()
 
-    def get_high_fidelity_tome_file_hashes_without_local_file(self, min_tome_fidelity, min_file_fidelity, max_file_size_to_request_bytes, max_items):
+    def get_high_fidelity_tome_file_hashes_without_local_file(self, min_tome_fidelity, min_file_fidelity,
+                                                              max_file_size_to_request_bytes, max_items):
         """ generator that yields tome file hashes having high fidelity values
         tome fidelity >= min_tome_fidelity, file fidelity >= min_file_fidelity) """
 
@@ -563,14 +564,16 @@ class MergeDB(pydb.basedb.BaseDB):
 
         if max_modification_date:
             rows = self.con.execute(
-                "SELECT document_guid, last_modification_date FROM " + table_name + " "
-                                                                                    "WHERE last_modification_date > ? "
-                                                                                    "AND last_modification_date <= ? ORDER BY last_modification_date ASC LIMIT ?",
+                "SELECT document_guid, last_modification_date FROM " +
+                table_name + " "
+                "WHERE last_modification_date > ? "
+                "AND last_modification_date <= ? ORDER BY last_modification_date ASC LIMIT ?",
                 [min_modification_date, max_modification_date, max_count])
         else:
             rows = self.con.execute(
-                "SELECT document_guid, last_modification_date FROM " + table_name + " "
-                                                                                    "WHERE last_modification_date > ? ORDER BY last_modification_date ASC LIMIT ?",
+                "SELECT document_guid, last_modification_date FROM " +
+                table_name + " "
+                "WHERE last_modification_date > ? ORDER BY last_modification_date ASC LIMIT ?",
                 [min_modification_date, max_count])
 
         for row in rows:
@@ -609,11 +612,11 @@ class MergeDB(pydb.basedb.BaseDB):
 
     def insert_local_file(self, local_file):
         databases.insert_local_file(self.con, local_file)
-        self.update_LocalFileExists(local_file['hash'])
+        self.update_local_file_exists(local_file['hash'])
 
     def remove_local_file(self, file_hash):
         self.con.execute("DELETE FROM local_files WHERE hash=?", [file_hash])
-        self.update_LocalFileExists(file_hash)
+        self.update_local_file_exists(file_hash)
 
     def get_local_file(self, file_hash):
         rows = self.con.execute("SELECT * FROM local_files WHERE hash=?", [file_hash])

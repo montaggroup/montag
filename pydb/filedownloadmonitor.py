@@ -26,7 +26,7 @@ class FileDownloadMonitor():
         # sets a file as completed
         # can only be called if the file is currently locked
         # an unlock call is required afterwards
-        if not file_hash in self.locked_items:
+        if file_hash not in self.locked_items:
             raise KeyError("Hash {} not locked in set_completed".format(file_hash))
         self.completed_items.add(file_hash)
 

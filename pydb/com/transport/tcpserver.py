@@ -1,5 +1,4 @@
 from twisted.internet.protocol import Factory
-from twisted.internet import reactor
 from tcptransportprotocol import TcpTransportProtocol
 
 

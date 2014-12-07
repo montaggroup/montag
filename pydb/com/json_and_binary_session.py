@@ -7,6 +7,7 @@ import session
 
 logger = logging.getLogger('session')
 
+
 class JsonAndBinarySession():
     def __init__(self, upper_layer):
         self.upper_layer = upper_layer
@@ -91,7 +92,7 @@ class JsonAndBinarySession():
             min_modification_date_authors = args[0]
             min_modification_date_tomes = args[1]
             self.upper_layer.command_get_database_entries_received(min_modification_date_authors,
-                                                         min_modification_date_tomes)
+                                                                   min_modification_date_tomes)
         elif command == "setNumberDocuments":
             number_entries_batch = args[0]
             number_entries_total = args[1]
