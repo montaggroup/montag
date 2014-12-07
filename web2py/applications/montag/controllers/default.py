@@ -254,7 +254,7 @@ def edit_author():
         response.flash = 'form has errors'
     return dict(form=form, author=author_doc)
 
-def _is_tome_guid(string):
+def _is_tome_or_author_guid(string):
     return re.match("[0-9a-z]{32}", string)
 
 def tomesearch():
@@ -263,11 +263,15 @@ def tomesearch():
 
     if form.validate(formname = 'search', session = None, request_vars=request.vars, message_onsuccess='', keepvalues=True):
         query = form.vars['query'].strip()
-        if _is_tome_guid(query):
+        if _is_tome_or_author_guid(query):
             tome = db.get_tome_by_guid(query)
             if tome is not None:
                 redirect(URL('view_tome', args=[query]))
-        
+                
+            author = db.get_author_by_guid(query)
+            if author is not None:
+                redirect(URL('view_author', args=[query]))
+
         
         response.title = "Search Results - Montag"
         search_query = _build_search_query(form)
