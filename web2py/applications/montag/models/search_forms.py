@@ -66,11 +66,6 @@ def _get_author_query_page(query, start_offset, end_offset):
     result_authors = db.find_authors(query)
 
     authorlist=result_authors[start_offset:end_offset]
-
-    def author_key(a):
-        return a['name']
-    authorlist.sort(key=author_key)
-
     return len(result_authors), authorlist
 
 

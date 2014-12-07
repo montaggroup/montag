@@ -175,10 +175,15 @@ class BaseDB(sqlitedb.SqliteDB):
 
         result = []
         # \todo look in pseudonyms, too
+        
+        name_without_wildcards = author_name.replace('%','').lower()
 
-        for row in self.cur.execute("SELECT * FROM authors WHERE name LIKE ?", [author_name]):
+        for row in self.cur.execute("SELECT * FROM authors WHERE name LIKE ? ORDER BY name", [author_name]):
             fields = {key: row[key] for key in row.keys()}
-            result.append(fields)
+            if fields['name'].lower() == name_without_wildcards:
+                result.insert(0, fields)
+            else:
+                result.append(fields)
 
         return result
 
