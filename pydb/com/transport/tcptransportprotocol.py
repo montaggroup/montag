@@ -78,6 +78,7 @@ class TcpTransportProtocol(Protocol):
         logger.debug("Resume called, {} chunks and {} messages queued".format(len(self.chunks_to_transmit), len(self.queued_messages)))
         self.paused = False
         self._check_message_queue()
+        self.dataReceived()
 
     #noinspection PyPep8Naming
     def stopProducing(self):
