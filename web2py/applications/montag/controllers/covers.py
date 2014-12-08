@@ -6,10 +6,10 @@ from pydb import FileType
 
 def edit_covers():
     tome_id = request.args[0]
-    tome = db.get_tome(tome_id)
+    tome = pdb.get_tome(tome_id)
     tome_guid = tome['guid']
 
-    tome = db.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info=True,
+    tome = pdb.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info=True,
                                                            include_author_detail=True)
 
     available_covers = []
@@ -51,7 +51,7 @@ def set_cover_from_content():
     content_hash = request.args[1]
     content_extension = request.args[2]
 
-    tome = db.get_tome(tome_id)
+    tome = pdb.get_tome(tome_id)
     form = _set_cover_from_content_form()
 
     if form.process(keepvalues=True).accepted:
@@ -60,8 +60,8 @@ def set_cover_from_content():
         (_,extension_with_dot) = os.path.splitext(cover_file_path)
 
         file_extension = extension_with_dot[1:]
-        (local_file_id, file_hash, file_size) = db.add_file_from_local_disk(cover_file_path, file_extension, move_file = True)
-        db.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Cover, fidelity)
+        (local_file_id, file_hash, file_size) = pdb.add_file_from_local_disk(cover_file_path, file_extension, move_file = True)
+        pdb.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Cover, fidelity)
         redirect(URL('default', 'view_tome', args=(tome['guid'])))
 
     return {'tome': tome, 'content_hash': content_hash, 'content_extension': content_extension, 'form': form}
@@ -80,30 +80,30 @@ def set_main_cover():
     file_hash = request.args[1]
     file_extension = request.args[2]
 
-    tome = db.get_tome(tome_id)
+    tome = pdb.get_tome(tome_id)
     form = _set_main_cover_form()
     
-    file_size = db.get_local_file_size(file_hash)
+    file_size = pdb.get_local_file_size(file_hash)
 
     if form.process(keepvalues=True).accepted:
         fidelity = form.vars['fidelity']
-        db.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Cover, fidelity)
+        pdb.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Cover, fidelity)
 
-        doc=db.get_tome_document_by_guid(tome['guid'])
-        other_files=filter( lambda x: x['hash']!=file_hash, doc['files'])
-        tome_file_doc=filter( lambda x: x['hash']==file_hash, doc['files'])[0]
+        doc = pdb.get_tome_document_by_guid(tome['guid'])
+        other_files = filter( lambda x: x['hash']!=file_hash, doc['files'])
+        tome_file_doc = filter( lambda x: x['hash']==file_hash, doc['files'])[0]
         tome_file_doc['fidelity'] = fidelity
 
         other_files.append(tome_file_doc)
         doc['files']=other_files
-        db.load_own_tome_document(doc)
+        pdb.load_own_tome_document(doc)
 
         redirect(URL('default', 'view_tome', args=(tome['guid'])))
 
     return {'tome': tome, 'file_hash': file_hash, 'file_extension': file_extension, 'form': form}
 
 def _stream_image(file_hash, extension):
-    fp = db.get_local_file_path(file_hash)
+    fp = pdb.get_local_file_path(file_hash)
     if fp is None:
         return
     plain_file = open(fp,"rb")
@@ -122,7 +122,7 @@ def get_cover_image():
 def get_best_cover():
     tome_id = request.args[0]
 
-    tome_file = db.get_best_relevant_cover_available(tome_id)
+    tome_file = pdb.get_best_relevant_cover_available(tome_id)
     if tome_file is None:
         return
     
@@ -134,7 +134,7 @@ def _extract_image_from_content(file_hash, extension):
     """    
     session.forget(response)
 
-    fp = db.get_local_file_path(file_hash)
+    fp = pdb.get_local_file_path(file_hash)
     if fp is None:
         raise KeyError("File not in file store")
     with open(fp,"rb") as source_file:

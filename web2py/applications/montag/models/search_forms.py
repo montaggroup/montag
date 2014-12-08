@@ -48,9 +48,9 @@ def _get_query_page(query, start_offset, end_offset):
 
     tomelist=[]
     for tome_id in result_tome_ids[start_offset:end_offset]:
-        merge_tome = db.get_tome(tome_id)
+        merge_tome = pdb.get_tome(tome_id)
         if merge_tome is not None:
-            tome = db.get_tome_document_with_local_overlay_by_guid(merge_tome['guid'], include_local_file_info=True, include_author_detail=True)
+            tome = pdb.get_tome_document_with_local_overlay_by_guid(merge_tome['guid'], include_local_file_info=True, include_author_detail=True)
             tomelist.append(tome)
 
     def tome_key(t):
@@ -63,7 +63,7 @@ def _get_query_page(query, start_offset, end_offset):
 
 
 def _get_author_query_page(query, start_offset, end_offset):
-    result_authors = db.find_authors(query)
+    result_authors = pdb.find_authors(query)
 
     authorlist=result_authors[start_offset:end_offset]
 

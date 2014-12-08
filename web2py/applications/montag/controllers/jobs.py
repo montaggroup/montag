@@ -4,7 +4,7 @@
 def index(): return dict(message="hello from jobs.py")
 
 def _friend_name(friend_id):
-    friend = db.get_friend(friend_id)
+    friend = pdb.get_friend(friend_id)
     return friend['name']
 
 def list_jobs():

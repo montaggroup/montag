@@ -17,8 +17,8 @@ def list_friends():
     if is_locking_active:
         is_locked = comm_data_store.is_locked()
 
-    friends = db.get_friends()
-    update_infos = [db.get_friend_last_query_dates(friend['id']) for friend in friends]
+    friends = pdb.get_friends()
+    update_infos = [pdb.get_friend_last_query_dates(friend['id']) for friend in friends]
     friends_by_id={}
     for friend in friends:
         friend['jobs']=[]
@@ -78,7 +78,7 @@ def _load_comm_data(friend_id):
     return comm_data
 
 def _load_friend(friend_id):
-    friend = db.get_friend(friend_id)
+    friend = pdb.get_friend(friend_id)
     return friend
 
 def edit_friend():
@@ -105,12 +105,12 @@ def edit_friend():
         new_name = form.vars['name'].decode('utf-8')
         if new_name != friend['name']:
             friend['name'] = new_name
-            db.set_friend_name(friend['id'], friend['name'])
+            pdb.set_friend_name(friend['id'], friend['name'])
             
         new_can_connect_to = '1' if form.vars['can_connect_to'] else '0'
         if new_can_connect_to != friend['can_connect_to']:
             friend['can_connect_to'] = new_can_connect_to
-            db.set_friend_can_connect_to(friend['id'], new_can_connect_to)
+            pdb.set_friend_can_connect_to(friend['id'], new_can_connect_to)
 
         comm_data = _load_comm_data(friend_id)
         response.flash = 'Stored new values'
@@ -135,7 +135,7 @@ def remove_friend():
         response.title = "Remove friend {} - Montag".format(friend['name'])
 
     if form.process(keepvalues=True).accepted:
-        db.remove_friend(int(friend_id))
+        pdb.remove_friend(int(friend_id))
         redirect('../list_friends')
 
     elif form.errors:
@@ -146,7 +146,7 @@ def add_friend():
     form = _friend_add_form()
     response.title = "Add friend"
     if form.process(keepvalues=True).accepted:
-        friend_id = db.add_friend(form.vars['name'].decode('utf-8'))
+        friend_id = pdb.add_friend(form.vars['name'].decode('utf-8'))
         response.flash = 'Added new friend'
         redirect(URL('edit_friend', args=[friend_id]))
 
@@ -166,7 +166,7 @@ def fetch_updates():
         
 def fetch_updates_all():
     com_service = pydb.pyrosetup.comservice()
-    friends = db.get_friends()
+    friends = pdb.get_friends()
     for friend in friends:
         try:
             if friend['can_connect_to']:

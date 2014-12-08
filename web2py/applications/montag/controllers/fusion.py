@@ -9,7 +9,7 @@ def _select_author_merge_partner_form(first_author):
 
 def select_author_merge_partner():
     first_author_guid = request.args[0]
-    first_author = db.get_author_by_guid(first_author_guid)
+    first_author = pdb.get_author_by_guid(first_author_guid)
     
     if first_author is None:
         session.flash = "Author not found"
@@ -50,10 +50,10 @@ def select_author_merge_partner():
 
 def confirm_merge_authors():
     first_author_guid = request.args[0]
-    first_author = db.get_author_by_guid(first_author_guid)
+    first_author = pdb.get_author_by_guid(first_author_guid)
 
     second_author_guid = request.args[1]
-    second_author = db.get_author_by_guid(second_author_guid)
+    second_author = pdb.get_author_by_guid(second_author_guid)
     
     if second_author is None:
         session.flash = "Author not found"
@@ -67,10 +67,10 @@ def confirm_merge_authors():
 
 def execute_merge_authors():
     first_author_guid = request.args[0]
-    first_author = db.get_author_by_guid(first_author_guid)
+    first_author = pdb.get_author_by_guid(first_author_guid)
 
     second_author_guid = request.args[1]
-    second_author = db.get_author_by_guid(second_author_guid) 
+    second_author = pdb.get_author_by_guid(second_author_guid) 
 
     use_data_from_first = request.args[2]
     if use_data_from_first.lower()=="false":
@@ -84,7 +84,7 @@ def execute_merge_authors():
 
     source_author = first_author if use_data_from_first else second_author
 
-    new_author_doc = db.get_author_document_by_guid(first_author_guid)
+    new_author_doc = pdb.get_author_document_by_guid(first_author_guid)
     new_author_doc['fusion_sources'].append({'source_guid': second_author_guid, 'fidelity':  pydb.network_params.Default_Manual_Fidelity})
     if not use_data_from_first: # copy data from secnd entry over
         for key,value in source_author.iteritems():
@@ -92,7 +92,7 @@ def execute_merge_authors():
                 if key.lower() != "guid":
                     new_author_doc[key]=source_author[key]
 
-    db.load_own_author_document(new_author_doc)
+    pdb.load_own_author_document(new_author_doc)
     redirect(URL('default','view_author', args=(first_author_guid)))
 
 def _select_tome_merge_partner_form(first_tome):
@@ -105,7 +105,7 @@ def _select_tome_merge_partner_form(first_tome):
 
 def select_tome_merge_partner():
     first_tome_guid = request.args[0]
-    first_tome = db.get_tome_by_guid(first_tome_guid)
+    first_tome = pdb.get_tome_by_guid(first_tome_guid)
     if first_tome is None:
         session.flash = "Tome not found"
         redirect(URL('default', 'tomesearch'))
@@ -140,10 +140,10 @@ def select_tome_merge_partner():
 
 def confirm_merge_tomes():
     first_tome_guid = request.args[0]
-    first_tome = db.get_tome_document_with_local_overlay_by_guid(first_tome_guid, include_local_file_info=True, include_author_detail=True)
+    first_tome = pdb.get_tome_document_with_local_overlay_by_guid(first_tome_guid, include_local_file_info=True, include_author_detail=True)
 
     second_tome_guid = request.args[1]
-    second_tome = db.get_tome_document_with_local_overlay_by_guid(second_tome_guid, include_local_file_info=True, include_author_detail=True)
+    second_tome = pdb.get_tome_document_with_local_overlay_by_guid(second_tome_guid, include_local_file_info=True, include_author_detail=True)
     
     if second_tome is None:
         session.flash = "Tome not found"
@@ -166,8 +166,8 @@ def execute_merge_tomes():
         use_data_from_first = False
     
     if use_data_from_first:
-        db.fuse_tomes(second_tome_guid, target_guid=first_tome_guid)
+        pdb.fuse_tomes(second_tome_guid, target_guid=first_tome_guid)
     else:
-        db.fuse_tomes(first_tome_guid, target_guid=second_tome_guid)
+        pdb.fuse_tomes(first_tome_guid, target_guid=second_tome_guid)
 
     redirect(URL('default','view_tome', args=(first_tome_guid)))
