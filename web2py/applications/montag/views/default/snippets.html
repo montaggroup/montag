@@ -77,7 +77,7 @@ jQuery(document).ready(function(){
 {{def show_tome_info_block(tome, include_change_info=False, show_edit_button=True, show_file_edit_button=True, additional_tome_button_html=None):}}
 <li class="tome">
     {{if include_change_info:
-        change_info = db.get_latest_tome_related_change(tome['guid'])
+        change_info = pdb.get_latest_tome_related_change(tome['guid'])
         friend = friend_name(change_info['friend_id'])
         }}
     <span class="change_info">{{=friend}} edited:</span><br>
