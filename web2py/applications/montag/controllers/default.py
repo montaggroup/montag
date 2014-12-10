@@ -264,11 +264,11 @@ def tomesearch():
     if form.validate(formname = 'search', session = None, request_vars=request.vars, message_onsuccess='', keepvalues=True):
         query = form.vars['query'].strip()
         if _is_tome_or_author_guid(query):
-            tome = db.get_tome_by_guid(query)
+            tome = pdb.get_tome_by_guid(query)
             if tome is not None:
                 redirect(URL('view_tome', args=[query]))
                 
-            author = db.get_author_by_guid(query)
+            author = pdb.get_author_by_guid(query)
             if author is not None:
                 redirect(URL('view_author', args=[query]))
 
