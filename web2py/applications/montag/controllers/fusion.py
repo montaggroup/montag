@@ -22,12 +22,9 @@ def select_author_merge_partner():
               'first_author': first_author}
     
     response.title = "Select Merge Target - Montag"
-    page_number = 0
 
     if search_form.validate(formname = 'search', session = None, request_vars=request.vars, message_onsuccess='', keepvalues=True):
         author_to_search_for = search_form.vars['query'].decode('utf-8')
-        if 'page' in request.vars:
-            page_number = int(request.vars.page)
         retval['query'] = search_form.vars['query']
     else:
         author_to_search_for = first_author['name']
@@ -38,7 +35,11 @@ def select_author_merge_partner():
             author_to_search_for='%'+author_to_search_for
         if author_to_search_for[-1]!='%':
             author_to_search_for=author_to_search_for+'%'
+
+    page_number = 0
             
+    if 'page' in request.vars:
+        page_number = int(request.vars.page)
             
     _pass_paged_author_query_results_to_view(author_to_search_for, retval, page_number)
 
