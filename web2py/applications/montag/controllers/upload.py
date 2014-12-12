@@ -35,7 +35,7 @@ def _insert_file(file_stream, original_file_name):
         file.write(file_stream.read())
         file.close()
 
-        (id, hash, size)=db.add_file_from_local_disk(file_path, extension_with_dot[1:], move_file = True)
+        (id, hash, size)=pdb.add_file_from_local_disk(file_path, extension_with_dot[1:], move_file = True)
 
         return id, hash,size
 
@@ -99,7 +99,7 @@ def upload_file_to_tome():
     tome_guid = request.args[0]
     form = _create_upload_form()
 
-    tome = db.get_tome_by_guid(tome_guid)
+    tome = pdb.get_tome_by_guid(tome_guid)
     if tome is None:
         response.flash("Tome not found")
         return dict(form=form, tome=None)
@@ -112,7 +112,7 @@ def upload_file_to_tome():
 
         fidelity = 60
         (id, file_hash, size) =  _insert_file(f.file, f.filename)
-        db.link_tome_to_file(tome['id'], file_hash, size, extension, FileType.Content, fidelity)
+        pdb.link_tome_to_file(tome['id'], file_hash, size, extension, FileType.Content, fidelity)
         redirect(URL('default', 'view_tome', args=(tome_guid)))
     elif form.errors:
         response.flash = 'form has errors'
@@ -177,11 +177,11 @@ def add_tome_from_file():
 
     if form.process(keepvalues=True, dbio=False).accepted:
         fidelity = form.vars['fidelity'].decode('utf-8')
-        author_ids = db.find_or_create_authors(form.vars['authors'],fidelity)
-        tome_id = db.find_or_create_tome(form.vars['title'].decode('utf-8'),form.vars['principal_language'].decode('utf-8'), author_ids, form.vars['subtitle'].decode('utf-8'),
+        author_ids = pdb.find_or_create_authors(form.vars['authors'],fidelity)
+        tome_id = pdb.find_or_create_tome(form.vars['title'].decode('utf-8'),form.vars['principal_language'].decode('utf-8'), author_ids, form.vars['subtitle'].decode('utf-8'),
                                          form.vars['tome_type'], fidelity, publication_year=form.vars['publication_year'])
-        tome = db.get_tome(tome_id)
-        db.link_tome_to_file(tome_id,file_hash,file_size,file_extension,FileType.Content,fidelity)
+        tome = pdb.get_tome(tome_id)
+        pdb.link_tome_to_file(tome_id,file_hash,file_size,file_extension,FileType.Content,fidelity)
         response.flash = 'Successfully created tome, please edit details now'
         redirect(URL(f='edit_tome',c='default', args=(tome['guid'])))
     elif form.errors:
@@ -207,7 +207,7 @@ def _upload_cover_form():
 
 def upload_cover():
     tome_id = request.args[0]
-    tome = db.get_tome(tome_id)
+    tome = pdb.get_tome(tome_id)
 
     form = _upload_cover_form()
 
@@ -219,7 +219,7 @@ def upload_cover():
         file_extension = extension_with_dot[1:]
 
         (id, file_hash, file_size) =  _insert_file(f.file, f.filename)
-        db.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Cover, fidelity)
+        pdb.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Cover, fidelity)
         response.flash = 'Successfully uploaded cover'
         redirect(URL(f='view_tome',c='default', args=(tome['guid'])))
     elif form.errors:

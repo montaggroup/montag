@@ -19,7 +19,7 @@ import pydb.config
 import pydb.pyrosetup
 
 sys.excepthook = Pyro4.util.excepthook
-db = pydb.pyrosetup.pydbserver()
+pdb = pydb.pyrosetup.pydbserver()
 
 cfg_tags_minimum_display_fidelity = 20.0
 
@@ -29,7 +29,7 @@ def db_str_to_form(a_string):
     return unicode(a_string).encode('utf-8')
 
 def has_cover(tome_id):
-    tome_file = db.get_best_relevant_cover_available(tome_id)
+    tome_file = pdb.get_best_relevant_cover_available(tome_id)
     return tome_file is not None
 
 def trim_joblist(joblist, target_size):
@@ -84,11 +84,11 @@ response.breadcrumb_bar=request.function.replace('_', ' ').title()
 _friend_name_cache = {0: 'You'}
 def friend_name(friend_id):
     if not friend_id in _friend_name_cache:
-        friend = db.get_friend(friend_id)
+        friend = pdb.get_friend(friend_id)
         _friend_name_cache[friend_id] = friend['name']
 
     return _friend_name_cache[friend_id]
 
 
 def get_used_languages():
-    return db.get_used_languages()
+    return pdb.get_used_languages()

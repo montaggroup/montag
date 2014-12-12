@@ -15,9 +15,9 @@ def getfile():
     tome_id = request.args[0]
     file_hash = request.args[1]
 
-    tome_file = db.get_tome_file(tome_id, file_hash)
+    tome_file = pdb.get_tome_file(tome_id, file_hash)
 
-    fp = db.get_local_file_path(file_hash)
+    fp = pdb.get_local_file_path(file_hash)
     plain_file = open(fp,"rb")
 
     return _stream_tome_file(tome_id, tome_file, plain_file)
@@ -39,10 +39,10 @@ def _get_converted_file(tome_id, file_hash, target_extension):
     file_hash = request.args[1]
     session.forget(response)
 
-    tome_file = db.get_tome_file(tome_id, file_hash)
+    tome_file = pdb.get_tome_file(tome_id, file_hash)
     extension = tome_file['file_extension']
 
-    fp = db.get_local_file_path(file_hash)
+    fp = pdb.get_local_file_path(file_hash)
     with open(fp,"rb") as source_file:
         if extension == target_extension:    
             return _stream_tome_file(tome_id, tome_file, source_file)
@@ -69,10 +69,10 @@ def _get_converted_file(tome_id, file_hash, target_extension):
 
 def _stream_tome_file(tome_id, tome_file, contents_stream):
     # \todo error handling for tome or tome_file not found    
-    tome = db.get_tome(tome_id)
-    tome_doc = db.get_tome_document_by_guid(tome['guid'])
+    tome = pdb.get_tome(tome_id)
+    tome_doc = pdb.get_tome_document_by_guid(tome['guid'])
 
-    author_docs = [db.get_author_document_by_guid(author['guid']) for author in tome_doc['authors']]
+    author_docs = [pdb.get_author_document_by_guid(author['guid']) for author in tome_doc['authors']]
 
     enriched_file = cStringIO.StringIO()
     added = pydb.ebook_metadata_tools.add_plain_metadata(contents_stream, tome_file, enriched_file, author_docs, tome_doc)
@@ -99,14 +99,14 @@ def _stream_tome_file(tome_id, tome_file, contents_stream):
 def get_cover():
     tome_id = request.args[0]
 
-    tome_file = db.get_best_relevant_cover_available(tome_id)
+    tome_file = pdb.get_best_relevant_cover_available(tome_id)
     if tome_file is None:
         return
     
     extension=tome_file['file_extension']
     file_hash=tome_file['hash']
     
-    fp = db.get_local_file_path(file_hash)
+    fp = pdb.get_local_file_path(file_hash)
     if fp is None:
         return
     plain_file = open(fp,"rb")
@@ -124,12 +124,12 @@ def timeline():
     min_modification_date_tomes = time.time()-history_days*3600*24
     min_modification_date_authors = time.time()+1000  # no authors
 
-    changed_tome_guids = db.get_tome_document_timeline(tome_limit)
+    changed_tome_guids = pdb.get_tome_document_timeline(tome_limit)
     
     response.title = "Timeline - Montag"
     tomelist = []
     for tome_index, tome_guid in enumerate(changed_tome_guids):
-       tome = db.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info = True, include_author_detail=True)
+       tome = pdb.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info = True, include_author_detail=True)
        if 'title' in tome:
            tome['index'] = tome_index+1
            tomelist.append(tome)
@@ -141,10 +141,10 @@ def timeline():
 def random_tomes():
     response.title = "Random Tomes - Montag"
     
-    tomes = db.get_random_tomes(20) 
+    tomes = pdb.get_random_tomes(20)
     tomelist = []
     for tome_index, tome_info in enumerate(tomes):
-        tome = db.get_tome_document_with_local_overlay_by_guid(tome_info['guid'], include_local_file_info = True, include_author_detail=True)
+        tome = pdb.get_tome_document_with_local_overlay_by_guid(tome_info['guid'], include_local_file_info = True, include_author_detail=True)
         tome['index'] = tome_index+1
         tomelist.append(tome)
 
@@ -159,13 +159,13 @@ def timeline_json():
 def view_author():
     author_guid = request.args[0]
 
-    author = db.get_author_by_guid(author_guid)
+    author = pdb.get_author_by_guid(author_guid)
     if author is None:
-        author_guid = db.get_author_fusion_target_guid(author_guid)
+        author_guid = pdb.get_author_fusion_target_guid(author_guid)
         if author_guid:
             redirect(URL('view_author', args=(author_guid)))
         
-    tomes = db.get_tomes_by_author(author['id'])
+    tomes = pdb.get_tomes_by_author(author['id'])
     tomes.sort(key=lambda x: x['title'])
 
     response.title = "%s - Montag" % author['name']
@@ -173,7 +173,7 @@ def view_author():
     tomelist = []
     for tome in tomes:
         if tome['author_link_fidelity'] > pydb.network_params.Min_Relevant_Fidelity:
-            tome = db.get_tome_document_with_local_overlay_by_guid(tome['guid'], include_local_file_info = True, include_author_detail=True)
+            tome = pdb.get_tome_document_with_local_overlay_by_guid(tome['guid'], include_local_file_info = True, include_author_detail=True)
             tomelist.append(tome)
 
     return {
@@ -184,9 +184,9 @@ def view_author():
 def view_tome():
     tome_guid = request.args[0]
     
-    tome = db.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info=True, include_author_detail=True)
+    tome = pdb.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info=True, include_author_detail=True)
     if not 'title' in tome:
-        tome_guid = db.get_tome_fusion_target_guid(tome_guid)
+        tome_guid = pdb.get_tome_fusion_target_guid(tome_guid)
         if tome_guid:
             redirect(URL('view_tome', args=(tome_guid)))
 
@@ -200,10 +200,10 @@ def view_tome():
 def view_tome_debug_info():
     tome_guid = request.args[0]
     
-    tome = db.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info=True, include_author_detail=True)
-    debug_info = db.get_debug_info_for_tome_by_guid(tome_guid)
+    tome = pdb.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info=True, include_author_detail=True)
+    debug_info = pdb.get_debug_info_for_tome_by_guid(tome_guid)
     
-    overlay_tome = db.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info = True, include_author_detail=False)
+    overlay_tome = pdb.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info = True, include_author_detail=False)
     debug_info['overlay'] = overlay_tome
 
 
@@ -220,7 +220,7 @@ def view_tome_debug_info():
 
 
 def _author_edit_form(author):
-   required_fidelity = db.calculate_required_author_fidelity(author['id'])
+   required_fidelity = pdb.calculate_required_author_fidelity(author['id'])
  
    form = SQLFORM.factory(
         Field('name',requires=IS_NOT_EMPTY(), default=db_str_to_form(author['name']), comment=XML(r'<input type="button" value="Guess name case" onclick="title_case_field(&quot;no_table_name&quot;)">')),
@@ -233,7 +233,7 @@ def _author_edit_form(author):
 
 def edit_author():
     author_guid = request.args[0]
-    author_doc = db.get_author_document_with_local_overlay_by_guid(author_guid)
+    author_doc = pdb.get_author_document_with_local_overlay_by_guid(author_guid)
     if author_doc is None:
         session.flash = "No such author"
         reditrect(URL('tomesearch'))
@@ -247,8 +247,8 @@ def edit_author():
         for f in field_names:
             author_doc[f] = form.vars[f].decode('utf-8')
 
-        db.load_own_author_document(author_doc)
-        author_doc = db.get_author_document_with_local_overlay_by_guid(author_guid)
+        pdb.load_own_author_document(author_doc)
+        author_doc = pdb.get_author_document_with_local_overlay_by_guid(author_guid)
         response.flash = 'Stored new values'
     elif form.errors:
         response.flash = 'form has errors'
@@ -264,11 +264,11 @@ def tomesearch():
     if form.validate(formname = 'search', session = None, request_vars=request.vars, message_onsuccess='', keepvalues=True):
         query = form.vars['query'].strip()
         if _is_tome_or_author_guid(query):
-            tome = db.get_tome_by_guid(query)
+            tome = pdb.get_tome_by_guid(query)
             if tome is not None:
                 redirect(URL('view_tome', args=[query]))
                 
-            author = db.get_author_by_guid(query)
+            author = pdb.get_author_by_guid(query)
             if author is not None:
                 redirect(URL('view_author', args=[query]))
 
@@ -291,7 +291,7 @@ def tomesearch():
     
 def _tome_edit_form(tome_id, tome):
     
-    required_tome_fidelity = db.calculate_required_tome_fidelity(tome_id)
+    required_tome_fidelity = pdb.calculate_required_tome_fidelity(tome_id)
     form = SQLFORM.factory(
         Field('title',requires=IS_NOT_EMPTY(), default=tome['title'].encode('utf-8'), comment=XML(r'<input type="button" value="Guess title case" onclick="title_case_field(&quot;no_table_title&quot;)">')),
         Field('subtitle', default=db_str_to_form(tome['subtitle']), comment=XML(r'<input type="button" value="Guess subtitle case" onclick="title_case_field(&quot;no_table_subtitle&quot;)">')),
@@ -353,10 +353,10 @@ class tag_validator:
 
 def add_synopsis_to_tome():
     tome_guid = request.args[0]
-    tome = db.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info=True, include_author_detail=True)
+    tome = pdb.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info=True, include_author_detail=True)
     
     new_syn = {
-               'guid' : db.generate_guid(),
+               'guid' : pdb.generate_guid(),
                'fidelity': pydb.network_params.Default_Manual_Fidelity,
                'content': ""
                }
@@ -367,7 +367,7 @@ def add_synopsis_to_tome():
     
 def edit_tome():
     tome_guid = request.args[0]
-    tome_doc = db.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info=True, include_author_detail=True)
+    tome_doc = pdb.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info=True, include_author_detail=True)
     if tome_doc is None:
         session.flash = "No such tome"
         redirect(URL('tomesearch'))
@@ -412,7 +412,7 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
     
                 for sf in syn_field_names:
                     synopsis_to_edit[sf]=synform.vars[sf].decode('utf-8')
-                db.load_own_tome_document(tome_doc)
+                pdb.load_own_tome_document(tome_doc)
                 redirect(URL('edit_tome', args=(tome_doc['guid']), anchor= 'synopses'))
 
             elif synform.errors:
@@ -432,7 +432,7 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
             tome_doc['publication_year']=None
         elif tome_doc['publication_year']=='None':
             tome_doc['publication_year']=None
-        db.load_own_tome_document(tome_doc)
+        pdb.load_own_tome_document(tome_doc)
         redirect(URL('edit_tome', args=(tome_doc['guid'])))
 
     elif form.errors:
@@ -445,9 +445,9 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
 def edit_tome_file_link():
     tome_id=request.args[0]
     file_hash=request.args[1]
-    tome=db.get_tome(tome_id)
+    tome=pdb.get_tome(tome_id)
 
-    files = db.get_tome_files( tome_id, include_local_file_info = True)
+    files = pdb.get_tome_files( tome_id, include_local_file_info = True)
     tome_files=filter( lambda x: x['hash']==file_hash, files)
     tome_file=tome_files[0]
 
@@ -462,7 +462,7 @@ def edit_tome_file_link():
     field_names=['file_extension','fidelity']
 
     if form.process(keepvalues=True).accepted:
-        doc=db.get_tome_document_with_local_overlay_by_guid(tome['guid'])
+        doc=pdb.get_tome_document_with_local_overlay_by_guid(tome['guid'])
         other_files=filter( lambda x: x['hash']!=file_hash, doc['files'])
         tome_file_doc=filter( lambda x: x['hash']==file_hash, doc['files'])[0]
 
@@ -474,7 +474,7 @@ def edit_tome_file_link():
 
         other_files.append(tome_file_doc)
         doc['files']=other_files    
-        db.load_own_tome_document(doc)
+        pdb.load_own_tome_document(doc)
             
         response.flash = 'Stored new values'
         redirect(URL('edit_tome', args=(tome['guid']), anchor='files'))
@@ -485,7 +485,7 @@ def edit_tome_file_link():
 
 def link_tome_to_file():
     tome_id=request.args[0]
-    tome=db.get_tome(tome_id)
+    tome=pdb.get_tome(tome_id)
  
     form = SQLFORM.factory(
         Field('hash'),
@@ -502,12 +502,12 @@ def link_tome_to_file():
         file_extension=form.vars['file_extension']
         fidelity=form.vars['fidelity']
         
-        local_file_size=db.get_local_file_size(file_hash)
+        local_file_size=pdb.get_local_file_size(file_hash)
         
         if not local_file_size:
             response.flash = "This file is not known to the database, please check the hash"
         else:
-            db.link_tome_to_file(tome_id, file_hash, local_file_size, file_extension, FileType.Content, fidelity)
+            pdb.link_tome_to_file(tome_id, file_hash, local_file_size, file_extension, FileType.Content, fidelity)
             session.flash = 'Added new file link'
             redirect(URL('edit_tome_file_link', args=(tome_id, file_hash)))
     elif form.errors:
@@ -519,9 +519,9 @@ def edit_tome_author_link():
     tome_id=request.args[0]
     author_id=request.args[1]
     
-    tome=db.get_tome(tome_id)
+    tome=pdb.get_tome(tome_id)
        
-    tome_authors = db.get_tome_authors(tome_id)
+    tome_authors = pdb.get_tome_authors(tome_id)
     tome_author = None
     for ta in tome_authors:
         if int(ta['id'])==int(author_id):
@@ -542,7 +542,7 @@ def edit_tome_author_link():
     field_names=['order','fidelity']
 
     if form.process(keepvalues=True).accepted:
-        doc=db.get_tome_document_with_local_overlay_by_guid(tome['guid'])
+        doc=pdb.get_tome_document_with_local_overlay_by_guid(tome['guid'])
         other_authors=filter( lambda x: x['guid']!=author_guid, doc['authors'])
         tome_author_doc=filter( lambda x: x['guid']==author_guid, doc['authors'])[0]
 
@@ -551,8 +551,8 @@ def edit_tome_author_link():
 
         other_authors.append(tome_author_doc)
         doc['authors']=other_authors
-        db.load_own_tome_document(doc)
-        tome_authors = db.get_tome_authors(tome_id)
+        pdb.load_own_tome_document(doc)
+        tome_authors = pdb.get_tome_authors(tome_id)
 
         response.flash = 'Stored new values'
         redirect(URL('edit_tome', args=(tome['guid']), anchor='authors'))
@@ -564,9 +564,9 @@ def edit_tome_author_link():
 
 def link_tome_to_author():
     tome_id=request.args[0]
-    tome=db.get_tome(tome_id)
+    tome=pdb.get_tome(tome_id)
 
-    tome_authors = db.get_tome_authors(tome_id)
+    tome_authors = pdb.get_tome_authors(tome_id)
 
     if tome_authors:
         last_tome_author = max(tome_authors, key=lambda x: float(x['author_order']))
@@ -589,10 +589,10 @@ def link_tome_to_author():
         fidelity=float(form.vars['fidelity'])
         author_order=float(form.vars['order'])
 
-        author_ids = db.find_or_create_authors([author_name],fidelity)
+        author_ids = pdb.find_or_create_authors([author_name],fidelity)
         author_id = author_ids[0]
 
-        db.link_tome_to_author(tome_id, author_id, author_order, fidelity)
+        pdb.link_tome_to_author(tome_id, author_id, author_order, fidelity)
 
         session.flash = 'Added author to tome'
         redirect(URL('edit_tome_author_link', args=(tome_id, author_id)))
