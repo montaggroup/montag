@@ -584,13 +584,13 @@ class MainDB:
         if size == 0:
             raise ValueError("File is empty after stripping")
 
-        logger.debug("Hash is " + file_hash)
+        logger.debug(u"Hash is " + file_hash)
         cache_path = self._calculate_cache_path(file_hash) + '.' + extension
-        logger.debug("Cache path is " + cache_path)
+        logger.debug(u"Cache path is " + cache_path)
 
         if move_file:
             if not os.path.exists(cache_path):
-                logger.debug("move from {} to {} .".format(source_path, cache_path))
+                logger.debug(u"move from {} to {} .".format(source_path, cache_path))
                 try:
                     shutil.move(source_path, cache_path)
                 except:
@@ -598,24 +598,24 @@ class MainDB:
             else:
                 old_hash = _hash_file(cache_path)
                 if old_hash != file_hash:
-                    logger.info("Old hash in file_store {} doesn't match the actual hash {} overwriting."
+                    logger.info(u"Old hash in file_store {} doesn't match the actual hash {} overwriting."
                                 .format(old_hash, file_hash))
                     os.remove(cache_path)
                     shutil.move(source_path, cache_path)
         else:
             if not os.path.exists(cache_path):
-                logger.debug("copy from {} to {} .".format(source_path, cache_path))
+                logger.debug(u"copy from {} to {} .".format(source_path, cache_path))
                 shutil.copyfile(source_path, cache_path)
             else:
                 old_hash = _hash_file(cache_path)
                 if old_hash != file_hash:
-                    logger.info("Old hash in file_store {} doesn't match the actual hash {} overwriting."
+                    logger.info(u"Old hash in file_store {} doesn't match the actual hash {} overwriting."
                                 .format(old_hash, file_hash))
                     shutil.copyfile(source_path, cache_path)
 
         # \todo check hash after copying to ensure it worked (e.g. disk full)
         if size != os.path.getsize(cache_path):
-            raise Exception("File sizes after insert do not match: {} bytes in file to insert, "
+            raise Exception(u"File sizes after insert do not match: {} bytes in file to insert, "
                             "{} bytes in store. Cache path is {}".format(size, os.path.getsize(cache_path), cache_path))
 
         local_file_id = self.local_db.add_local_file(file_hash, extension)
