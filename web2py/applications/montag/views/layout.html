@@ -39,6 +39,10 @@
        HTML5 elements & feature detects -->
   <script src="{{=URL('static','js/modernizr.custom.js')}}"></script>  
 
+    {{ if response.enable_dropzone: }}
+  <script src="{{=URL('static','js/dropzone.js')}}"></script>  
+    {{pass}}
+    
   <!-- include stylesheets -->
   {{
   response.files.append(URL('static','css/skeleton.css'))

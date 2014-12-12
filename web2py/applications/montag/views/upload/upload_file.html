@@ -1,3 +1,14 @@
 {{extend 'layout.html'}}
 
 {{ =form }}
+
+
+<script type="text/javascript">
+Dropzone.options.dropzoneForm = {
+  init: function() {
+    this.on("success", function(file, reply) { window.location=reply; });
+  },
+  previewsContainer: false   
+};
+
+</script>

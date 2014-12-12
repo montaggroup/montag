@@ -42,11 +42,14 @@ def _insert_file(file_stream, original_file_name):
 
 def _create_upload_form():
     form = FORM(TABLE(
-           TR(TD('Upload File:', INPUT(_type='file',
-                                       _name='new_tome_file',
+           TR(TD(DIV(DIV('Drop Files Here'), _class='dz-message'))),
+           TR(TD(' -- or --')),
+           TR(TD(INPUT(_type='file',
+                                       _name='file',
                                        requires=IS_NOT_EMPTY()))),
            TR(TD(INPUT(_type='submit',_value='Submit')))
-       ))
+           ,_class='upload_file'
+       ),  _class="dropzone", _id='dropzoneForm')
     return form
 
 def _title_suggestion(filename):
@@ -57,21 +60,37 @@ def _title_suggestion(filename):
     return title_suggestion
 
 def upload_file():
+    response.enable_dropzone = True
     form = _create_upload_form()
 
     if form.accepts(request.vars):
-        f = request.vars.new_tome_file
-
-        _, extension_with_dot = os.path.splitext(f.filename)
+        f = request.vars.file
+        is_dropzone = False
+        
+        if isinstance(f, list): #  dropzone uploads result in lists
+            f=f[1]
+            is_dropzone = True
+        
+        filename = f.filename
+        filepath = f.file
+            
+            
+        _, extension_with_dot = os.path.splitext(filename)
         extension = extension_with_dot[1:]
 
         metadata=ebook_metadata_tools.extract_metadata(f.file, extension)
         if not 'title' in metadata:
-            metadata['title'] = _title_suggestion(f.filename)
+            metadata['title'] = _title_suggestion(filename)
 
-        (id, hash, size) =  _insert_file(f.file, f.filename)
+        (id, hash, size) =  _insert_file(filepath, filename)
         session.metadata = metadata
-        redirect(URL('add_tome_from_file', args=(hash, extension, size )))
+        
+        target_url = URL('add_tome_from_file', args=(hash, extension, size ))
+        if is_dropzone:
+            return target_url
+        else:
+            redirect(target_url)
+         
     elif form.errors:
         response.flash = 'form has errors'
     return dict(form=form)

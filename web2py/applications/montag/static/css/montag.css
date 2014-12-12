@@ -232,3 +232,15 @@ h2 {
 .clearfix {
   clear: both;
 }
+
+table.upload_file .dz-message {
+    width: 200px;
+    height: 110px;
+    border: 1px solid grey;
+    text-align: center;
+    padding-top: 80px;
+}
+
+table.upload_file .btn {
+    margin-top: 15px;
+}
