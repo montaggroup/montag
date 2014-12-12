@@ -2,6 +2,7 @@
 import tempfile
 import subprocess
 from pydb import FileType
+import cStringIO
 
 
 def edit_covers():
@@ -56,11 +57,16 @@ def set_cover_from_content():
 
     if form.process(keepvalues=True).accepted:
         fidelity = form.vars['fidelity']
-        cover_file_path = _extract_image_from_content(content_hash, content_extension)
-        (_,extension_with_dot) = os.path.splitext(cover_file_path)
+        cover_contents = _extract_image_from_content(content_hash, content_extension)
 
-        file_extension = extension_with_dot[1:]
-        (local_file_id, file_hash, file_size) = pdb.add_file_from_local_disk(cover_file_path, file_extension, move_file = True)
+        file_extension = 'jpg'
+        fd_cover, path_cover = tempfile.mkstemp('.' + file_extension)
+        cover_file = os.fdopen(fd_cover,'wb')
+        cover_file.write(cover_contents.getvalue())
+        cover_file.close()
+        
+        (local_file_id, file_hash, file_size) = pdb.add_file_from_local_disk(path_cover, file_extension, move_file = True)
+        
         pdb.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Cover, fidelity)
         redirect(URL('default', 'view_tome', args=(tome['guid'])))
 
@@ -140,27 +146,34 @@ def _extract_image_from_content(file_hash, extension):
     with open(fp,"rb") as source_file:
         contents = source_file.read()
 
+        return _get_cover_image(contents, extension)
+
+def _get_cover_image(ebook_contents, extension):
+    """ returns a cStringIO buffer with the contents of the cover file """
     # write into a temp file as to prevent ebook_convert from accessing the file store directly
     # this way we are sure that the file has the correct extension
-    fd_orig, path_orig=tempfile.mkstemp('.'+extension)
+    fd_orig, path_orig = tempfile.mkstemp('.' + extension)
     orig_file=os.fdopen(fd_orig,'wb')
-    orig_file.write(contents)
-    del contents
+    orig_file.write(ebook_contents)
     orig_file.close()
     
-    fd_target, path_cover_target=tempfile.mkstemp('.jpg')
+    fd_target, path_cover_target = tempfile.mkstemp('.jpg')
     os.close(fd_target)
     
     print "Extracting cover of {} to {}".format(path_orig, path_cover_target)
-    convert_result=subprocess.call(['ebook-meta',path_orig,'--get-cover', path_cover_target])
-    print "cv is",convert_result
+    convert_result = subprocess.call(['ebook-meta',path_orig,'--get-cover', path_cover_target])
+    print "cv is", convert_result
+    os.remove(path_orig)
     
-    return path_cover_target
+    with open(path_cover_target, "rb") as coverfile:
+        result = cStringIO.StringIO(coverfile.read())
+    os.remove(path_cover_target)
+    
+    return result
+
 
 def _stream_image_from_content(file_hash, extension):
-
-    path_cover_target = _extract_image_from_content(file_hash, extension)
-    cover_target = open(path_cover_target, 'rb')
+    cover_target = _extract_image_from_content(file_hash, extension)
 
     response.headers['Content-Type'] = 'image/jpeg'
 
