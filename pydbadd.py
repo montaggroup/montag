@@ -81,7 +81,7 @@ def add_file(filepath, fidelity, tome_type, delete_source):
         db.link_tome_to_file(tome_id, hash, size, file_extension=extension, file_type=FileType.Content,
                              fidelity=fidelity)
     else:
-        print "Unable to add file '{}' to db - check whether it might be defective".format(filepath)
+        print u"Unable to add file '{}' to db - check whether it might be defective".format(filepath)
 
 
 tome_type = TomeType.Unknown

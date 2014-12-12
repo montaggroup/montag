@@ -74,7 +74,6 @@ def upload_file():
         filename = f.filename
         filepath = f.file
             
-            
         _, extension_with_dot = os.path.splitext(filename)
         extension = extension_with_dot[1:]
 
@@ -105,7 +104,7 @@ def upload_file_to_tome():
         return dict(form=form, tome=None)
 
     if form.accepts(request.vars):
-        f = request.vars.new_tome_file
+        f = request.vars.file
         
         _, extension_with_dot = os.path.splitext(f.filename)
         extension = extension_with_dot[1:]

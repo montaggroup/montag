@@ -97,7 +97,12 @@ class LocalDB(pydb.basedb.BaseDB):
         cur = self.con.cursor()
         cur.execute("INSERT OR IGNORE INTO local_files (last_modification_date, hash, file_extension) VALUES (?,?,?)",
                     (time.time(), file_hash, extension))
-        return cur.lastrowid
+        last_row_id = cur.lastrowid
+        if not last_row_id: # insert was ignored
+            local_file = self.get_local_file_by_hash(file_hash)
+            return local_file['id']
+            
+        return last_row_id
 
     def add_tags_to_tome(self, tome_id, tags_values, fidelity):
         cur = self.con.cursor()
