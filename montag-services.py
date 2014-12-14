@@ -41,11 +41,11 @@ def _wait_for_db_ping_ok():
         try:
             if db.ping() == 'pong':
                db_ok = True
-            else:
-                time.sleep(0.5)
+               break
         except Pyro4.errors.CommunicationError:
-            time.sleep(0.5)
             pass
+
+        time.sleep(0.5)
         tries += 1
 
     return db_ok
