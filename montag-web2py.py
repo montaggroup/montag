@@ -19,5 +19,5 @@ sys.path.append('gluon')
 import web2py.gluon.widget
 
 # commandline for web2py to parse
-sys.argv = ['web2py.py','-a', '12345', '-i', '0.0.0.0']
+sys.argv = ['web2py.py', '-a', '12345', '-i', '0.0.0.0']
 web2py.gluon.widget.start(cron=True)
