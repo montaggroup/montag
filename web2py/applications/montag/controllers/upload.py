@@ -96,6 +96,8 @@ def upload_file():
 
 def upload_file_to_tome():
     tome_guid = request.args[0]
+
+    response.enable_dropzone = True
     form = _create_upload_form()
 
     tome = pdb.get_tome_by_guid(tome_guid)
@@ -105,14 +107,28 @@ def upload_file_to_tome():
 
     if form.accepts(request.vars):
         f = request.vars.file
+        is_dropzone = False
+        
+        if isinstance(f, list): #  dropzone uploads result in lists
+            f=f[1]
+            is_dropzone = True
+        
+        filename = f.filename
+        filepath = f.file
         
         _, extension_with_dot = os.path.splitext(f.filename)
         extension = extension_with_dot[1:]
 
         fidelity = 60
         (id, file_hash, size) =  _insert_file(f.file, f.filename)
+
         pdb.link_tome_to_file(tome['id'], file_hash, size, extension, FileType.Content, fidelity)
-        redirect(URL('default', 'view_tome', args=(tome_guid)))
+        target_url = URL('default', 'view_tome', args=(tome_guid))
+        if is_dropzone:
+            return target_url
+        else:
+            redirect(target_url)
+
     elif form.errors:
         response.flash = 'form has errors'
 
