@@ -49,22 +49,35 @@ def _get_converted_file(tome_id, file_hash, target_extension):
         else:
             contents = source_file.read()
 
+    converted_content = _convert_ebook(contents, extension, target_extension)
+    tome_file['file_extension'] = target_extension
+    
+    return _stream_tome_file(tome_id, tome_file, converted_content)
+  
+
+def _convert_ebook(contents, source_extension, target_extension):
+    """ returns a cStringIO buffer with the conversion result, contents should be an buffer """
+
     # write into a temp file as to prevent ebook_convert from accessing the file store directly
     # this way we are sure that the file has the correct extension
-    fd_orig, path_orig = tempfile.mkstemp('.'+extension)
+    fd_orig, path_orig = tempfile.mkstemp('.' + source_extension)
     orig_file = os.fdopen(fd_orig,'wb')
     orig_file.write(contents)
-    del contents
     orig_file.close()
     
-    fd_target, path_target=tempfile.mkstemp('.'+target_extension)
+    fd_target, path_converted = tempfile.mkstemp('.'+target_extension)
     os.close(fd_target)
     
-    convert_result = subprocess.call(['ebook-convert',path_orig, path_target])
-    converted_content = open(path_target, 'rb')
+    convert_result = subprocess.call(['ebook-convert', path_orig, path_converted])
+
     
-    tome_file['file_extension'] = target_extension
-    return _stream_tome_file(tome_id, tome_file, converted_content)
+    with open(path_converted, 'rb') as converted_file:
+        converted_content = cStringIO.StringIO(converted_file.read())
+
+    os.remove(path_orig)
+    os.remove(path_converted)
+     
+    return converted_content
     
 
 def _stream_tome_file(tome_id, tome_file, contents_stream):
