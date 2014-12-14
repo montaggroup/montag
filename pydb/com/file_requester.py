@@ -96,7 +96,7 @@ class FileRequester(object):
             return
 
         self.number_negative_file_replies += 1
-        self.comservice.release_file_after_fetching(file_hash, False)
+        self.comservice.release_file_after_fetching(file_hash, success=False)
 
         if self.hash_of_transfer_in_progress is not None:
             logger.error("Answer order error, was expecting more parts for hash %s, but got not content" %
@@ -111,6 +111,7 @@ class FileRequester(object):
         self.number_files_downloaded += 1
         logger.info("Adding file via %s" % completed_file_name)
         self.file_inserter.insert_file_in_background(completed_file_name, extension, file_hash)
+        self.comservice.release_file_after_fetching(file_hash, success=True)
 
     def _start_multipart_transfer(self, extension, file_hash):
         self.hash_of_transfer_in_progress = self.requested_hashes.popleft()
@@ -170,9 +171,9 @@ class FileRequester(object):
         self.file_inserter.wait_for_insert_to_complete()
 
         if self.hash_of_transfer_in_progress is not None:
-            self.comservice.release_file_after_fetching(self.hash_of_transfer_in_progress, False)
+            self.comservice.release_file_after_fetching(self.hash_of_transfer_in_progress, success=False)
         for file_hash in self.requested_hashes:
-            self.comservice.release_file_after_fetching(file_hash, False)
+            self.comservice.release_file_after_fetching(file_hash, success=False)
 
         self._failure_callback()
 
