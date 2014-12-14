@@ -7,6 +7,7 @@ import sys
 import pydb.services as services
 import time
 import pydb.pyrosetup
+import Pyro4
 
 def do_list_services(args):
     services_status = services.get_current_services_status()
@@ -33,9 +34,21 @@ def do_start_services(args):
 
 def _wait_for_db_ping_ok():
     db = pydb.pyrosetup.pydbserver()
-    while db.ping() != 'pong':
-        time.sleep(0.5)
+    db_ok = False
 
+    tries = 0
+    while not db_ok and tries < 500:
+        try:
+            if db.ping() == 'pong':
+               db_ok = True
+            else:
+                time.sleep(0.5)
+        except Pyro4.errors.CommunicationError:
+            time.sleep(0.5)
+            pass
+        tries += 1
+
+    return db_ok
 
 def do_stop_services(args):
     services_status = services.get_current_services_status()
