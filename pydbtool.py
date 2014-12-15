@@ -340,6 +340,8 @@ def do_import_file_store(args, db):
 
     files_to_add = []
 
+    strip_files = not args.no_strip
+
     for root, subfolders, files in os.walk(source_dir):
         files.sort()
         subfolders.sort()
@@ -354,7 +356,7 @@ def do_import_file_store(args, db):
                                  'extension': extension,
                                  'only_allowed_hash': file_hash,
                                  'move_file': args.delete,
-                                 'strip_file': True})
+                                 'strip_file': strip_files})
 
             if len(files_to_add) >= INSERT_BATCH_SIZE:
                 succeeded, failed = insert_files(files_to_add)
@@ -622,6 +624,8 @@ parser_import_file_store = subparsers.add_parser('import_file_store',
                                                  help='imports a folder of files from a (exported) store')
 parser_import_file_store.add_argument('source_directory', help='directory to check for files')
 parser_import_file_store.add_argument('--delete', '-d', action='store_true', help='delete imported files')
+parser_import_file_store.add_argument('--no-strip', '-n', action='store_true',
+                                      help='skip stripping of files (faster, requires a trusted clean file store)')
 parser_import_file_store.set_defaults(func=do_import_file_store)
 
 parser_set_comm_data_tcp_plain = subparsers.add_parser('set_comm_data_tcp_plain',
