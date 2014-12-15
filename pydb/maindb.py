@@ -27,38 +27,54 @@ import config
 logger = logging.getLogger('database')
 
 
+def db_path(db_dir, db_name):
+    return os.path.join(db_dir, db_name + ".db")
+
+
+def build(base_path, schema_path, enable_db_sync=True):
+    db_dir = os.path.join(base_path, "db")
+    if not os.path.exists(db_dir):
+        os.makedirs(db_dir)
+
+    foreign_db_dir = os.path.join(db_dir, "foreign")
+    if not os.path.exists(foreign_db_dir):
+        os.makedirs(foreign_db_dir)
+
+    store_dir = os.path.join(base_path, "filestore")
+    if not os.path.exists(store_dir):
+        os.mkdir(store_dir)
+
+    local_db = LocalDB(db_path(db_dir, "local"), schema_path, enable_db_sync)
+    merge_db = MergeDB(db_path(db_dir, "merge"), schema_path, enable_db_sync=False)
+    merge_db.add_source(local_db)
+    friends_db = FriendsDB(db_path(db_dir, "friends"), schema_path)
+
+
+    def build_foreign_db(friend_id):
+        foreign_db_path = db_path(db_dir, os.path.join("foreign", str(friend_id)))
+        db = ForeignDB(foreign_db_path, schema_path, friend_id, enable_db_sync=enable_db_sync)
+        return db
+
+    db = MainDB(local_db, friends_db, merge_db, store_dir, build_foreign_db)
+    db.load_foreign_dbs()
+
+    logger.info("DBs initialized")
+    return db
+
+
 class MainDB:
-    def __init__(self, base_path, schema_path, enable_db_sync=True):
-        self.base_path = base_path
-        self.schema_path = schema_path
-
-        self.db_dir = os.path.join(base_path, "db")
-        if not os.path.exists(self.db_dir):
-            os.makedirs(self.db_dir)
-
-        self.foreign_db_dir = os.path.join(self.db_dir, "foreign")
-        if not os.path.exists(self.foreign_db_dir):
-            os.makedirs(self.foreign_db_dir)
-
-        self.store_dir = os.path.join(base_path, "filestore")
-        if not os.path.exists(self.store_dir):
-            os.mkdir(self.store_dir)
+    def __init__(self, local_db, friends_db, merge_db, store_dir, build_foreign_db):
 
         self.default_add_fidelity = 50
 
-        self.enable_db_sync = enable_db_sync
-        self.local_db = LocalDB(self.db_path("local"), schema_path, enable_db_sync)
-        self.merge_db = MergeDB(self.db_path("merge"), schema_path, enable_db_sync=False)
-        self.merge_db.add_source(self.local_db)
-        self.friends_db = FriendsDB(self.db_path("friends"), schema_path)
-
+        self.local_db = local_db
+        self.friends_db = friends_db
+        self.merge_db = merge_db
         self.foreign_dbs = {}
-        self._load_foreign_dbs()
+        self.store_dir = store_dir
 
-        logger.info("DBs initialized")
+        self.build_foreign_db = build_foreign_db
 
-    def db_path(self, db_name):
-        return os.path.join(self.db_dir, db_name + ".db")
 
     def file_store_disk_usage(self):
         total, used, free = disk_usage.disk_usage(self.store_dir)
@@ -66,8 +82,8 @@ class MainDB:
 
     def _add_foreign_db(self, friend_id):
         logger.info("Loading foreign db for friend %d" % friend_id)
-        foreign_db_path = self.db_path(os.path.join("foreign", str(friend_id)))
-        db = ForeignDB(foreign_db_path, self.schema_path, friend_id, enable_db_sync=self.enable_db_sync)
+
+        db = self.build_foreign_db(friend_id)
         self.foreign_dbs[friend_id] = db
         self.merge_db.add_source(db)
 
@@ -76,7 +92,7 @@ class MainDB:
         self.merge_db.remove_source(db)
         del self.foreign_dbs[friend_id]
 
-    def _load_foreign_dbs(self):
+    def load_foreign_dbs(self):
         for db in self.foreign_dbs.itervalues():
             self.merge_db.remove_source(db)
             db.close()
