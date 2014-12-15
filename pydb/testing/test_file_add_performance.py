@@ -29,7 +29,7 @@ class TestFileAddPerformance(unittest.TestCase):
 
         for i in xrange(10):
             pydb_base_dir = tempfile.mkdtemp('pydb_file_add_performance')
-            self.main_db = pydb.maindb.MainDB(pydb_base_dir, get_schema_dir())
+            self.main_db = pydb.maindb.build(pydb_base_dir, get_schema_dir())
             time.sleep(0.5)
 
 

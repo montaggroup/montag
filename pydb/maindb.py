@@ -27,38 +27,59 @@ import config
 logger = logging.getLogger('database')
 
 
+def db_path(db_dir, db_name):
+    return os.path.join(db_dir, db_name + ".db")
+
+
+def build(base_path, schema_path, enable_db_sync=True):
+    db_dir = os.path.join(base_path, "db")
+    if not os.path.exists(db_dir):
+        os.makedirs(db_dir)
+
+    foreign_db_dir = os.path.join(db_dir, "foreign")
+    if not os.path.exists(foreign_db_dir):
+        os.makedirs(foreign_db_dir)
+
+    store_dir = os.path.join(base_path, "filestore")
+    if not os.path.exists(store_dir):
+        os.mkdir(store_dir)
+
+    local_db = LocalDB(db_path(db_dir, "local"), schema_path, enable_db_sync)
+    merge_db = MergeDB(db_path(db_dir, "merge"), schema_path, enable_db_sync=False)
+    merge_db.add_source(local_db)
+    friends_db = FriendsDB(db_path(db_dir, "friends"), schema_path)
+
+
+    def build_foreign_db(friend_id):
+        foreign_db_path = db_path(db_dir, os.path.join("foreign", str(friend_id)))
+        db = ForeignDB(foreign_db_path, schema_path, friend_id, enable_db_sync=enable_db_sync)
+        return db
+
+    index_server = pyrosetup.indexserver()
+
+    db = MainDB(local_db, friends_db, merge_db, store_dir, build_foreign_db, index_server)
+    db.load_foreign_dbs()
+
+    logger.info("DBs initialized")
+    return db
+
+
+
+
 class MainDB:
-    def __init__(self, base_path, schema_path, enable_db_sync=True):
-        self.base_path = base_path
-        self.schema_path = schema_path
-
-        self.db_dir = os.path.join(base_path, "db")
-        if not os.path.exists(self.db_dir):
-            os.makedirs(self.db_dir)
-
-        self.foreign_db_dir = os.path.join(self.db_dir, "foreign")
-        if not os.path.exists(self.foreign_db_dir):
-            os.makedirs(self.foreign_db_dir)
-
-        self.store_dir = os.path.join(base_path, "filestore")
-        if not os.path.exists(self.store_dir):
-            os.mkdir(self.store_dir)
+    def __init__(self, local_db, friends_db, merge_db, store_dir, build_foreign_db, index_server):
 
         self.default_add_fidelity = 50
 
-        self.enable_db_sync = enable_db_sync
-        self.local_db = LocalDB(self.db_path("local"), schema_path, enable_db_sync)
-        self.merge_db = MergeDB(self.db_path("merge"), schema_path, enable_db_sync=False)
-        self.merge_db.add_source(self.local_db)
-        self.friends_db = FriendsDB(self.db_path("friends"), schema_path)
-
+        self.local_db = local_db
+        self.friends_db = friends_db
+        self.merge_db = merge_db
         self.foreign_dbs = {}
-        self._load_foreign_dbs()
+        self.store_dir = store_dir
+        self.index_server = index_server
 
-        logger.info("DBs initialized")
+        self.build_foreign_db = build_foreign_db
 
-    def db_path(self, db_name):
-        return os.path.join(self.db_dir, db_name + ".db")
 
     def file_store_disk_usage(self):
         total, used, free = disk_usage.disk_usage(self.store_dir)
@@ -66,8 +87,8 @@ class MainDB:
 
     def _add_foreign_db(self, friend_id):
         logger.info("Loading foreign db for friend %d" % friend_id)
-        foreign_db_path = self.db_path(os.path.join("foreign", str(friend_id)))
-        db = ForeignDB(foreign_db_path, self.schema_path, friend_id, enable_db_sync=self.enable_db_sync)
+
+        db = self.build_foreign_db(friend_id)
         self.foreign_dbs[friend_id] = db
         self.merge_db.add_source(db)
 
@@ -76,7 +97,7 @@ class MainDB:
         self.merge_db.remove_source(db)
         del self.foreign_dbs[friend_id]
 
-    def _load_foreign_dbs(self):
+    def load_foreign_dbs(self):
         for db in self.foreign_dbs.itervalues():
             self.merge_db.remove_source(db)
             db.close()
@@ -379,6 +400,13 @@ class MainDB:
     def document_modification_date_by_guid(self, doc_type, guid):
         return self.merge_db.document_modification_date_by_guid(doc_type, guid)
 
+    def _update_search_index(self):
+        try:
+            self.index_server.update_index()
+        except Pyro4.errors.CommunicationError, e:
+            logger.error("Unable to connect to index_server: %s" % e)
+
+
     def add_author(self, name, guid=None, date_of_birth=None, date_of_death=None, fidelity=None):
         """ adds a new author, generating a guid, returns the id of the author """
         if not fidelity:
@@ -391,7 +419,7 @@ class MainDB:
         self.merge_db.request_author_update(guid)
         author = self.merge_db.get_author_by_guid(guid)
 
-        _update_search_index()
+        self._update_search_index()
 
         return author['id']
 
@@ -468,7 +496,7 @@ class MainDB:
 
         tome = self.merge_db.get_tome_by_guid(guid)
 
-        _update_search_index()
+        self._update_search_index()
 
         return tome['id']
 
@@ -685,7 +713,7 @@ class MainDB:
             self.local_db.add_tags_to_tome(local_db_tome_id, tag_value_list, fidelity)
 
         self.merge_db.request_tome_tag_update(guid)
-        _update_search_index()
+        self._update_search_index()
 
     def _add_synopsis_to_tome(self, guid, content, local_db_tome_id, fidelity=None):
         """ adds a new synopsis, returns the id of the synopsis """
@@ -751,7 +779,7 @@ class MainDB:
                 author_guid = author_doc['guid']
                 self.merge_db.request_complete_author_update(author_guid)
 
-        _update_search_index()
+        self._update_search_index()
 
     def load_tome_documents_from_friend(self, friend_id, tome_docs):
         db = self.foreign_dbs[friend_id]
@@ -803,7 +831,7 @@ class MainDB:
                 logger.debug("Content: %s", repr(tome_doc))
                 self.merge_db.request_complete_tome_update(tome_guid, include_fusion_source_update=True)
 
-        _update_search_index()
+        self._update_search_index()
 
     def load_own_author_document(self, author_doc):
         with Transaction(self.local_db):
@@ -814,7 +842,7 @@ class MainDB:
         with Transaction(self.merge_db):
             self.merge_db.request_complete_author_update(author_guid)
 
-        _update_search_index()
+        self._update_search_index()
 
     def load_own_tome_document(self, tome_doc):
         with Transaction(self.local_db):
@@ -840,7 +868,7 @@ class MainDB:
         with Transaction(self.merge_db):
             self.merge_db.request_complete_tome_update(tome_guid, include_fusion_source_update=True)
 
-        _update_search_index()
+        self._update_search_index()
 
     def get_tomes_by_author(self, author_id):
         return self.merge_db.get_tomes_by_author(author_id)
@@ -906,11 +934,11 @@ class MainDB:
 
             logger.info("Committing")
 
-        _update_search_index()
+        self._update_search_index()
 
     def request_complete_tome_update(self, guid):
         self.merge_db.request_complete_tome_update(guid, include_fusion_source_update=True)
-        _update_search_index()
+        self._update_search_index()
 
     def hard_commit_all(self):
         with collect_transaction_errors("local"):
@@ -1176,16 +1204,6 @@ def _hash_stream(stream):
 
 def _hash_file(path):
     return _hash_stream(open(path, 'rb'))
-
-
-def _update_search_index():
-    # noinspection PyUnresolvedReferences
-    try:
-        index_server = pyrosetup.indexserver()
-        index_server.update_index()
-    except Pyro4.errors.CommunicationError, e:
-        logger.error("Unable to connect to index_server: %s" % e)
-
 
 def _effective_friend_fidelity(friend_fidelity, specific_friend_deduction=Friend_Fidelity_Deduction):
     f = friend_fidelity

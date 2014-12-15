@@ -49,7 +49,7 @@ if __name__ == "__main__":
     else:
         basepath = args.basepath
 
-    maindb = pydb.maindb.MainDB(basepath, schema_path=schema_path(), enable_db_sync=not args.no_sync)
+    maindb = pydb.maindb.build(basepath, schema_path=schema_path(), enable_db_sync=not args.no_sync)
 
     def term_handler():
         maindb.hard_commit_all()
