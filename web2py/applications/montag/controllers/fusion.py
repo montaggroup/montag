@@ -71,7 +71,7 @@ def execute_merge_authors():
     first_author = pdb.get_author_by_guid(first_author_guid)
 
     second_author_guid = request.args[1]
-    second_author = pdb.get_author_by_guid(second_author_guid) 
+    second_author = pdb.get_author_by_guid(second_author_guid)
 
     use_data_from_first = request.args[2]
     if use_data_from_first.lower()=="false":
@@ -86,6 +86,11 @@ def execute_merge_authors():
     source_author = first_author if use_data_from_first else second_author
 
     new_author_doc = pdb.get_author_document_by_guid(first_author_guid)
+
+    required_fidelity_1 = pdb.calculate_required_author_fidelity(first_author['id'])
+    required_fidelity_2 = pdb.calculate_required_author_fidelity(second_author['id'])
+    new_author_doc['fidelity'] = max(required_fidelity_1,required_fidelity_2)  #  we are not less certain than before
+
     new_author_doc['fusion_sources'].append({'source_guid': second_author_guid, 'fidelity':  pydb.network_params.Default_Manual_Fidelity})
     if not use_data_from_first: # copy data from secnd entry over
         for key,value in source_author.iteritems():
