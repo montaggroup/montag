@@ -1150,6 +1150,10 @@ class MainDB:
         new_tome_doc = self.get_tome_document_by_guid(target_guid)
         new_tome_doc['fusion_sources'].append({'source_guid': source_guid, 'fidelity': fidelity})
 
+        required_fidelity_1 = self.calculate_required_tome_fidelity(source_tome['id'])
+        required_fidelity_2 = self.calculate_required_tome_fidelity(target_tome['id'])
+        new_tome_doc['fidelity'] = max(required_fidelity_1, required_fidelity_2)  # we are not less certain than before
+
         if data_tome != target_tome:  # copy data from data tome over
             for key, value in data_tome.iteritems():
                 if key in new_tome_doc:
