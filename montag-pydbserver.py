@@ -62,7 +62,7 @@ if __name__ == "__main__":
     pydb_uri = daemon.register(maindb, objectId=args.pyro_name)
     print "PYRO Server URI: {}".format(str(pydb_uri))
 
-    comm_data_store = pydb.commdatastore.CommDataStore(maindb.db_path("friends"), schema_path())
+    comm_data_store = pydb.commdatastore.CommDataStore(os.path.join(basepath, 'db', 'friends.db'), schema_path())
     comm_datas_store_uri = daemon.register(comm_data_store, objectId=args.comm_data_store_name)
 
     daemon.requestLoop()        
