@@ -133,3 +133,21 @@ def short_hash(full_hash):
 
 def generate_download_filename(tome, file):
     return u"{} ({}).{}".format(tome['title'],short_hash(file['hash']), file['file_extension'])
+
+
+def format_bibliography_dates(author_info):
+    result = ""
+    if author_info['date_of_birth']:
+        result = "Born "+author_info['date_of_birth']
+    else:
+        result = "No date of birth provided yet"
+    
+    if author_info['date_of_death']:
+        result += ", died "+author_info['date_of_death']
+    else:
+        if author_info['date_of_birth']:
+            result += ', no date of death provided yet.'
+        else:
+            result += ', nor date of death.'
+    
+    return result
