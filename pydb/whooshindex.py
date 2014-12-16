@@ -74,7 +74,7 @@ class WhooshIndex:
                                    merge_db_id=tome['id'],
                                    type=tome['type'])
         logger.info("Committing writer")
-        writer.commit()
+        writer.commit(MERGE_CUSTOM)
         logger.info("Commit done")
 
     def remove_tomes(self, tome_guids):
@@ -97,3 +97,45 @@ class WhooshIndex:
             merge_db_ids = [r['merge_db_id'] for r in results]
             logger.info("Found %d results" % len(merge_db_ids))
             return merge_db_ids
+
+
+
+def MERGE_CUSTOM(writer, segments):
+    """This policy merges small segments, where "small" is defined using a
+    heuristic based on the fibonacci sequence.
+    """
+
+    from whoosh.reading import SegmentReader
+    from whoosh.util import fib
+
+    unchanged_segments = []
+    segments_to_merge = []
+
+    sorted_segment_list = sorted(segments, key=lambda s: s.doc_count_all())
+    total_docs = 0
+
+    merge_point_found = False
+    for i, seg in enumerate(sorted_segment_list):
+        count = seg.doc_count_all()
+        if count > 0:
+            total_docs += count
+        logger.debug("{}: {}/{}, fib {}".format(i, count, total_docs, fib(i+5)))
+        if merge_point_found:
+        unchanged_segments.append(seg)
+        else:
+            segments_to_merge.append((seg, i))
+                if i > 3 and total_docs < fib(i + 5):
+                    logger.debug("Merge point found at {} - {}".format(i, total_docs))
+                    merge_point_found = True
+
+    if merge_point_found and len(segments_to_merge) > 1:
+        for seg, i in segments_to_merge:
+            logger.info("Merging segment {} having size {}".format(i, seg.doc_count_all()))
+            reader = SegmentReader(writer.storage, writer.schema, seg)
+            writer.add_reader(reader)
+            reader.close()
+        return unchanged_segments
+    else:
+        logger.debug("No merge point found, no merge yet")
+        return segments
+

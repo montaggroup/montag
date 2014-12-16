@@ -116,7 +116,7 @@ class IndexThread(threading.Thread):
         self.progress_file.persist_mod_dates(self.min_mod_date_tomes, self.min_mod_date_authors)
 
         self.update_count += len(enriched_tomes)
-        logger.debug("{} items processed".format(self.update_count))
+        logger.debug("{} items processed in total".format(self.update_count))
 
 
 class ProgressFile():
