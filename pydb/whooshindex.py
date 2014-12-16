@@ -119,13 +119,13 @@ def MERGE_CUSTOM(writer, segments):
         count = seg.doc_count_all()
         if count > 0:
             total_docs += count
-	    logger.debug("{}: {}/{}, fib {}".format(i, count, total_docs, fib(i+5)))
-	    if merge_point_found:
-		unchanged_segments.append(seg)
-	    else:
-	        segments_to_merge.append((seg, i))
+        logger.debug("{}: {}/{}, fib {}".format(i, count, total_docs, fib(i+5)))
+        if merge_point_found:
+        unchanged_segments.append(seg)
+        else:
+            segments_to_merge.append((seg, i))
                 if i > 3 and total_docs < fib(i + 5):
-    	    	    logger.debug("Merge point found at {} - {}".format(i, total_docs))
+                    logger.debug("Merge point found at {} - {}".format(i, total_docs))
                     merge_point_found = True
 
     if merge_point_found and len(segments_to_merge) > 1:
