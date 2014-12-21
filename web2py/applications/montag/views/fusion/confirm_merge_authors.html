@@ -20,6 +20,28 @@
         {{=A("Use This Entry", _class='button', _href=URL( 'execute_merge_authors',args=[first_author['guid'], second_author['guid'], False] )) }}
     </td>
 </tr>
+<tr>
+    <td>
+        <h2>
+        {{=len(first_author_tomes)}} Tomes
+         </h2>
+        <ul class="tomes">
+          {{ for tome in first_author_tomes: }}
+          {{ show_short_tome_info_block(tome) }}
+          {{pass}}
+        </ul>
+    </td>    
+    <td>
+        <h2>
+        {{=len(second_author_tomes)}} Tomes
+        </h2>
+        <ul class="tomes">
+          {{ for tome in second_author_tomes: }}
+          {{ show_short_tome_info_block(tome) }}
+          {{pass}}
+        </ul>
+    </td>    
+</tr>    
 </table>
 {{else:}}
 Authors not found, please go back.
