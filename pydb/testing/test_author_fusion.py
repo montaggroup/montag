@@ -32,8 +32,8 @@ def build_main_db_memory_only(schema_path):
         db = pydb.foreigndb.ForeignDB(":memory:", schema_path, friend_id, enable_db_sync=False)
         return db
 
-    store_dir = None
-    db = pydb.maindb.MainDB(local_db, friends_db, merge_db, store_dir, build_foreign_db, index_server)
+    file_store = None
+    db = pydb.maindb.MainDB(local_db, friends_db, merge_db, file_store, build_foreign_db, index_server)
 
     logger.info("DBs initialized")
     return db
