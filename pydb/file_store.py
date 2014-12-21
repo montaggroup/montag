@@ -58,10 +58,10 @@ class FileStore():
                                 .format(old_hash, file_hash))
                     shutil.copyfile(source_path, cache_path)
 
-        # \todo check hash after copying to ensure it worked (e.g. disk full)
         if size != os.path.getsize(cache_path):
-            raise Exception(u"File sizes after insert do not match: {} bytes in file to insert, "
+            raise ValueError(u"File sizes after insert do not match: {} bytes in file to insert, "
                             "{} bytes in store. Cache path is {}".format(size, os.path.getsize(cache_path), cache_path))
+
         if move_file and os.path.exists(source_path):
             os.remove(source_path)
 
