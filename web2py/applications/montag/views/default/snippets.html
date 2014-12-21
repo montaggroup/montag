@@ -74,6 +74,24 @@ jQuery(document).ready(function(){
     {{pass}}
 {{return}}
 
+{{ def show_short_tome_info_block(tome): }}
+<li class="tome">
+    <div class="tome_info_paragraph">
+    <span class="tome_info_block"> {{=tome_link(tome)}} by {{=authors_links(tome['authors'])}}
+    </span><br>
+        
+       
+    {{ _show_tome_edition_line(tome) }}
+    {{=tome['principal_language']}} {{=pydb.tome_type_text(tome['type'])}} — {{=int(tome['fidelity'])}}/100
+    {{ if tome['tags']: }} —
+        {{ = tome_tag_links(tome) }}
+    {{pass}}<br>
+    </div>
+    <div class="clearfix"></div>
+</li>
+{{ return}}
+
+
 {{def show_tome_info_block(tome, include_change_info=False, show_edit_button=True, show_file_edit_button=True, additional_tome_button_html=None):}}
 <li class="tome">
     {{if include_change_info:

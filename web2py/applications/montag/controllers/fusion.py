@@ -48,13 +48,25 @@ def select_author_merge_partner():
 
     return retval
 
+def _fetch_tomes_by_author(author_id):
+    tomes = pdb.get_tomes_by_author(author_id)
+    tomes.sort(key=lambda x: x['title'])
+
+    tomelist = []
+    for tome in tomes:
+        if tome['author_link_fidelity'] > pydb.network_params.Min_Relevant_Fidelity:
+            tome = pdb.get_tome_document_with_local_overlay_by_guid(tome['guid'], include_local_file_info = True, include_author_detail=True)
+            tomelist.append(tome)
+    return tomelist
 
 def confirm_merge_authors():
     first_author_guid = request.args[0]
     first_author = pdb.get_author_by_guid(first_author_guid)
+    first_author_tomes = _fetch_tomes_by_author(first_author['id'])
 
     second_author_guid = request.args[1]
     second_author = pdb.get_author_by_guid(second_author_guid)
+    second_author_tomes = _fetch_tomes_by_author(second_author['id'])
     
     if second_author is None:
         session.flash = "Author not found"
@@ -63,7 +75,8 @@ def confirm_merge_authors():
      
     response.title = "Confirm Merge - Montag"
     
-    return {'first_author': first_author, 'second_author': second_author}
+    return {'first_author': first_author, 'first_author_tomes': first_author_tomes,
+            'second_author': second_author, 'second_author_tomes': second_author_tomes}
     
 
 def execute_merge_authors():
