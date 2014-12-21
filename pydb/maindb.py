@@ -1,12 +1,8 @@
 import os
 import uuid
-import hashlib
-import shutil
 import time
 import traceback
-import base64
 import logging
-from tempfile import mkstemp
 import sqlite3 as sqlite
 import Pyro4
 
@@ -14,15 +10,15 @@ from mergedb import MergeDB
 from localdb import LocalDB
 from friendsdb import FriendsDB
 from foreigndb import ForeignDB
-from pydb import FileType, TomeType, pyrosetup, assert_hash
+import file_store
+from pydb import FileType, TomeType, pyrosetup
 from sqlitedb import Transaction
-import ebook_metadata_tools
 from contextlib import contextmanager
 from network_params import *
 import documents
 import databases
-import disk_usage
 import config
+
 
 logger = logging.getLogger('database')
 
@@ -48,7 +44,7 @@ def build(base_path, schema_path, enable_db_sync=True):
     merge_db = MergeDB(db_path(db_dir, "merge"), schema_path, enable_db_sync=False)
     merge_db.add_source(local_db)
     friends_db = FriendsDB(db_path(db_dir, "friends"), schema_path)
-
+    file_store_ = file_store.FileStore(store_dir)
 
     def build_foreign_db(friend_id):
         foreign_db_path = db_path(db_dir, os.path.join("foreign", str(friend_id)))
@@ -57,7 +53,7 @@ def build(base_path, schema_path, enable_db_sync=True):
 
     index_server = pyrosetup.indexserver()
 
-    db = MainDB(local_db, friends_db, merge_db, store_dir, build_foreign_db, index_server)
+    db = MainDB(local_db, friends_db, merge_db, file_store_, build_foreign_db, index_server)
     db.load_foreign_dbs()
 
     logger.info("DBs initialized")
@@ -65,25 +61,20 @@ def build(base_path, schema_path, enable_db_sync=True):
 
 
 
-
 class MainDB:
-    def __init__(self, local_db, friends_db, merge_db, store_dir, build_foreign_db, index_server):
-
+    def __init__(self, local_db, friends_db, merge_db, file_store, build_foreign_db, index_server):
         self.default_add_fidelity = 50
-
         self.local_db = local_db
         self.friends_db = friends_db
         self.merge_db = merge_db
         self.foreign_dbs = {}
-        self.store_dir = store_dir
+        self.file_store = file_store
         self.index_server = index_server
 
         self.build_foreign_db = build_foreign_db
 
-
     def file_store_disk_usage(self):
-        total, used, free = disk_usage.disk_usage(self.store_dir)
-        return total, used, free
+        return self.file_store.disk_usage()
 
     def _add_foreign_db(self, friend_id):
         logger.info("Loading foreign db for friend %d" % friend_id)
@@ -112,18 +103,6 @@ class MainDB:
     def ping(self):
         """ returns a simple string to test whether the connection is working and the server is running """
         return "pong"
-
-    def _calculate_cache_path(self, file_hash):
-        assert file_hash, "Hash must not be none"
-        file_hash = file_hash.lower()
-        assert_hash(file_hash)
-        d1 = file_hash[0:2]
-        d2 = file_hash[2:4]
-
-        dir_name = os.path.join(self.store_dir, d1, d2)
-        if not os.path.exists(dir_name):
-            os.makedirs(dir_name)
-        return os.path.join(dir_name, file_hash)
 
     def get_merge_statistics(self):
         """ returns a dictionary of merge.db statistics: authors, tomes, files """
@@ -183,24 +162,11 @@ class MainDB:
         """ returns a dictionary of tag_fields for all tags linked to the given tome """
         return self.merge_db.get_tome_tags(tome_id)
 
-    def get_file_contents_base64(self, file_hash):
-        """ returns a string containing the file identified by hash. The data is encoded using base64 """
-
-        file_ext = self.get_file_extension(file_hash)
-        if file_ext is not None:
-            cache_path = self._calculate_cache_path(file_hash) + '.' + file_ext
-            logger.debug("Trying to open file " + cache_path + " for reading")
-
-            with open(cache_path, 'rb') as f:
-                data = base64.b64encode(f.read())
-                return data
-
     def get_local_file_path(self, file_hash):
         """ returns a string containing the path to the file identified by hash or None """
         file_ext = self.get_file_extension(file_hash)
         if file_ext is not None:
-            cache_path = self._calculate_cache_path(file_hash) + '.' + file_ext
-            return os.path.abspath(cache_path)
+            return self.file_store.get_local_file_path(file_hash, file_ext)
 
     def get_file_extension(self, file_hash):
         """ returns a string containing the file extension of the file identified by hash. """
@@ -211,10 +177,8 @@ class MainDB:
     def get_local_file_size(self, file_hash):
         """ returns a the file size of the file identified by hash if it's available locally. """
         fp = self.get_local_file_path(file_hash)
-        if not fp:
-            return None
-
-        return os.path.getsize(fp)
+        if fp:
+            return os.path.getsize(fp)
 
     def get_all_file_hash_translation_sources(self, target_hash):
         """ returns a list of all hashes that translate to target_hash (including target_hash) """
@@ -554,14 +518,33 @@ class MainDB:
         """
 
         # @todo we can do this in memory, too
-        temp_file, effective_hash = _strip_file_to_temp(source_path, extension_without_dot)
+        temp_file, effective_hash = file_store.strip_file_to_temp(source_path, extension_without_dot)
         if temp_file is None:
-            effective_hash = _hash_file(source_path)
+            effective_hash = file_store.hash_file(source_path)
         else:
             os.remove(temp_file)
 
         used_links = self.merge_db.get_tome_files_by_hash(effective_hash)
         return bool(used_links)
+
+
+    def execute_strip_file(self, source_path, extension, file_hash, only_allowed_hash, move_file):
+        new_filename, file_hash_after_stripping = \
+            file_store.strip_file_to_temp(source_path, extension, remove_original=move_file)
+
+        if new_filename is None:
+            return None, None
+
+        if only_allowed_hash:
+            if file_hash_after_stripping != file_hash:
+                # the file hash changed by stripping but we were ordered to only accept one hash
+                # so now we have to update the translation table to change our request behaviour
+                logger.info("Hash changed after stripping, recording translation from %s to %s" %
+                            (file_hash, file_hash_after_stripping))
+                self.local_db.add_file_hash_translation(file_hash, file_hash_after_stripping)
+                self._apply_file_hash_translation(file_hash, file_hash_after_stripping)
+
+        return file_hash_after_stripping, new_filename
 
     def add_file_from_local_disk(self, source_path, extension, only_allowed_hash=None,
                                  move_file=False, strip_file=True):
@@ -575,7 +558,7 @@ class MainDB:
         if os.path.getsize(source_path) == 0:
             raise EOFError("File is empty")
 
-        file_hash = _hash_file(source_path)
+        file_hash = file_store.hash_file(source_path)
 
         if extension[0:1] == '.':
             extension = extension[1:]
@@ -588,69 +571,21 @@ class MainDB:
 
         if strip_file:
             try:
-                new_filename, file_hash_after_stripping = \
-                    _strip_file_to_temp(source_path, extension, remove_original=move_file)
-                if new_filename is not None:
-                    if only_allowed_hash:
-                        if file_hash_after_stripping != file_hash:
-                            # the file hash changed by stripping but we were ordered to only accept one hash
-                            # so now we have to update the translation table to change our request behaviour
-                            logger.info("Hash changed after stripping, recording translation from %s to %s" %
-                                        (file_hash, file_hash_after_stripping))
-                            self.local_db.add_file_hash_translation(file_hash, file_hash_after_stripping)
-                            self._apply_file_hash_translation(file_hash, file_hash_after_stripping)
-
-                    file_hash = file_hash_after_stripping
-                    source_path = new_filename
+                new_hash, new_path = self.execute_strip_file(source_path, extension, file_hash,
+                                                                            only_allowed_hash, move_file)
+                if new_hash is not None:
                     move_file = True  # remove the temp file later
+                    source_path = new_path
+                    file_hash = new_hash
 
             except ValueError:
                 logger.warning("Could not strip file %s, seems to be broken" % source_path)
                 return None, None, None
 
-        size = os.path.getsize(source_path)
-        if size == 0:
-            raise ValueError("File is empty after stripping")
-
-        logger.debug(u"Hash is " + file_hash)
-        cache_path = self._calculate_cache_path(file_hash) + '.' + extension
-        logger.debug(u"Cache path is " + cache_path)
-
-        if move_file:
-            if not os.path.exists(cache_path):
-                logger.debug(u"move from {} to {} .".format(source_path, cache_path))
-                try:
-                    shutil.move(source_path, cache_path)
-                except:
-                    logger.debug("move had issues, continuing for now")
-            else:
-                old_hash = _hash_file(cache_path)
-                if old_hash != file_hash:
-                    logger.info(u"Old hash in file_store {} doesn't match the actual hash {} overwriting."
-                                .format(old_hash, file_hash))
-                    os.remove(cache_path)
-                    shutil.move(source_path, cache_path)
-        else:
-            if not os.path.exists(cache_path):
-                logger.debug(u"copy from {} to {} .".format(source_path, cache_path))
-                shutil.copyfile(source_path, cache_path)
-            else:
-                old_hash = _hash_file(cache_path)
-                if old_hash != file_hash:
-                    logger.info(u"Old hash in file_store {} doesn't match the actual hash {} overwriting."
-                                .format(old_hash, file_hash))
-                    shutil.copyfile(source_path, cache_path)
-
-        # \todo check hash after copying to ensure it worked (e.g. disk full)
-        if size != os.path.getsize(cache_path):
-            raise Exception(u"File sizes after insert do not match: {} bytes in file to insert, "
-                            "{} bytes in store. Cache path is {}".format(size, os.path.getsize(cache_path), cache_path))
+        size = self.file_store.add_file(source_path, file_hash, extension, move_file)
 
         local_file_id = self.local_db.add_local_file(file_hash, extension)
         self.merge_db.insert_local_file({'hash': file_hash, 'file_extension': extension})
-
-        if move_file and os.path.exists(source_path):
-            os.remove(source_path)
 
         return local_file_id, file_hash, size
 
@@ -1191,20 +1126,6 @@ class MainDB:
         self.load_own_tome_document(new_tome_doc)
 
 
-def _hash_stream(stream):
-    chunk_size_bytes = 100*1000
-
-    hash_algo = hashlib.sha256()
-    buf = stream.read(chunk_size_bytes)
-    while buf:
-        hash_algo.update(buf)
-        buf = stream.read(chunk_size_bytes)
-    return hash_algo.hexdigest()
-
-
-def _hash_file(path):
-    return _hash_stream(open(path, 'rb'))
-
 def _effective_friend_fidelity(friend_fidelity, specific_friend_deduction=Friend_Fidelity_Deduction):
     f = friend_fidelity
     f = min(f, 100)
@@ -1226,24 +1147,6 @@ def _auto_create_fidelity(merge_db_fidelity):
         return f + Fidelity_Deduction_Auto_Create
 
     return 0
-
-
-def _strip_file_to_temp(source_path, extension_without_dot, remove_original=False):
-    (handle, filename_stripped) = mkstemp(suffix='.' + extension_without_dot)
-    logger.info("Writing to file %s" % filename_stripped)
-    f = os.fdopen(handle, "w")
-
-    if ebook_metadata_tools.strip_file(source_path, extension_without_dot, f):
-        f.close()
-        if remove_original:
-            os.remove(source_path)
-        file_hash_after_stripping = _hash_file(filename_stripped)
-        return filename_stripped, file_hash_after_stripping
-
-    else:
-        f.close()
-        os.remove(filename_stripped)
-        return None, None
 
 
 @contextmanager

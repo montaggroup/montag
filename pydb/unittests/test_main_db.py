@@ -9,10 +9,12 @@ class TestMainDb(unittest.TestCase):
         local_db = mock.MagicMock()
         friends_db = mock.MagicMock()
         merge_db = mock.MagicMock()
-        store_dir = mock.MagicMock()
+        file_store = mock.MagicMock()
         build_foreign_db = mock.MagicMock()
+        index_server = mock.MagicMock()
 
-        self.main_db = main_db.MainDB(local_db, friends_db, merge_db, store_dir, build_foreign_db)
+
+        self.main_db = main_db.MainDB(local_db, friends_db, merge_db, file_store, build_foreign_db, index_server)
 
     def testPing(self):
         self.assertEqual(self.main_db.ping(), 'pong')
