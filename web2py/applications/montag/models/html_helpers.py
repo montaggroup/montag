@@ -117,6 +117,9 @@ def nice_name(name):
     tn = tn[0].upper() + tn[1:]
     return tn
 
+def nice_name_lcfirst(name):
+    tn = name.replace("_"," ")
+    return tn
     
 def nice_table_name(table_name):
     tn = table_name.replace("_"," ")

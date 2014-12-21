@@ -4,8 +4,9 @@ errors = 0
 <h1> {{=nice_name(dbname)}} </h1>
 {{ for category, items in problems.iteritems(): }}
 {{if items: }}
-<h2> {{=nice_name(category)}} </h2>
-<table>
+
+<h2 onclick="jQuery('#checkTb_{{=category}}').slideToggle(100)"> {{=len(items)}} {{=nice_name_lcfirst(category)}}  </h2>
+<table class='checkResult' id='checkTb_{{=category}}'>
 <tr>
 {{
 guid_is_tome = True
@@ -54,3 +55,12 @@ No problems found.
 {{pass}}
 
 {{pass}}
+
+
+{{def hide_all_checks():}}
+<script>
+jQuery(document).ready(function(){
+   jQuery('.checkResult').hide();
+});
+</script>
+{{return}}
