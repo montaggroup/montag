@@ -1,7 +1,6 @@
 import logging
 import os
 import shutil
-import base64
 import hashlib
 import ebook_metadata_tools
 import tempfile
@@ -23,14 +22,6 @@ class FileStore():
     def get_local_file_path(self, file_hash, file_ext):
         cache_path = self._calculate_cache_path(file_hash) + '.' + file_ext
         return os.path.abspath(cache_path)
-
-    def get_file_contents_base64(self, file_hash, file_ext):
-        cache_path = self.get_local_file_path(file_hash, file_ext)
-        logger.debug("Trying to open file " + cache_path + " for reading")
-
-        with open(cache_path, 'rb') as f:
-            data = base64.b64encode(f.read())
-            return data
 
     def add_file(self, source_path, file_hash, extension, move_file):
         size = os.path.getsize(source_path)

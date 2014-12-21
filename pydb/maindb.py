@@ -162,13 +162,6 @@ class MainDB:
         """ returns a dictionary of tag_fields for all tags linked to the given tome """
         return self.merge_db.get_tome_tags(tome_id)
 
-    def get_file_contents_base64(self, file_hash):
-        """ returns a string containing the file identified by hash. The data is encoded using base64 """
-        file_ext = self.get_file_extension(file_hash)
-
-        if file_ext is not None:
-            return self.file_store.get_file_contents_base64(file_hash, file_ext)
-
     def get_local_file_path(self, file_hash):
         """ returns a string containing the path to the file identified by hash or None """
         file_ext = self.get_file_extension(file_hash)
