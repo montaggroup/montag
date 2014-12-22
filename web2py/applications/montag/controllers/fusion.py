@@ -81,37 +81,17 @@ def confirm_merge_authors():
 
 def execute_merge_authors():
     first_author_guid = request.args[0]
-    first_author = pdb.get_author_by_guid(first_author_guid)
-
     second_author_guid = request.args[1]
-    second_author = pdb.get_author_by_guid(second_author_guid)
 
     use_data_from_first = request.args[2]
     if use_data_from_first.lower()=="false":
         use_data_from_first = False
 
+    if use_data_from_first:
+        pdb.fuse_authors(second_author_guid, target_guid=first_author_guid)
+    else:
+        pdb.fuse_authors(first_author_guid, target_guid=second_author_guid)
 
-    if first_author_guid < second_author_guid:
-        first_author_guid, second_author_guid = second_author_guid, first_author_guid
-        first_author, second_author = second_author, first_author
-        use_data_from_first = not use_data_from_first
-
-    source_author = first_author if use_data_from_first else second_author
-
-    new_author_doc = pdb.get_author_document_by_guid(first_author_guid)
-
-    required_fidelity_1 = pdb.calculate_required_author_fidelity(first_author['id'])
-    required_fidelity_2 = pdb.calculate_required_author_fidelity(second_author['id'])
-    new_author_doc['fidelity'] = max(required_fidelity_1,required_fidelity_2)  #  we are not less certain than before
-
-    new_author_doc['fusion_sources'].append({'source_guid': second_author_guid, 'fidelity':  pydb.network_params.Default_Manual_Fidelity})
-    if not use_data_from_first: # copy data from secnd entry over
-        for key,value in source_author.iteritems():
-            if key in new_author_doc:
-                if key.lower() != "guid":
-                    new_author_doc[key]=source_author[key]
-
-    pdb.load_own_author_document(new_author_doc)
     redirect(URL('default','view_author', args=(first_author_guid)))
 
 def _select_tome_merge_partner_form(first_tome):
@@ -177,7 +157,6 @@ def confirm_merge_tomes():
 
 def execute_merge_tomes():
     first_tome_guid = request.args[0]
-
     second_tome_guid = request.args[1]
 
     use_data_from_first = request.args[2]
