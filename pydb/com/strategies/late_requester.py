@@ -15,6 +15,7 @@ class LateRequester(Strategy):
         self._session = None
         self._completion_callback = None
         self._bulk_inserter = None
+        self.more_file_requests_required = False
 
     def associated(self, session, friend_id, completion_callback, bulk_inserter):
         self._session = session
@@ -37,14 +38,21 @@ class LateRequester(Strategy):
                                           self._bulk_inserter, last_query_date_authors, last_query_date_tomes)
 
     def metadata_requester_completed(self):
-        prepare_file_requester(self._main_db, self._file_requester, default_max_files_to_request)
-        self._file_requester.set_file_progress_callback(self.file_requester_reported_progress)
         self.file_requester_reported_progress(self._file_requester.queue_length(), 0)
 
+        self._start_file_requester()
+
+
+    def _start_file_requester(self):
+        self.more_file_requests_required = prepare_file_requester(self._main_db, self._file_requester, default_max_files_to_request)
         self._file_requester.activate(self._session, self._friend_id,
                                       self.file_requester_completed, self.any_requester_failed)
 
     def file_requester_completed(self):
+        if self.more_file_requests_required:
+            self._start_file_requester()
+            return
+
         self._session.request_stop_providing()
         self._update_progress('completed', 0, 0)
         self._completion_callback()

@@ -24,11 +24,16 @@ def strategy_phase_name(strategy_phase_id_):
 
 
 def prepare_file_requester(main_db, file_requester, max_files_to_request):
+    """ returns true if there are potentially more files to request """
     tome_file_hashes = main_db.get_file_hashes_to_request(max_files_to_request)
     for tome_file_hash in tome_file_hashes:
         all_source_hashes = main_db.get_all_file_hash_translation_sources(tome_file_hash)
         for source_hash in all_source_hashes:
             file_requester.queue_download_file(source_hash)
+
+    if len(tome_file_hashes) >= max_files_to_request:
+        return True
+    return False
 
 
 class Strategy(object):
