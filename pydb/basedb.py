@@ -56,7 +56,6 @@ class BaseDB(sqlitedb.SqliteDB):
             if lang not in result:
                 result[lang] = {None: 0, pydb.TomeType.Fiction: 0, pydb.TomeType.NonFiction: 0}
 
-            # \todo make a check for that in the check tool
             if tome_type not in result[lang]:
                 logger.error("Invalid tome type '{}' found in database, skipping count".format(tome_type))
                 continue
@@ -872,6 +871,11 @@ class BaseDB(sqlitedb.SqliteDB):
         add_check('tomes_completely_lowercase_with_fidelity_smaller_70',
                   from_clause='tomes',
                   where_clause='title=lower(title) AND title!=upper(title) AND fidelity < 70 AND fidelity >= ?',
+                  params=[network_params.Min_Relevant_Fidelity])
+
+        add_check('tomes_with_invalid_type',
+                  from_clause='tomes',
+                  where_clause='type IS NOT NULL AND type NOT IN (1,2) AND fidelity >= ?',
                   params=[network_params.Min_Relevant_Fidelity])
 
         add_check('tomes_with_multiple_spaces_in_title_or_subtitle',
