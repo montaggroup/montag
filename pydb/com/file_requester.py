@@ -111,7 +111,6 @@ class FileRequester(object):
         self.number_files_downloaded += 1
         logger.info("Adding file via %s" % completed_file_name)
         self.file_inserter.insert_file_in_background(completed_file_name, extension, file_hash)
-        self.comservice.release_file_after_fetching(file_hash, success=True)
 
     def _start_multipart_transfer(self, extension, file_hash):
         self.hash_of_transfer_in_progress = self.requested_hashes.popleft()
