@@ -63,7 +63,7 @@ class Reisa(QtGui.QMainWindow):
         tome_id = self.db.find_or_create_tome(title, language, author_ids, None, tome_type=tome_type,
                                               fidelity=default_fidelity)
 
-        # \todo the file might already be linked to another tome, #
+        # \todo the file might already be linked to another tome,
         # that ain't generic or completely different - we should handle that
         base, extension = os.path.splitext(file_path)
         extension = extension[1:]  # remove period
@@ -195,10 +195,9 @@ def launch_reisa():
     print "args:", cmdline_args
     cmdline_args = cmdline_args[1:]
     if cmdline_args:
-        if "reisa.py" in cmdline_args[0]:  # quick fix for windows @todo fixme
+        if "reisa.py" in cmdline_args[0]:  # quick fix for windows, here we have command line starting with the python file
             cmdline_args = cmdline_args[1:]
-            if cmdline_args:
-                ui.set_initial_path(os.path.abspath(cmdline_args[0]))
+        ui.set_initial_path(os.path.abspath(cmdline_args[0]))
 
     ui.setup_ui()
     ui.show()

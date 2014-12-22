@@ -349,7 +349,6 @@ def do_import_file_store(args, db):
         for filename in files:
             file_hash, extension = os.path.splitext(filename)
 
-            # \todo check whether we already have that file before hashing
             full_path = os.path.join(root, filename)
 
             files_to_add.append({'source_path': full_path,
@@ -608,7 +607,6 @@ parser_update_search_index.set_defaults(func=do_search)
 parser_print_stats = subparsers.add_parser('print_stats', help='prints statistics')
 parser_print_stats.set_defaults(func=do_print_stats)
 
-# \todo give this a nice name e.g. pod or something
 parser_create_file_list = subparsers.add_parser('create_file_list', help='creates a list of files needed')
 parser_create_file_list.add_argument('--max_files', help='Maximum number of files to add to list', type=int,
                                      default='100000')

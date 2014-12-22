@@ -170,12 +170,10 @@ class BaseDB(sqlitedb.SqliteDB):
             return fields
 
     def find_authors(self, author_name):
-        """ finds a author by name or pseudonym """
+        """ finds a author by name """
 
         result = []
-        # \todo look in pseudonyms, too
-        
-        name_without_wildcards = author_name.replace('%','').lower()
+        name_without_wildcards = author_name.replace('%', '').lower()
 
         for row in self.cur.execute("SELECT * FROM authors WHERE name LIKE ? ORDER BY name", [author_name]):
             fields = {key: row[key] for key in row.keys()}
