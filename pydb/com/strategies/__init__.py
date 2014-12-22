@@ -1,4 +1,4 @@
-default_max_files_to_request = 100000
+default_max_files_to_request = 10000
 
 strategy_phases = {
     'connecting': 0,
