@@ -5,6 +5,7 @@ from collections import defaultdict
 import logging
 import databases
 import pydb
+import copy
 
 logger = logging.getLogger('mergedb')
 
@@ -656,13 +657,12 @@ def merge_items_bipolar(items, group_fun):
 
     groups = defaultdict(list)
     for item in items:
-        logger.debug("Calling group on %s", str(item))
+        logger.debug("Calling group on {}".format(str(item)))
         group_id = group_fun(item)
         groups[group_id].append(item)
 
     group_winners = dict()
-    for group_id in groups:
-        members = groups[group_id]
+    for group_id, members in groups.iteritems():
         group_winners[group_id] = item_with_best_opinion_bipolar(members)
 
     return group_winners
@@ -675,22 +675,14 @@ def item_with_best_opinion_bipolar(items_of_one_group_with_same_meaning):
     if not filtered_items:
         return None
 
-    # \todo check this for correctness, stability
     min_item = min(filtered_items, key=lambda x: x['fidelity'])
-    min_fidelity = min_item['fidelity']
+    min_fidelity = min(min_item['fidelity'], 0)
+
     max_item = max(filtered_items, key=lambda x: x['fidelity'])
+    max_fidelity = max(max_item['fidelity'], 0)
 
-    max_fidelity = max_item['fidelity']
-
-    if max_fidelity > 0:  # we have at least one positive message
-        if min_fidelity < 0:  # we have at least one negative message
-            effective_fidelity = max_fidelity + min_fidelity
-        else:
-            effective_fidelity = max_fidelity
-    else:  # we do only have negative messages
-        effective_fidelity = min_fidelity
-
-    result_item = max_item
+    result_item = copy.deepcopy(max_item)
+    effective_fidelity = max_fidelity + min_fidelity
     result_item['fidelity'] = effective_fidelity
 
     return result_item

@@ -169,5 +169,58 @@ class test_get_tome_document(unittest.TestCase):
         self.assertNotIn('local_file_exists', file_link)
 
 
+class test_item_with_best_opinion_unipolar(unittest.TestCase):
+    def test_having_two_items_with_different_fidelity_the_max_fidelity_item_is_returned(self):
+
+        item_a = {'fidelity': 30, 'text': 'a'}
+        item_b = {'fidelity': 40, 'text': 'b'}
+
+        result = mergedb.item_with_best_opinion_unipolar([item_a, item_b])
+
+        self.assertEqual(result['fidelity'], 40)
+        self.assertEqual(result['text'], 'b')
+
+
+class test_item_with_best_opinion_bipolar(unittest.TestCase):
+    def setUp(self):
+        self.item_a = {'fidelity': 30, 'text': 'a'}
+        self.item_b = {'fidelity': 40, 'text': 'a'}
+        self.item_c = {'fidelity': -10, 'text': 'a'}
+
+    def test_having_only_one_item_returns_that(self):
+        result = mergedb.item_with_best_opinion_bipolar([self.item_a])
+        self.assertEqual(result['fidelity'], 30)
+
+    def test_having_two_items_with_positive_fidelity_it_will_return_the_max(self):
+        result = mergedb.item_with_best_opinion_bipolar([self.item_a, self.item_b])
+        self.assertEqual(result['fidelity'], 40)
+
+    def test_having_two_items_with_positive_and_negative_fidelity_it_will_return_the_difference_as_effective_fidelity(self):
+        result = mergedb.item_with_best_opinion_bipolar([self.item_a, self.item_c])
+        self.assertEqual(result['fidelity'], 20)
+
+
+class test_merge_items_bipolar(unittest.TestCase):
+    def setUp(self):
+        self.item_a = {'fidelity': 30, 'text': 'a'}
+        self.item_a_neg = {'fidelity': -5, 'text': 'a'}
+        self.item_b = {'fidelity': 40, 'text': 'b'}
+
+    def test_having_only_one_item_returns_that(self):
+        result = mergedb.merge_items_bipolar([self.item_a], lambda x: x['text'])
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result['a']['fidelity'], 30)
+
+    def test_having_two_different_items_returns_those(self):
+        result = mergedb.merge_items_bipolar([self.item_a, self.item_b], lambda x: x['text'])
+        self.assertEqual(len(result), 2)
+        self.assertEqual(result['a']['fidelity'], 30)
+        self.assertEqual(result['b']['fidelity'], 40)
+
+    def test_having_two_diffent_opinions_negative_and_positive_and_effective_value_will_be_calculated(self):
+        result = mergedb.merge_items_bipolar([self.item_a, self.item_a_neg], lambda x: x['text'])
+        self.assertEqual(len(result), 1)
+        self.assertEqual(result['a']['fidelity'], 25)
+
 if __name__ == '__main__':
     unittest.main()
