@@ -49,7 +49,6 @@ class WhooshIndex:
         for tome in enriched_tomes:
             full_title_text = title.coalesce_title(tome['title'], tome['subtitle'])
 
-            # @todo add pseudonyms
             author_text = u' '.join([author['name'] for author in tome['authors']])
 
             tag_text = u','.join(tag['tag_value'] for tag in tome['tags'])

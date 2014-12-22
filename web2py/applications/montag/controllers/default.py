@@ -81,7 +81,6 @@ def _convert_ebook(contents, source_extension, target_extension):
     
 
 def _stream_tome_file(tome_id, tome_file, contents_stream):
-    # \todo error handling for tome or tome_file not found    
     tome = pdb.get_tome(tome_id)
     tome_doc = pdb.get_tome_document_by_guid(tome['guid'])
 

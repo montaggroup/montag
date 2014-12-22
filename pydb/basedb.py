@@ -56,7 +56,6 @@ class BaseDB(sqlitedb.SqliteDB):
             if lang not in result:
                 result[lang] = {None: 0, pydb.TomeType.Fiction: 0, pydb.TomeType.NonFiction: 0}
 
-            # \todo make a check for that in the check tool
             if tome_type not in result[lang]:
                 logger.error("Invalid tome type '{}' found in database, skipping count".format(tome_type))
                 continue
@@ -171,12 +170,10 @@ class BaseDB(sqlitedb.SqliteDB):
             return fields
 
     def find_authors(self, author_name):
-        """ finds a author by name or pseudonym """
+        """ finds a author by name """
 
         result = []
-        # \todo look in pseudonyms, too
-        
-        name_without_wildcards = author_name.replace('%','').lower()
+        name_without_wildcards = author_name.replace('%', '').lower()
 
         for row in self.cur.execute("SELECT * FROM authors WHERE name LIKE ? ORDER BY name", [author_name]):
             fields = {key: row[key] for key in row.keys()}
@@ -872,6 +869,11 @@ class BaseDB(sqlitedb.SqliteDB):
         add_check('tomes_completely_lowercase_with_fidelity_smaller_70',
                   from_clause='tomes',
                   where_clause='title=lower(title) AND title!=upper(title) AND fidelity < 70 AND fidelity >= ?',
+                  params=[network_params.Min_Relevant_Fidelity])
+
+        add_check('tomes_with_invalid_type',
+                  from_clause='tomes',
+                  where_clause='type IS NOT NULL AND type NOT IN (1,2) AND fidelity >= ?',
                   params=[network_params.Min_Relevant_Fidelity])
 
         add_check('tomes_with_multiple_spaces_in_title_or_subtitle',

@@ -1097,25 +1097,19 @@ class MainDB:
         return uuid.uuid4().hex
 
     def fuse_tomes(self, source_guid, target_guid):
-        """ fuses two the tome identified by source_guid into target_guid -
-         so that afterwards the fused tome has the tome data fiven by target_guid) """
+        """ fuses the tome identified by source_guid into target_guid -
+         so that afterwards the fused tome has the tome data given by target_guid) """
         source_tome = self.get_tome_by_guid(source_guid)
         target_tome = self.get_tome_by_guid(target_guid)
 
         data_tome = target_tome
-
-        fidelity = Default_Manual_Fidelity
 
         if target_guid < source_guid:  # this is not allowed by db, switch
             source_guid, target_guid = target_guid, source_guid
             source_tome, target_tome = target_tome, source_tome
 
         new_tome_doc = self.get_tome_document_by_guid(target_guid)
-        new_tome_doc['fusion_sources'].append({'source_guid': source_guid, 'fidelity': fidelity})
 
-        required_fidelity_1 = self.calculate_required_tome_fidelity(source_tome['id'])
-        required_fidelity_2 = self.calculate_required_tome_fidelity(target_tome['id'])
-        new_tome_doc['fidelity'] = max(required_fidelity_1, required_fidelity_2)  # we are not less certain than before
 
         if data_tome != target_tome:  # copy data from data tome over
             for key, value in data_tome.iteritems():
@@ -1123,8 +1117,43 @@ class MainDB:
                     if key.lower() != "guid":
                         new_tome_doc[key] = data_tome[key]
 
+
+        required_fidelity_1 = self.calculate_required_tome_fidelity(source_tome['id'])
+        required_fidelity_2 = self.calculate_required_tome_fidelity(target_tome['id'])
+        new_tome_doc['fidelity'] = max(required_fidelity_1, required_fidelity_2)  # we are not less certain than before
+        new_tome_doc['fusion_sources'].append({'source_guid': source_guid, 'fidelity': Default_Manual_Fidelity})
+
+
         self.load_own_tome_document(new_tome_doc)
 
+    def fuse_authors(self, source_guid, target_guid):
+        """ fuses the author identified by source_guid into target_guid -
+         so that afterwards the fused author has the data given by target_guid) """
+        source_author = self.get_author_by_guid(source_guid)
+        target_author = self.get_author_by_guid(target_guid)
+
+        data_author = target_author
+
+        if target_guid < source_guid:  # this is not allowed by db, switch
+            source_guid, target_guid = target_guid, source_guid
+            source_author, target_author = target_author, source_author
+
+        new_author_doc = self.get_author_document_by_guid(target_guid)
+
+        if data_author != target_author:  # copy data from data author over
+            for key, value in data_author.iteritems():
+                if key in new_author_doc:
+                    if key.lower() not in ("guid"):
+                        new_author_doc[key] = data_author[key]
+
+
+        required_fidelity_1 = self.calculate_required_author_fidelity(source_author['id'])
+        required_fidelity_2 = self.calculate_required_author_fidelity(target_author['id'])
+        new_author_doc['fidelity'] = max(required_fidelity_1, required_fidelity_2)  # we are not less certain than before
+        new_author_doc['fusion_sources'].append({'source_guid': source_guid, 'fidelity': Default_Manual_Fidelity})
+
+
+        self.load_own_author_document(new_author_doc)
 
 def _effective_friend_fidelity(friend_fidelity, specific_friend_deduction=Friend_Fidelity_Deduction):
     f = friend_fidelity
