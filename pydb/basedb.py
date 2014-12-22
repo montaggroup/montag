@@ -818,7 +818,7 @@ class BaseDB(sqlitedb.SqliteDB):
                   where_clause="(LENGTH(name) - LENGTH(REPLACE(name, ' ', ''))) > 5 AND fidelity < 70 AND fidelity >=?",
                   params=[network_params.Min_Relevant_Fidelity])
 
-        add_check('authors_with_a_commas_in_name_and_fidelity_smaller_70',
+        add_check('authors_with_commas_in_name_and_fidelity_smaller_70',
                   from_clause='authors',
                   where_clause="name LIKE '%,%' AND fidelity < 70 AND fidelity >=?",
                   params=[network_params.Min_Relevant_Fidelity])
