@@ -819,7 +819,7 @@ class BaseDB(sqlitedb.SqliteDB):
                   params=[network_params.Min_Relevant_Fidelity])
                   
         add_check('files_with_strange_extension',
-                  from_clause="files inner join tomes on tomes.id=files.tome_id",
+                  from_clause="files INNER JOIN tomes ON tomes.id=files.tome_id",
                   where_clause="file_extension not in "
                                "('epub', 'mobi', 'pdf','txt','pdb','jpg','html','lit','djvu','EPUB', 'rtf', 'azw3', 'png', 'gif') "
                                "AND files.fidelity >=?",
@@ -827,9 +827,9 @@ class BaseDB(sqlitedb.SqliteDB):
                   params=[network_params.Min_Relevant_Fidelity])
 
         add_check('authors_with_identical_names',
-                  from_clause="authors a1 inner join authors a2 ON a1.name=a2.name",
+                  from_clause="authors a1 INNER JOIN authors a2 ON a1.name=a2.name COLLATE NOCASE",
                   where_clause="a1.guid != a2.guid AND a1.fidelity >=? AND a2.fidelity >=?",
-                  order_by_clause="a1.name",
+                  order_by_clause="a1.name COLLATE NOCASE",
                   params=[network_params.Min_Relevant_Fidelity, network_params.Min_Relevant_Fidelity])
 
         add_check('authors_with_multiple_spaces_in_name',
@@ -838,8 +838,8 @@ class BaseDB(sqlitedb.SqliteDB):
                   params=[network_params.Min_Relevant_Fidelity])
 
         add_check('files_linked_to_multiple_tomes',
-                  from_clause="files f1 inner join tomes on tomes.id=f1.tome_id",
-                  where_clause="(select count(*) from files f2 where f1.hash=f2.hash AND f2.fidelity >= ?) > 1 "
+                  from_clause="files f1 INNER JOIN tomes ON tomes.id=f1.tome_id",
+                  where_clause="(SELECT count(*) from files f2 where f1.hash=f2.hash AND f2.fidelity >= ?) > 1 "
                                "AND f1.fidelity >=?",
                   order_by_clause="f1.hash",
                   params=[network_params.Min_Relevant_Fidelity, network_params.Min_Relevant_Fidelity])
