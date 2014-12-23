@@ -16,7 +16,7 @@ def edit_covers():
     available_covers = []
     available_content = []
 
-    relevant_files = filter(lambda f: f['fidelity'] >  pydb.network_params.Min_Relevant_Fidelity, tome['files'])
+    relevant_files = relevant_items(tome['files'])
     relevant_local_files = filter(lambda f: f['has_local_copy'], relevant_files)
 
     for tome_file in relevant_local_files:

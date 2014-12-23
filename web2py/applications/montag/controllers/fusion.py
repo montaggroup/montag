@@ -54,7 +54,7 @@ def _fetch_tomes_by_author(author_id):
 
     tomelist = []
     for tome in tomes:
-        if tome['author_link_fidelity'] > pydb.network_params.Min_Relevant_Fidelity:
+        if tome['author_link_fidelity'] >= pydb.network_params.Min_Relevant_Fidelity:
             tome = pdb.get_tome_document_with_local_overlay_by_guid(tome['guid'], include_local_file_info = True, include_author_detail=True)
             tomelist.append(tome)
     return tomelist

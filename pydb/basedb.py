@@ -42,14 +42,14 @@ class BaseDB(sqlitedb.SqliteDB):
 
     def get_used_languages(self):
         rows = self.cur.execute(
-            "SELECT DISTINCT(principal_language) FROM tomes WHERE fidelity > ?", [network_params.Min_Relevant_Fidelity])
+            "SELECT DISTINCT(principal_language) FROM tomes WHERE fidelity >= ?", [network_params.Min_Relevant_Fidelity])
         result = [row[0] for row in rows]
         return result
 
     def get_tome_statistics(self):
         result = {}
         rows = self.cur.execute(
-            "SELECT type, principal_language, count(*) FROM tomes WHERE fidelity > ? GROUP BY type, principal_language",
+            "SELECT type, principal_language, count(*) FROM tomes WHERE fidelity >= ? GROUP BY type, principal_language",
             [network_params.Min_Relevant_Fidelity])
         for row in rows:
             tome_type, lang, count = row

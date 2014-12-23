@@ -92,3 +92,10 @@ def friend_name(friend_id):
 
 def get_used_languages():
     return pdb.get_used_languages()
+
+def is_relevant(item):
+    return item['fidelity'] >= pydb.network_params.Min_Relevant_Fidelity
+
+def relevant_items(iterable):
+    return ( i for i in iterable if is_relevant(i) )
+    

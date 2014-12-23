@@ -1,3 +1,4 @@
+
 # -*- coding: utf-8 -*-
 import os
 import subprocess
@@ -184,7 +185,7 @@ def view_author():
 
     tomelist = []
     for tome in tomes:
-        if tome['author_link_fidelity'] > pydb.network_params.Min_Relevant_Fidelity:
+        if tome['author_link_fidelity'] >= pydb.network_params.Min_Relevant_Fidelity:
             tome = pdb.get_tome_document_with_local_overlay_by_guid(tome['guid'], include_local_file_info = True, include_author_detail=True)
             tomelist.append(tome)
 
@@ -400,7 +401,7 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
     form= _tome_edit_form(tome_id, tome_doc)
     synforms = list()
     
-    relevant_synopses = filter(lambda f: f['fidelity'] >  pydb.network_params.Min_Relevant_Fidelity, tome_doc['synopses'])
+    relevant_synopses = relevant_items(tome_doc['synopses'])
     tome_doc['synopses'] = relevant_synopses
     for synopsis in relevant_synopses:
         synforms.append(_tome_synopses_form(synopsis))

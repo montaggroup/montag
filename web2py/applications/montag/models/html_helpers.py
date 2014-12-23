@@ -15,7 +15,7 @@ def _concat_link_list(link_list):
     return result
 
 def authors_links(author_link_infos):
-    links=[ author_link(author_link_info['detail']) for author_link_info in author_link_infos if author_link_info['fidelity'] > pydb.network_params.Min_Relevant_Fidelity ]
+    links=[ author_link(author_link_info['detail']) for author_link_info in relevant_items(author_link_infos) ]
     return _concat_link_list(links)
 
 def search_link(text, query, class_="search_link"):
@@ -28,7 +28,7 @@ def tag_link(tag_text):
 def title_by_authors_link(title_text, author_link_infos):
     search_title_text = re.sub("Preceded by ","",title_text)
     search_title_text = re.sub("Followed by ","",search_title_text)
-    search_authors_text = ''.join([ u'author:"{}"'.format(author_link_info['detail']['name']) for author_link_info in author_link_infos if author_link_info['fidelity'] > pydb.network_params.Min_Relevant_Fidelity])
+    search_authors_text = ''.join([ u'author:"{}"'.format(author_link_info['detail']['name']) for author_link_info in relevant_items(author_link_infos) ])
     search_text = u'title:"{}"'.format(search_title_text) + " " + search_authors_text
     return search_link(title_text,search_text, class_="tag_link")
 
