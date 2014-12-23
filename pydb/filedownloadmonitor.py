@@ -22,11 +22,14 @@ class FileDownloadMonitor():
         # unlocks an item
         self.locked_items.remove(file_hash)
 
-    def set_completed(self, file_hash):
+    def set_completed_and_unlock(self, file_hash):
         # sets a file as completed
         # can only be called if the file is currently locked
         # an unlock call is required afterwards
+        self.completed_items.add(file_hash)
+
         if file_hash not in self.locked_items:
             raise KeyError("Hash {} not locked in set_completed".format(file_hash))
-        self.completed_items.add(file_hash)
+
+        self.locked_items.remove(file_hash)
 

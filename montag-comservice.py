@@ -17,7 +17,7 @@ if __name__ == "__main__":
     multiprocessing.freeze_support()
     import pydb.pyrosetup
 
-    cs = pydb.comservice.ComService()
+    cs = pydb.comservice.build()
 
     parser = argparse.ArgumentParser(description='Runs the communication client service')
     parser.add_argument('--name', '-n', dest='pyro_name', help='Sets the Pyro4 name for the server', action='store',
