@@ -401,7 +401,7 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
     form= _tome_edit_form(tome_id, tome_doc)
     synforms = list()
     
-    relevant_synopses = filter(lambda f: f['fidelity'] >= pydb.network_params.Min_Relevant_Fidelity, tome_doc['synopses'])
+    relevant_synopses = relevant_items(tome_doc['synopses'])
     tome_doc['synopses'] = relevant_synopses
     for synopsis in relevant_synopses:
         synforms.append(_tome_synopses_form(synopsis))

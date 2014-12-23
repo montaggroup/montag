@@ -39,7 +39,7 @@ Tome not found in database.
 
     <div class="tome_file_info">
     <br/>
-    {{ relevant_files = filter(lambda f: f['file_type']==pydb.FileType.Content and f['fidelity'] >= pydb.network_params.Min_Relevant_Fidelity, tome['files'])}}
+    {{ relevant_files = filter(lambda f: f['file_type']==pydb.FileType.Content and is_relevant(f), tome['files'])}}
     {{if relevant_files: }}
       {{show_tome_file_block(tome)}}
     {{else:}}
