@@ -14,7 +14,7 @@ logger = logging.getLogger('basedb')
 
 class BaseDB(sqlitedb.SqliteDB):
     def __init__(self, db_file_path, schema_dir, init_sql_file, enable_db_sync):
-        logger.info("Loading db from %s" % db_file_path)
+        logger.info("Loading db from {}".format(db_file_path))
 
         sqlitedb.SqliteDB.__init__(self, db_file_path, schema_dir)
 
@@ -242,11 +242,9 @@ class BaseDB(sqlitedb.SqliteDB):
     def get_tome_author_entry(self, tome_id, author_id):
         """ returns the item for the tome <-> author connection, None if no link """
 
-        # logger.info( "T%s A%s N%s", str(tome_id), str(author_id), self.filename
         for row in self.con.execute("SELECT * FROM tomes_authors WHERE tome_id=? AND author_id=?",
                                     [tome_id, author_id]):
             fields = {key: row[key] for key in row.keys()}
-            logger.debug("Tome author fields: %s", repr(fields))
             return fields
 
     def get_tome_author_entry_by_guid(self, tome_guid, author_guid):
@@ -588,10 +586,10 @@ class BaseDB(sqlitedb.SqliteDB):
             stuff might not have been changed at all - but mergedb will detect that
         """
         if 'prepared' not in doc:
-            raise ValueError("Tome doc not prepared: %s", doc)
+            raise ValueError("Tome doc not prepared: {}".format(doc))
         guid = doc['guid']
 
-        logger.debug("Applying update for tome %s" % guid)
+        logger.debug("Applying update for tome {} {}".format(guid, doc))
 
         # check authors for existence to avoid inserting incomplete entries
         author_links = []
