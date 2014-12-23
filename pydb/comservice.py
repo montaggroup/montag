@@ -6,7 +6,7 @@ import Pyro4
 import sys
 import time
 import logging
-
+import filedownloadmonitor
 
 logger = logging.getLogger('comservice')
 
@@ -50,14 +50,12 @@ class Job():
 
 
 class ComService():
-    def __init__(self):
+    def __init__(self, file_download_monitor):
         # job id -> (process, progress_array)
         self.jobs = {}
         self.last_job_id = 0
 
-        # \todo replace this with the file monitor
-        self.locked_files = set()
-        self.completed_files = set()
+        self.file_download_monitor = file_download_monitor
 
     def clean_jobs(self):
         for job_id, job in self.jobs.items():
@@ -129,30 +127,21 @@ class ComService():
     def lock_file_for_fetching(self, file_hash):
         """ @returns "locked" for lock successful, "busy" for lock busy, and "completed" for download already completed
         """
-        if file_hash in self.completed_files:
-            # print "lock_file_for_fetching: {} {}".format(file_hash,"completed")
-            return "completed"
 
-        if file_hash in self.locked_files:
-            # print "lock_file_for_fetching: {} {}".format(file_hash,"busy")
-            return "busy"
+        code_translation = {
+            None: 'completed',
+            True: 'locked',
+            False: 'busy'
+        }
 
-        self.locked_files.add(file_hash)
-        # print "lock_file_for_fetching: {} {}".format(file_hash,"locked")
-        return "locked"
+        lock_result = self.file_download_monitor.try_lock(file_hash)
+        return code_translation[lock_result]
 
     def release_file_after_fetching(self, file_hash, success):
-        if file_hash not in self.locked_files:
-            raise KeyError("Hash {} not locked".format(file_hash))
-
         if success:
-            # print "release_file_after_fetching: {} {}".format(file_hash,"after success")
-            self.completed_files.add(file_hash)
+            self.file_download_monitor.set_completed_and_unlock(file_hash)
         else:
-            # print "release_file_after_fetching: {} {}".format(file_hash,"after fail")
-            pass
-
-        self.locked_files.remove(file_hash)
+            self.file_download_monitor.unlock(file_hash)
 
     # functions for external job creation
     def register_job(self, name, friend_id):
@@ -184,6 +173,11 @@ class ComService():
         job.progress_array[1] = current_items_done
 
 
+def build():
+    file_download_monitor = filedownloadmonitor.FileDownloadMonitor()
+    return ComService(file_download_monitor)
+
+
 def exec_fetch_updates(friend_id, current_phase_store, progress_array):
     # noinspection PyUnresolvedReferences
     sys.excepthook = Pyro4.util.excepthook
@@ -191,7 +185,7 @@ def exec_fetch_updates(friend_id, current_phase_store, progress_array):
 
     db = pyrosetup.pydbserver()
     comm_data_store = pyrosetup.comm_data_store()
-    comservice = pyrosetup.comservice()
+    com_service = pyrosetup.comservice()
 
     if db.ping() != "pong":
         raise ValueError("Unable to talk to server, is it running?")
@@ -202,9 +196,9 @@ def exec_fetch_updates(friend_id, current_phase_store, progress_array):
         raise ValueError("No friend by that id found")
 
     friend_comm_data = comm_data_store.get_comm_data(friend_id)
-    cc = com.client.ComClient(db, friend_id, friend_comm_data, comservice)
+    cc = com.client.ComClient(db, friend_id, friend_comm_data, com_service)
 
-    strategy = com.master_strategy.construct_master_client_strategy(db, comservice)
+    strategy = com.master_strategy.construct_master_client_strategy(db, com_service)
 
     def update_progress(current_phase, progress_arg_1, progress_arg_2):
         current_phase_store.value = current_phase
