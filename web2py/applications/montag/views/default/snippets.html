@@ -31,7 +31,7 @@ pass
 {{def show_tome_file_block(tome, show_edit_button=True):}}
     <ul class="files" id="tome_file_block_{{=next_tome_block_id()}}" >
       {{
-        relevant_files = filter(lambda f: f['file_type']==pydb.FileType.Content and f['fidelity'] >  pydb.network_params.Min_Relevant_Fidelity, tome['files'])
+        relevant_files = filter(lambda f: f['file_type']==pydb.FileType.Content and f['fidelity'] >= pydb.network_params.Min_Relevant_Fidelity, tome['files'])
         for file in relevant_files:}}
       <li> 
       {{if 'has_local_copy' in file and file['has_local_copy']:
