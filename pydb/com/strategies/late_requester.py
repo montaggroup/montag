@@ -38,6 +38,7 @@ class LateRequester(Strategy):
                                           self._bulk_inserter, last_query_date_authors, last_query_date_tomes)
 
     def metadata_requester_completed(self):
+        self._file_requester.set_file_progress_callback(self.file_requester_reported_progress)
         self.file_requester_reported_progress(self._file_requester.queue_length(), 0)
 
         self._start_file_requester()

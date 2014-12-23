@@ -1,4 +1,8 @@
+import logging
+
 default_max_files_to_request = 100000
+
+logger = logging.getLogger('strategies')
 
 strategy_phases = {
     'connecting': 0,
@@ -26,6 +30,7 @@ def strategy_phase_name(strategy_phase_id_):
 def prepare_file_requester(main_db, file_requester, max_files_to_request):
     """ returns true if there are potentially more files to request """
     tome_file_hashes = main_db.get_file_hashes_to_request(max_files_to_request)
+    logger.debug('Enqueing {} files for download'.format(len(tome_file_hashes)))
     for tome_file_hash in tome_file_hashes:
         all_source_hashes = main_db.get_all_file_hash_translation_sources(tome_file_hash)
         for source_hash in all_source_hashes:
