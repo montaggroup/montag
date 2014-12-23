@@ -1,6 +1,7 @@
 import threading
 import os
 from pydb import mergedb
+from network_params import relevant_items
 import whooshindex
 import json
 import logging
@@ -90,8 +91,8 @@ class IndexThread(threading.Thread):
             tome = self.merge_db.get_tome_by_guid(tome_guid)
             if tome:
                 tome_id = tome['id']
-                tome['authors'] = self.merge_db.get_tome_authors(tome_id)
-                tome['tags'] = self.merge_db.get_tome_tags(tome_id)
+                tome['authors'] = list(relevant_items(self.merge_db.get_tome_authors(tome_id)))
+                tome['tags'] = list(relevant_items(self.merge_db.get_tome_tags(tome_id)))
                 tomes_with_authors_and_tags.append(tome)
             else:
                 deleted_tome_guids.append(tome_guid)
