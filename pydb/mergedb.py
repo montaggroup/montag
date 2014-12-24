@@ -595,15 +595,15 @@ class MergeDB(pydb.basedb.BaseDB):
                                [min_modification_date]).fetchone()
         return row[0]
 
-    def get_newest_modified_document_guids(self, doc_type, max_count):
+    def get_newest_modified_document_guids(self, doc_type, max_count, offset=0):
         """ returns a list of doc guids """
         table_name = doc_type + "_document_changes"
         result = []
 
         rows = self.con.execute(
             "SELECT document_guid FROM " + table_name + " "
-                                                        "ORDER BY last_modification_date DESC LIMIT ?",
-            [max_count])
+                                                        "ORDER BY last_modification_date DESC LIMIT ? OFFSET ?",
+            [max_count, offset])
 
         for row in rows:
             guid = row['document_guid']

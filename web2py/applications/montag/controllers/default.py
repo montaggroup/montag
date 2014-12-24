@@ -2,14 +2,15 @@
 import os
 import subprocess
 import cStringIO
-import time
 from pydb import FileType, TomeType
 import pydb.title
 import pydb.ebook_metadata_tools
+import pydb.pyrosetup
+import pydb.network_params
 import tempfile
 import json
-import pydb.pyrosetup
-import uuid
+import re
+
 
 def getfile():
     tome_id = request.args[0]
@@ -22,10 +23,12 @@ def getfile():
 
     return _stream_tome_file(tome_id, tome_file, plain_file)
 
+
 def getfile_as_mobi():
     tome_id = request.args[0]
     file_hash = request.args[1]
     return _get_converted_file(tome_id, file_hash, 'mobi')
+
 
 def getfile_as_epub():
     tome_id = request.args[0]
@@ -130,21 +133,19 @@ def get_cover():
 
 
 def timeline():
-    history_days = 1
     tome_limit = 50
+    offset = 0
     
-    min_modification_date_tomes = time.time()-history_days*3600*24
-    min_modification_date_authors = time.time()+1000  # no authors
-
-    changed_tome_guids = pdb.get_tome_document_timeline(tome_limit)
+    changed_tome_guids = pdb.get_tome_document_timeline(tome_limit, offset)
     
     response.title = "Timeline - Montag"
     tomelist = []
     for tome_index, tome_guid in enumerate(changed_tome_guids):
-       tome = pdb.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info = True, include_author_detail=True)
-       if 'title' in tome:
-           tome['index'] = tome_index+1
-           tomelist.append(tome)
+        tome = pdb.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info=True,
+                                                               include_author_detail=True)
+        if 'title' in tome:
+            tome['index'] = tome_index+1
+            tomelist.append(tome)
 
     return {
         'tome_info': tomelist, 'title': 'Timeline'
@@ -156,7 +157,8 @@ def random_tomes():
     tomes = pdb.get_random_tomes(20)
     tomelist = []
     for tome_index, tome_info in enumerate(tomes):
-        tome = pdb.get_tome_document_with_local_overlay_by_guid(tome_info['guid'], include_local_file_info = True, include_author_detail=True)
+        tome = pdb.get_tome_document_with_local_overlay_by_guid(tome_info['guid'], include_local_file_info=True,
+                                                                include_author_detail=True)
         tome['index'] = tome_index+1
         tomelist.append(tome)
 
@@ -164,9 +166,11 @@ def random_tomes():
         'tome_info': tomelist, 'title': 'Random Tomes'
     }
 
+
 def timeline_json():
     result = timeline()
     return json.dumps(result['tome_info'])
+
 
 def view_author():
     author_guid = request.args[0]
@@ -248,7 +252,7 @@ def edit_author():
     author_doc = pdb.get_author_document_with_local_overlay_by_guid(author_guid)
     if author_doc is None:
         session.flash = "No such author"
-        reditrect(URL('tomesearch'))
+        redirect(URL('tomesearch'))
 
     field_names = ['name', 'date_of_birth', 'date_of_death', 'fidelity']
 
@@ -330,17 +334,18 @@ def _tome_synopses_form(synopsis):
         )
     return form
 
+
 class tag_validator:
     def __init__(self, format="a", error_message="b"):
         pass
         
     def __call__(self, field_value):
-        used_tag_values=set()
+        used_tag_values = set()
         tags = []
         
-        field_value=field_value.decode('utf-8')
+        field_value = field_value.decode('utf-8')
         for line_index, line in enumerate(field_value.split("\n")):
-            line=line.strip()
+            line = line.strip()
             if line:
                 fidelity = pydb.network_params.Default_Manual_Fidelity
                 value = line
@@ -352,7 +357,7 @@ class tag_validator:
                     except ValueError:
                         pass
                 
-                value=value.strip()
+                value = value.strip()
                 if value in used_tag_values:
                     return None,u"Duplicate tag names entered: {}".format(value)
                 used_tag_values.add(value)
@@ -360,7 +365,7 @@ class tag_validator:
         return tags, None
      
     def formatter(self, value):
-        tags=value
+        tags = value
         return "\n".join(["%.1f %s" %(tag['fidelity'], tag['tag_value'].encode('utf-8')) for tag in tags])
 
 def add_synopsis_to_tome():
