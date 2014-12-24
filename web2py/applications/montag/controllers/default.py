@@ -133,10 +133,17 @@ def get_cover():
 
 
 def timeline():
-    tome_limit = 50
-    offset = 0
+    items_per_page = 20
+
+    page_number = 0
+    if 'page' in request.vars:
+        page_number = int(request.vars.page)
     
-    changed_tome_guids = pdb.get_tome_document_timeline(tome_limit, offset)
+    page_start = page_number * items_per_page
+    page_end = (page_number+1) * items_per_page
+    number_results_total = pdb.get_tome_document_timeline_size()
+
+    changed_tome_guids = pdb.get_tome_document_timeline(items_per_page, page_start)
     
     response.title = "Timeline - Montag"
     tomelist = []
@@ -148,7 +155,12 @@ def timeline():
             tomelist.append(tome)
 
     return {
-        'tome_info': tomelist, 'title': 'Timeline'
+        'tome_info': tomelist,
+        'title': 'Timeline',
+        'page': page_number,
+        'page_start': page_start,
+        'page_end': page_end,
+        'number_results_total': number_results_total
     }
 
 def random_tomes():

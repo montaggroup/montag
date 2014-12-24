@@ -595,6 +595,14 @@ class MergeDB(pydb.basedb.BaseDB):
                                [min_modification_date]).fetchone()
         return row[0]
 
+    def get_number_of_modified_documents(self, doc_type):
+        """ returns the number of changed documents of a given doc_type
+        """
+        table_name = doc_type + "_document_changes"
+
+        row = self.con.execute("SELECT count(document_guid) FROM " + table_name).fetchone()
+        return row[0]
+
     def get_newest_modified_document_guids(self, doc_type, max_count, offset=0):
         """ returns a list of doc guids """
         table_name = doc_type + "_document_changes"
@@ -610,7 +618,7 @@ class MergeDB(pydb.basedb.BaseDB):
 
             result.append(guid)
         return result
-
+        
     def insert_local_file(self, local_file):
         databases.insert_local_file(self.con, local_file)
         self.update_local_file_exists(local_file['hash'])
