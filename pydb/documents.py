@@ -143,7 +143,10 @@ def overlay_local_items(mergedb_items, localdb_items, key_name):
             local_fidelity = local_item['fidelity']
             merge_fidelity = merge_item['fidelity']
             if abs(local_fidelity) > abs(merge_fidelity) or local_fidelity * merge_fidelity < 0:
-                overlaid_items.append(local_item)
+                new_item = copy.deepcopy(local_item)
+                if 'id' in merge_item:
+                    new_item['id'] = merge_item['id']
+                overlaid_items.append(new_item)
             else:
                 overlaid_items.append(merge_item)
         else:
