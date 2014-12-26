@@ -73,6 +73,15 @@ class test_overlay_document(unittest.TestCase):
         result_author = result_authors[0]
         self.assertEqual(result_author['id'], 14)
 
+    def test_overlay_local_db_author_gets_detail_merge_db_id_if_overwritten(self):
+        merge_document = {'authors': [{'guid': '1234', 'fidelity': 80,'detail': {'id': 14}}]}
+        local_document = {'authors': [{'guid': '1234', 'fidelity': -10, 'detail': {'id': 12}}]}
+
+        overlay = documents.overlay_document(merge_document, local_document)
+        result_authors = overlay['authors']
+        result_author = result_authors[0]
+        self.assertEqual(result_author['detail']['id'], 14)
+
 
 
 class TestPrepareTomeDocument(unittest.TestCase):
