@@ -1,3 +1,6 @@
+Taken from https://raw.githubusercontent.com/futurepress/epub.js/master/license :
+
+
 Copyright (c) 2013, FuturePress
 
 All rights reserved.
