@@ -1,11 +1,15 @@
 {{extend 'layout.html'}}
 {{include 'default/snippets.html'}}
+{{include 'default/paging_controls.html'}}
 
 {{hide_all_files()}}
 </script>
+{{show_paging_controls()}}
+
 <ul class="tomes">
   {{ for tome in tome_info: }}
     {{ show_tome_info_block(tome, include_change_info=False, show_file_edit_button=False) }}
   {{pass}}
 </ul>
-{{pass}}
+
+{{show_paging_controls()}}

@@ -970,10 +970,13 @@ class MainDB:
         number_changed_tomes = self.merge_db.changed_documents_count('tome', min_modification_date_tomes)
         return number_changed_authors, number_changed_tomes
 
-    def get_tome_document_timeline(self, max_items_to_fetch):
+    def get_tome_document_timeline(self, max_items_to_fetch, offset):
         """ returns a list of tuples ( tome_guid, last_mod_date)"""
-        doc_list = self.merge_db.get_newest_modified_document_guids('tome', max_items_to_fetch)
+        doc_list = self.merge_db.get_newest_modified_document_guids('tome', max_items_to_fetch, offset)
         return doc_list
+        
+    def get_tome_document_timeline_size(self):
+        return self.merge_db.get_number_of_modified_documents('tome')
 
     # concept of generic author
     # if there is more than one author with the same name, we'll add to the one without a
