@@ -79,6 +79,12 @@ class TestFileRequesterLocking(unittest.TestCase):
         self.failure_callback = mock.MagicMock()
 
 
+        def mock_insert_file_in_background(completed_file_name, extension, file_hash):
+            self.comservice.release_file_after_fetching(file_hash, success=True)
+
+        self.file_inserter.insert_file_in_background.side_effect = mock_insert_file_in_background
+
+
     def test_empty(self):
         pass
 

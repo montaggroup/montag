@@ -15,3 +15,7 @@ Default_Manual_Fidelity = 80
 
 def is_relevant(entry):
     return entry['fidelity'] >= Min_Relevant_Fidelity
+
+
+def relevant_items(iterable):
+    return (i for i in iterable if is_relevant(i))

@@ -6,7 +6,7 @@ import copy
 
 web2py_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
 pydb_dir = web2py_dir
-for i in range(0,4):
+for i in range(0, 4):
     pydb_dir, _ = os.path.split(pydb_dir)
 
 if not pydb_dir in sys.path:
@@ -14,6 +14,7 @@ if not pydb_dir in sys.path:
 
 import pydb
 import pydb.network_params
+from pydb.network_params import is_relevant, relevant_items
 import pydb.title
 import pydb.config
 import pydb.pyrosetup
@@ -58,9 +59,8 @@ def add_job_infos_to_friends_dict(friends_by_id, com_service, jobs):
 
 def progress_text(com_service, job_id, current_phase):
     arg1, arg2 = com_service.get_job_progress(job_id)
-    progress = "Unknown"
 
-    if current_phase=='providing':
+    if current_phase == 'providing':
         docs_provided, files_provided = arg1, arg2
         return "{} docs, {} files".format(docs_provided, files_provided)
     
@@ -72,18 +72,20 @@ def progress_text(com_service, job_id, current_phase):
         
 
 def format_job_status(job_info):
-    job_status ="completed" if not job_info['is_running'] else ""
-    if job_info['current_phase']!='completed':
+    job_status = "completed" if not job_info['is_running'] else ""
+    if job_info['current_phase'] != 'completed':
         job_status += " " + nice_name(job_info['current_phase'])
     job_status += " "+job_info['progress']
     return job_status
 
 
-response.breadcrumb_bar=request.function.replace('_', ' ').title()
+response.breadcrumb_bar = request.function.replace('_', ' ').title()
 
 _friend_name_cache = {0: 'You'}
+
+
 def friend_name(friend_id):
-    if not friend_id in _friend_name_cache:
+    if friend_id not in _friend_name_cache:
         friend = pdb.get_friend(friend_id)
         _friend_name_cache[friend_id] = friend['name']
 
@@ -93,9 +95,3 @@ def friend_name(friend_id):
 def get_used_languages():
     return pdb.get_used_languages()
 
-def is_relevant(item):
-    return item['fidelity'] >= pydb.network_params.Min_Relevant_Fidelity
-
-def relevant_items(iterable):
-    return ( i for i in iterable if is_relevant(i) )
-    
