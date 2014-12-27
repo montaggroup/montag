@@ -34,20 +34,25 @@ left_sidebar_enabled=True
     });
 
     book.ready.all.then(function(){
-        document.getElementById("loader").style.display = "none";
         if(initialBookPosition) {
             book.gotoCfi(initialBookPosition);
         }
     });
-    
+
+    var firstTimeLocationChangeDone = false;
     book.renderer.on("renderer:locationChanged", function(newLocation) {
         var newHash = "#"+newLocation;
+        // don't change the location the first time as it is the initial load => title page
+        if(!location.hash && !firstTimeLocationChangeDone)
+        {
+            firstTimeLocationChangeDone = true;
+            return;
+        }
+
         if (location.hash != newHash)
             location.hash = newHash;
-        
+
     });
-    
-    
 </script>
 
 
@@ -71,11 +76,10 @@ $("body").on("keydown", function(e){
             || e.keyCode === 39 // right
             || e.keyCode === 32 // space
            ) {
-        
-       book.nextPage();      
+
+       book.nextPage();
     }
 })
-    
 
 initialBookPosition = null;
 if(location.hash) {
@@ -84,13 +88,26 @@ if(location.hash) {
 
 book.renderTo("reader_area");
 
+function showLoader()
+{
+    document.getElementById("loader").style.display = "block";
+}
+
+function hideLoader()
+{
+    document.getElementById("loader").style.display = "none";
+}
+
+book.on('renderer:chapterDisplayed', hideLoader);
+book.on('renderer:chapterUnloaded', showLoader);
+
 </script>
 
 
 {{block left_sidebar}}
 <div id="toc_container">
 <ul id="toc">
-    
-</ul>    
+
+</ul>
 </div>
 {{end}}
