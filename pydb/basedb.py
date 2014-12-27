@@ -815,7 +815,7 @@ class BaseDB(sqlitedb.SqliteDB):
 
         add_check('authors_with_commas_in_name_and_fidelity_smaller_70',
                   from_clause='authors',
-                  where_clause="name LIKE '%,%' AND fidelity < 70 AND fidelity >=?",
+                  where_clause="name LIKE '%,%' AND name not LIKE '%, Jr.%' AND fidelity < 70 AND fidelity >=?",
                   params=[network_params.Min_Relevant_Fidelity])
                   
         add_check('files_with_strange_extension',
