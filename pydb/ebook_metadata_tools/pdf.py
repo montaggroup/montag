@@ -1,10 +1,9 @@
 import sys
 import optparse
-
+import PyPDF2
 
 def extract_fulltext(source_stream):
-    from PyPDF2.pdf import PdfFileReader
-    pdf = PdfFileReader(source_stream)
+    pdf = PyPDF2.PdfFileReader(source_stream)
     content = ""
 
     for i in range(0, pdf.getNumPages()):
@@ -22,7 +21,26 @@ def add_metadata(source_stream, output_stream, author_docs, tome_doc, tome_file)
 
 # noinspection PyUnusedLocal
 def get_metadata(instream):
-    return {'author_names': []}
+    pdf = PyPDF2.PdfFileReader(instream)
+    doc_info = pdf.getDocumentInfo()
+    print doc_info
+
+    result = {'author_names': []}
+
+    for key, value in doc_info.iteritems():
+        key = key.lower()
+        value = unicode(value).strip()
+        if not value:
+            continue
+
+        if key == "/author":
+            result['author_names'].append(value)
+        elif key == '/title':
+            result['title'] = value
+        elif key == '/subtitle':
+            result['subtitle'] = value
+
+    return result
 
 
 # noinspection PyUnusedLocal
@@ -49,9 +67,14 @@ if __name__ == "__main__":
 
         print 'extracting...\n'
         infilestream = open(infile, "rb")
-        fulltext = extract_fulltext(infilestream)
-        print 'completed:\n'
-        print fulltext
+
+
+        # fulltext = extract_fulltext(infilestream)
+        # print 'completed:\n'
+        # print fulltext
+
+        metadata = get_metadata(infilestream)
+        print metadata
 
         return 0
 
