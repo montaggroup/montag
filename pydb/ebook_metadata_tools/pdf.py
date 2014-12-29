@@ -45,7 +45,10 @@ def get_metadata(instream):
 
 # noinspection PyUnusedLocal
 def clear_metadata(source_stream, output_stream):
-    return False
+    merger = PyPDF2.PdfFileMerger()
+    merger.append(source_stream)
+    merger.write(output_stream)
+    return True
 
 
 def is_responsible_for_extension(extension):
@@ -73,8 +76,11 @@ if __name__ == "__main__":
         # print 'completed:\n'
         # print fulltext
 
-        metadata = get_metadata(infilestream)
-        print metadata
+        #metadata = get_metadata(infilestream)
+        #print metadata
+
+        outs = file("out.pdf", "w+b")
+        clear_metadata(infilestream, outs)
 
         return 0
 
