@@ -16,7 +16,21 @@ def extract_fulltext(source_stream):
 
 # noinspection PyUnusedLocal
 def add_metadata(source_stream, output_stream, author_docs, tome_doc, tome_file):
-    return False
+    merger = PyPDF2.PdfFileMerger()
+    merger.append(source_stream)
+
+    author_names = [author_doc['name'] for author_doc in author_docs]
+    metadata = {
+        '/Author': ', '.join(author_names),
+        '/Title': tome_doc['title']
+    }
+
+    if tome_doc['subtitle']:
+        metadata['/Subtitle'] = tome_doc['subtitle']
+
+    merger.addMetadata(metadata)
+    merger.write(output_stream)
+    return True
 
 
 # noinspection PyUnusedLocal
@@ -79,8 +93,8 @@ if __name__ == "__main__":
         #metadata = get_metadata(infilestream)
         #print metadata
 
-        outs = file("out.pdf", "w+b")
-        clear_metadata(infilestream, outs)
+        #outs = file("out.pdf", "w+b")
+        #clear_metadata(infilestream, outs)
 
         return 0
 
