@@ -28,6 +28,17 @@ date_broken_sample = """<?xml version="1.0" encoding="utf-8" standalone="no"?>
 </package>
 """
 
+date_empty_sample = """<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<package xmlns="http://www.idpf.org/2007/opf" unique-identifier="12345" version="2.0">
+  <metadata xmlns:dc="http://purl.org/dc/elements/1.1/">
+      <dc:creator>some body</dc:creator>
+      <dc:date/>
+  </metadata>
+  <manifest/>
+  <spine/>
+  <guide/>
+</package>
+"""
 
 class test_epub_get_metadata(unittest.TestCase):
     def test_empty_of_does_not_lead_to_error(self):
@@ -49,6 +60,11 @@ class test_epub_get_metadata(unittest.TestCase):
         self.assertEqual(result['author_names'][0], 'some body')
         self.assertNotIn('publication_year', result)
 
+    def test_empty_date_tag_does_not_lead_to_error(self):
+        result = epub.get_metadata_from_opf_string(date_empty_sample)
+        self.assertEqual(len(result['author_names']), 1)
+        self.assertEqual(result['author_names'][0], 'some body')
+        self.assertNotIn('publication_year', result)
 
 if __name__ == '__main__':
     unittest.main()

@@ -154,6 +154,8 @@ def get_metadata_from_opf_string(opf_content):
                 result['author_names'].append(metadata_tag.text)
             elif re.match(".*date$", metadata_tag.tag):
                 def only_year(iso_date):
+                    if iso_date is None:
+                        return None
                     m = re.match("^[0-9]{4}", iso_date)
                     if m is None:
                         return None
