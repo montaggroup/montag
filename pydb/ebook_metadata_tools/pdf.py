@@ -54,6 +54,8 @@ def get_metadata(instream):
         logger.error("Caught an pypdf error: {}, skipping metadata read".format(e.message))
         return result
 
+    if doc_info is None:
+        return result
 
     for key, value in doc_info.iteritems():
         key = key.lower()
