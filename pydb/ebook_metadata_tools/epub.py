@@ -96,36 +96,40 @@ def clear_metadata(instream, outstream):
 
 
 def add_metadata(instream, outstream, author_docs, tome_doc, tome_file):
-    with zipfile.ZipFile(instream, 'r') as inzip:
-        opf_path = _get_path_of_content_opf(inzip)
-        opf_content = _read_content_opf(inzip, opf_path)
+    try:
+        with zipfile.ZipFile(instream, 'r') as inzip:
+            opf_path = _get_path_of_content_opf(inzip)
+            opf_content = _read_content_opf(inzip, opf_path)
 
-        root = etree.fromstring(opf_content)
-        for main_element in root:
-            logger.debug("main el %s" % main_element.tag)
-            if re.match(".*metadata$", main_element.tag):
-                logger.debug("Found metadata tag, cleaning")
+            root = etree.fromstring(opf_content)
+            for main_element in root:
+                logger.debug("main el %s" % main_element.tag)
+                if re.match(".*metadata$", main_element.tag):
+                    logger.debug("Found metadata tag, cleaning")
 
-                while list(main_element):  # do not remove using a for loop - this will skip elements in python 2.7.5!
-                    node_to_remove = list(main_element)[0]
-                    logger.debug("Removing node %s" % node_to_remove.tag)
-                    main_element.remove(node_to_remove)
+                    while list(main_element):  # do not remove using a for loop - this will skip elements in python 2.7.5!
+                        node_to_remove = list(main_element)[0]
+                        logger.debug("Removing node %s" % node_to_remove.tag)
+                        main_element.remove(node_to_remove)
 
-                for author_doc in author_docs:
-                    author_el = etree.SubElement(main_element, "{http://purl.org/dc/elements/1.1/}creator",
-                                                 {"{http://www.idpf.org/2007/opf}role": "aut"})
-                    author_el.text = author_doc['name']
-                title_el = etree.SubElement(main_element, "{http://purl.org/dc/elements/1.1/}title")
-                title_el.text = title.coalesce_title(tome_doc['title'], tome_doc['subtitle'])
-                language_el = etree.SubElement(main_element, "{http://purl.org/dc/elements/1.1/}language")
-                language_el.text = tome_doc['principal_language']
-                # \todo more tags, e.g. file hash in relation or tome guid in source
+                    for author_doc in author_docs:
+                        author_el = etree.SubElement(main_element, "{http://purl.org/dc/elements/1.1/}creator",
+                                                     {"{http://www.idpf.org/2007/opf}role": "aut"})
+                        author_el.text = author_doc['name']
+                    title_el = etree.SubElement(main_element, "{http://purl.org/dc/elements/1.1/}title")
+                    title_el.text = title.coalesce_title(tome_doc['title'], tome_doc['subtitle'])
+                    language_el = etree.SubElement(main_element, "{http://purl.org/dc/elements/1.1/}language")
+                    language_el.text = tome_doc['principal_language']
+                    # \todo more tags, e.g. file hash in relation or tome guid in source
 
-        with zipfile.ZipFile(outstream, 'w') as outzip:
-            _copy_zip_contents(inzip, outzip, [opf_path])
+            with zipfile.ZipFile(outstream, 'w') as outzip:
+                _copy_zip_contents(inzip, outzip, [opf_path])
 
-            new_content = etree.tostring(root)
-            _write_content_opf(outzip, opf_path, new_content)
+                new_content = etree.tostring(root)
+                _write_content_opf(outzip, opf_path, new_content)
+    except zipfile.BadZipfile:
+        raise ValueError("Unable to open epub zip")
+
     instream.seek(0)
     return True
 
