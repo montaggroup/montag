@@ -107,7 +107,7 @@ class BaseDB(sqlitedb.SqliteDB):
 
         if subtitle_filter_text:
             pre_result = result
-            result = [tome for tome in pre_result if tome['subtitle'] == subtitle_filter_text]
+            result = [tome for tome in pre_result if tome['subtitle'].lower() == subtitle_filter_text.lower()]
 
         if authors_filter and len(
                 authors_filter) > 0:  # if a authors filter is given, the tome must have at least the given authors
