@@ -53,6 +53,10 @@ def get_metadata(instream):
     except PyPDF2.utils.PdfReadError as e:
         logger.error("Caught an pypdf error: {}, skipping metadata read".format(e.message))
         return result
+    except TypeError as e:
+        logger.error("Caught an pypdf error: {}, skipping metadata read".format(e.message))
+        return result
+
 
     if doc_info is None:
         return result
