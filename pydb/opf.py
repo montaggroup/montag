@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import logging
+import re
 
 logger = logging.getLogger('opf')
 
@@ -33,6 +34,12 @@ class Metadata:
     def from_file(cls, filename):
         from lxml import etree
 
+        def clean_string(string):
+            string = string.strip()
+            string = re.sub("  +", " ", string)
+            return string
+
+
         parser = etree.XMLParser(ns_clean=True)
         tree = etree.parse(filename, parser)
         root = tree.getroot()
@@ -42,22 +49,23 @@ class Metadata:
             if child.tag.endswith('metadata'):
                 for meta in child:
                     logger.debug("%s %s %s", meta.tag, meta.attrib, meta.text)
+                    text = clean_string(meta.text)
                     if meta.tag.endswith('title'):
-                        result.title = meta.text
+                        result.title = text
                     elif meta.tag.endswith('language'):
-                        result.language = meta.text
+                        result.language = text
                     elif meta.tag.endswith('creator'):
-                        result.authors.append(meta.text)
+                        result.authors.append(text)
                     elif meta.tag.endswith('subject'):
-                        result.tags.append(meta.text)
+                        result.tags.append(text)
                     elif meta.tag.endswith('meta'):
                         attrib = meta.attrib['name']
                         if attrib == 'calibre:title_sort':
-                            result.title_sort = meta.attrib['content']
+                            result.title_sort = clean_string(meta.attrib['content'])
                         elif attrib == 'calibre:series':
-                            result.series = meta.attrib['content']
+                            result.series = clean_string(meta.attrib['content'])
                         elif attrib == 'calibre:series_index':
-                            result.series_index = meta.attrib['content']
+                            result.series_index = clean_string(meta.attrib['content'])
 
         return result
 
