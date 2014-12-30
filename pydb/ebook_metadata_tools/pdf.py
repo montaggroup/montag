@@ -45,11 +45,15 @@ def add_metadata(source_stream, output_stream, author_docs, tome_doc, tome_file)
 
 # noinspection PyUnusedLocal
 def get_metadata(instream):
-    pdf = PyPDF2.PdfFileReader(instream)
-    doc_info = pdf.getDocumentInfo()
-    print doc_info
-
     result = {'author_names': []}
+
+    try:
+        pdf = PyPDF2.PdfFileReader(instream)
+        doc_info = pdf.getDocumentInfo()
+    except PyPDF2.utils.PdfReadError as e:
+        logger.error("Caught an pypdf error: {}, skipping metadata read".format(e.message))
+        return result
+
 
     for key, value in doc_info.iteritems():
         key = key.lower()
