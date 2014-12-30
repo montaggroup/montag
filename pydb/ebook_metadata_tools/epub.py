@@ -129,8 +129,6 @@ def add_metadata(instream, outstream, author_docs, tome_doc, tome_file):
     instream.seek(0)
     return True
 
-logging.basicConfig(level=logging.DEBUG)
-
 
 def get_metadata_from_opf_string(opf_content):
     result = {'author_names': []}
