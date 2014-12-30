@@ -137,6 +137,12 @@ def add_metadata(instream, outstream, author_docs, tome_doc, tome_file):
 def get_metadata_from_opf_string(opf_content):
     result = {'author_names': []}
 
+    def clean_string(string):
+        if string is None:
+            return None
+        string = re.sub('  +', ' ', string)
+        return string.strip()
+
     try:
         root = etree.fromstring(opf_content)
     except etree.ParseError:
@@ -150,27 +156,29 @@ def get_metadata_from_opf_string(opf_content):
             continue
 
         for metadata_tag in main_element:
+            text = clean_string(metadata_tag.text)
+            if text is None:
+                continue
+            
             if re.match(".*title$", metadata_tag.tag):
-                result['title'] = metadata_tag.text
+                result['title'] = text
             elif re.match(".*language$", metadata_tag.tag):
-                result['principal_language'] = metadata_tag.text
+                result['principal_language'] = text
             elif re.match(".*creator$", metadata_tag.tag):
-                result['author_names'].append(metadata_tag.text)
+                result['author_names'].append(text)
             elif re.match(".*date$", metadata_tag.tag):
                 def only_year(iso_date):
-                    if iso_date is None:
-                        return None
                     m = re.match("^[0-9]{4}", iso_date)
                     if m is None:
                         return None
                     else:
                         return m.group(0)
 
-                publication_year = only_year(metadata_tag.text)
+                publication_year = only_year(text)
                 if publication_year is not None:
                     result['publication_year'] = publication_year
             else:
-                logger.debug("Found unsupported tag {} => {}".format(metadata_tag.tag, metadata_tag.text))
+                logger.debug("Found unsupported tag {} => {}".format(metadata_tag.tag, text))
 
     return result
 
