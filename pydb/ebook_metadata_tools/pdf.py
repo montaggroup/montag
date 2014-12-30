@@ -1,10 +1,13 @@
 import sys
 import optparse
+import PyPDF2
+import PyPDF2.utils
+import logging
 
+logger = logging.getLogger("ebook_metadata_tools.pdf")
 
 def extract_fulltext(source_stream):
-    from PyPDF2.pdf import PdfFileReader
-    pdf = PdfFileReader(source_stream)
+    pdf = PyPDF2.PdfFileReader(source_stream)
     content = ""
 
     for i in range(0, pdf.getNumPages()):
@@ -17,17 +20,63 @@ def extract_fulltext(source_stream):
 
 # noinspection PyUnusedLocal
 def add_metadata(source_stream, output_stream, author_docs, tome_doc, tome_file):
-    return False
+
+    try:
+        merger = PyPDF2.PdfFileMerger()
+        merger.append(source_stream)
+
+        author_names = [author_doc['name'] for author_doc in author_docs]
+        metadata = {
+            '/Author': ', '.join(author_names),
+            '/Title': tome_doc['title']
+        }
+
+        if tome_doc['subtitle']:
+            metadata['/Subtitle'] = tome_doc['subtitle']
+
+        merger.addMetadata(metadata)
+        merger.write(output_stream)
+        return True
+    except PyPDF2.utils.PdfReadError as e:
+        logger.error("Caught an pypdf error: {}, skipping metadata add".format(e.message))
+        return False
+
 
 
 # noinspection PyUnusedLocal
 def get_metadata(instream):
-    return {'author_names': []}
+    pdf = PyPDF2.PdfFileReader(instream)
+    doc_info = pdf.getDocumentInfo()
+    print doc_info
+
+    result = {'author_names': []}
+
+    for key, value in doc_info.iteritems():
+        key = key.lower()
+        value = unicode(value).strip()
+        if not value:
+            continue
+
+        if key == "/author":
+            result['author_names'].append(value)
+        elif key == '/title':
+            result['title'] = value
+        elif key == '/subtitle':
+            result['subtitle'] = value
+
+    return result
 
 
 # noinspection PyUnusedLocal
 def clear_metadata(source_stream, output_stream):
-    return False
+    try:
+        merger = PyPDF2.PdfFileMerger()
+        merger.append(source_stream)
+        merger.write(output_stream)
+        return True
+    except PyPDF2.utils.PdfReadError as e:
+        logger.error("Caught an pypdf error: {}, skipping metadata erase".format(e.message))
+        return False
 
 
 def is_responsible_for_extension(extension):
@@ -49,9 +98,17 @@ if __name__ == "__main__":
 
         print 'extracting...\n'
         infilestream = open(infile, "rb")
-        fulltext = extract_fulltext(infilestream)
-        print 'completed:\n'
-        print fulltext
+
+
+        # fulltext = extract_fulltext(infilestream)
+        # print 'completed:\n'
+        # print fulltext
+
+        #metadata = get_metadata(infilestream)
+        #print metadata
+
+        #outs = file("out.pdf", "w+b")
+        #clear_metadata(infilestream, outs)
 
         return 0
 
