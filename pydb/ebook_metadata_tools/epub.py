@@ -184,12 +184,14 @@ def get_metadata_from_opf_string(opf_content):
 
 
 def get_metadata(instream):
-    with zipfile.ZipFile(instream, 'r') as inzip:
-        opf_path = _get_path_of_content_opf(inzip)
-        opf_content = _read_content_opf(inzip, opf_path)
+    try:
+        with zipfile.ZipFile(instream, 'r') as inzip:
+            opf_path = _get_path_of_content_opf(inzip)
+            opf_content = _read_content_opf(inzip, opf_path)
 
-        result = get_metadata_from_opf_string(opf_content)
-
+            result = get_metadata_from_opf_string(opf_content)
+    except zipfile.BadZipfile:
+        raise ValueError("Unable to open epub zip")
     instream.seek(0)
     return result
 
