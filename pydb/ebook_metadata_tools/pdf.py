@@ -1,6 +1,10 @@
 import sys
 import optparse
 import PyPDF2
+import PyPDF2.utils
+import logging
+
+logger = logging.getLogger("ebook_metadata_tools.pdf")
 
 def extract_fulltext(source_stream):
     pdf = PyPDF2.PdfFileReader(source_stream)
@@ -16,21 +20,27 @@ def extract_fulltext(source_stream):
 
 # noinspection PyUnusedLocal
 def add_metadata(source_stream, output_stream, author_docs, tome_doc, tome_file):
-    merger = PyPDF2.PdfFileMerger()
-    merger.append(source_stream)
 
-    author_names = [author_doc['name'] for author_doc in author_docs]
-    metadata = {
-        '/Author': ', '.join(author_names),
-        '/Title': tome_doc['title']
-    }
+    try:
+        merger = PyPDF2.PdfFileMerger()
+        merger.append(source_stream)
 
-    if tome_doc['subtitle']:
-        metadata['/Subtitle'] = tome_doc['subtitle']
+        author_names = [author_doc['name'] for author_doc in author_docs]
+        metadata = {
+            '/Author': ', '.join(author_names),
+            '/Title': tome_doc['title']
+        }
 
-    merger.addMetadata(metadata)
-    merger.write(output_stream)
-    return True
+        if tome_doc['subtitle']:
+            metadata['/Subtitle'] = tome_doc['subtitle']
+
+        merger.addMetadata(metadata)
+        merger.write(output_stream)
+        return True
+    except PyPDF2.utils.PdfReadError as e:
+        logger.error("Caught an pypdf error: {}, skipping metadata add".format(e.message))
+        return False
+
 
 
 # noinspection PyUnusedLocal
@@ -59,10 +69,14 @@ def get_metadata(instream):
 
 # noinspection PyUnusedLocal
 def clear_metadata(source_stream, output_stream):
-    merger = PyPDF2.PdfFileMerger()
-    merger.append(source_stream)
-    merger.write(output_stream)
-    return True
+    try:
+        merger = PyPDF2.PdfFileMerger()
+        merger.append(source_stream)
+        merger.write(output_stream)
+        return True
+    except PyPDF2.utils.PdfReadError as e:
+        logger.error("Caught an pypdf error: {}, skipping metadata erase".format(e.message))
+        return False
 
 
 def is_responsible_for_extension(extension):
