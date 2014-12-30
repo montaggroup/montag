@@ -16,7 +16,11 @@ def show_database_check():
     return {'check_result': check_result}
 
 def show_database_content_check():
-    check_result = pdb.check_merge_db_for_content_problems()
+    filter_string = None
+    if request.args:
+        filter_string = request.args[0]
+    
+    check_result = pdb.check_merge_db_for_content_problems(filter_string)
     response.title = "Database Content Check Result - Montag"
     
     return {'check_result': check_result}

@@ -897,8 +897,8 @@ class MainDB:
                                                                                         max_file_size_bytes,
                                                                                         max_results))
 
-    def check_merge_db_for_content_problems(self):
-        return self.merge_db.check_for_content_problems()
+    def check_merge_db_for_content_problems(self, filter_string=None):
+        return self.merge_db.check_for_content_problems(filter_string)
 
     def check_databases_for_consistency_problems(self):
         result = {

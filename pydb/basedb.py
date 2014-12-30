@@ -801,10 +801,22 @@ class BaseDB(sqlitedb.SqliteDB):
 
         return problems
 
-    def check_for_content_problems(self):
+    def check_for_content_problems(self, filter_string=None):
+        """ filter_string = None => show all
+            filter_string = __list__ => show no items, just list the checks
+            filter_string = something => only execute checks with "something" in name
+        """
+    
         problems = {}
 
         def add_check(name, from_clause, where_clause, order_by_clause=None, params=()):
+            if filter_string is not None:
+                if filter_string == "__list__":
+                    problems[name] = []
+                    return
+                elif filter_string not in name:
+                    return
+        
             items = self.get_rows(from_clause, where_clause, order_by_clause, params)
             problems[name] = items
 
