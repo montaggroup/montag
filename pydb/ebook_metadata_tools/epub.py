@@ -129,41 +129,54 @@ def add_metadata(instream, outstream, author_docs, tome_doc, tome_file):
     instream.seek(0)
     return True
 
+logging.basicConfig(level=logging.DEBUG)
+
+
+def get_metadata_from_opf_string(opf_content):
+    result = {'author_names': []}
+
+    try:
+        root = etree.fromstring(opf_content)
+    except etree.ParseError:
+        logger.error("Unable to parse opf xml")
+        return result
+
+    for main_element in root:
+        logger.debug("looking at main element {}".format(main_element.tag))
+
+        if not re.match(".*metadata$", main_element.tag):
+            continue
+
+        for metadata_tag in main_element:
+            if re.match(".*title$", metadata_tag.tag):
+                result['title'] = metadata_tag.text
+            elif re.match(".*language$", metadata_tag.tag):
+                result['principal_language'] = metadata_tag.text
+            elif re.match(".*creator$", metadata_tag.tag):
+                result['author_names'].append(metadata_tag.text)
+            elif re.match(".*date$", metadata_tag.tag):
+                def only_year(iso_date):
+                    m = re.match("^[0-9]{4}", iso_date)
+                    if m is None:
+                        return None
+                    else:
+                        return m.group(0)
+
+                publication_year = only_year(metadata_tag.text)
+                if publication_year is not None:
+                    result['publication_year'] = publication_year
+            else:
+                logger.debug("Found unsupported tag {} => {}".format(metadata_tag.tag, metadata_tag.text))
+
+    return result
+
 
 def get_metadata(instream):
-    result = {'author_names': []}
     with zipfile.ZipFile(instream, 'r') as inzip:
         opf_path = _get_path_of_content_opf(inzip)
         opf_content = _read_content_opf(inzip, opf_path)
 
-        root = etree.fromstring(opf_content)
-        for main_element in root:
-            logger.debug("main el %s", main_element.tag)
-            if re.match(".*metadata$", main_element.tag):
-                for metadata_tag in main_element:
-                    if re.match(".*title$", metadata_tag.tag):
-                        result['title'] = metadata_tag.text
-                    elif re.match(".*language$", metadata_tag.tag):
-                        result['principal_language'] = metadata_tag.text
-                    # \todo creator might have different sub types
-                    elif re.match(".*creator$", metadata_tag.tag):
-                        def fix_author_name(author_name):
-                            m = re.match("(.+) *, *(.+)", author_name)
-                            if m:
-                                return m.group(2) + " " + m.group(1)
-                            return author_name
-
-                        result['author_names'].append(fix_author_name(metadata_tag.text))
-                    # \todo date might have different sub types
-                    elif re.match(".*date$", metadata_tag.tag):
-                        def only_year(isodate):
-                            m = re.match("^[0-9]{4}", isodate)
-                            return m.group(0)
-
-                        result['publication_year'] = only_year(metadata_tag.text)
-                    else:
-                        logger.debug("Found %s => %s" % (metadata_tag.tag, metadata_tag.text))
-                        pass
+        result = get_metadata_from_opf_string(opf_content)
 
     instream.seek(0)
     return result
@@ -180,5 +193,4 @@ if __name__ == "__main__":
     outs = file("out.epub", "w+b")
     clear_metadata(ins, outs)
     # print get_metadata(ins)
-
 
