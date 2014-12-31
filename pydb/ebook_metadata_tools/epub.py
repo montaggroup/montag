@@ -96,75 +96,102 @@ def clear_metadata(instream, outstream):
 
 
 def add_metadata(instream, outstream, author_docs, tome_doc, tome_file):
-    with zipfile.ZipFile(instream, 'r') as inzip:
-        opf_path = _get_path_of_content_opf(inzip)
-        opf_content = _read_content_opf(inzip, opf_path)
+    try:
+        with zipfile.ZipFile(instream, 'r') as inzip:
+            opf_path = _get_path_of_content_opf(inzip)
+            opf_content = _read_content_opf(inzip, opf_path)
 
-        root = etree.fromstring(opf_content)
-        for main_element in root:
-            logger.debug("main el %s" % main_element.tag)
-            if re.match(".*metadata$", main_element.tag):
-                logger.debug("Found metadata tag, cleaning")
+            root = etree.fromstring(opf_content)
+            for main_element in root:
+                logger.debug("main el %s" % main_element.tag)
+                if re.match(".*metadata$", main_element.tag):
+                    logger.debug("Found metadata tag, cleaning")
 
-                while list(main_element):  # do not remove using a for loop - this will skip elements in python 2.7.5!
-                    node_to_remove = list(main_element)[0]
-                    logger.debug("Removing node %s" % node_to_remove.tag)
-                    main_element.remove(node_to_remove)
+                    while list(main_element):  # do not remove using a for loop - this will skip elements in python 2.7.5!
+                        node_to_remove = list(main_element)[0]
+                        logger.debug("Removing node %s" % node_to_remove.tag)
+                        main_element.remove(node_to_remove)
 
-                for author_doc in author_docs:
-                    author_el = etree.SubElement(main_element, "{http://purl.org/dc/elements/1.1/}creator",
-                                                 {"{http://www.idpf.org/2007/opf}role": "aut"})
-                    author_el.text = author_doc['name']
-                title_el = etree.SubElement(main_element, "{http://purl.org/dc/elements/1.1/}title")
-                title_el.text = title.coalesce_title(tome_doc['title'], tome_doc['subtitle'])
-                language_el = etree.SubElement(main_element, "{http://purl.org/dc/elements/1.1/}language")
-                language_el.text = tome_doc['principal_language']
-                # \todo more tags, e.g. file hash in relation or tome guid in source
+                    for author_doc in author_docs:
+                        author_el = etree.SubElement(main_element, "{http://purl.org/dc/elements/1.1/}creator",
+                                                     {"{http://www.idpf.org/2007/opf}role": "aut"})
+                        author_el.text = author_doc['name']
+                    title_el = etree.SubElement(main_element, "{http://purl.org/dc/elements/1.1/}title")
+                    title_el.text = title.coalesce_title(tome_doc['title'], tome_doc['subtitle'])
+                    language_el = etree.SubElement(main_element, "{http://purl.org/dc/elements/1.1/}language")
+                    language_el.text = tome_doc['principal_language']
+                    # \todo more tags, e.g. file hash in relation or tome guid in source
 
-        with zipfile.ZipFile(outstream, 'w') as outzip:
-            _copy_zip_contents(inzip, outzip, [opf_path])
+            with zipfile.ZipFile(outstream, 'w') as outzip:
+                _copy_zip_contents(inzip, outzip, [opf_path])
 
-            new_content = etree.tostring(root)
-            _write_content_opf(outzip, opf_path, new_content)
+                new_content = etree.tostring(root)
+                _write_content_opf(outzip, opf_path, new_content)
+    except zipfile.BadZipfile:
+        raise ValueError("Unable to open epub zip")
+
     instream.seek(0)
     return True
 
 
-def get_metadata(instream):
+def get_metadata_from_opf_string(opf_content):
     result = {'author_names': []}
-    with zipfile.ZipFile(instream, 'r') as inzip:
-        opf_path = _get_path_of_content_opf(inzip)
-        opf_content = _read_content_opf(inzip, opf_path)
 
+    def clean_string(string):
+        if string is None:
+            return None
+        string = re.sub('  +', ' ', string)
+        return string.strip()
+
+    try:
         root = etree.fromstring(opf_content)
-        for main_element in root:
-            logger.debug("main el %s", main_element.tag)
-            if re.match(".*metadata$", main_element.tag):
-                for metadata_tag in main_element:
-                    if re.match(".*title$", metadata_tag.tag):
-                        result['title'] = metadata_tag.text
-                    elif re.match(".*language$", metadata_tag.tag):
-                        result['principal_language'] = metadata_tag.text
-                    # \todo creator might have different sub types
-                    elif re.match(".*creator$", metadata_tag.tag):
-                        def fix_author_name(author_name):
-                            m = re.match("(.+) *, *(.+)", author_name)
-                            if m:
-                                return m.group(2) + " " + m.group(1)
-                            return author_name
+    except etree.ParseError:
+        logger.error("Unable to parse opf xml")
+        return result
 
-                        result['author_names'].append(fix_author_name(metadata_tag.text))
-                    # \todo date might have different sub types
-                    elif re.match(".*date$", metadata_tag.tag):
-                        def only_year(isodate):
-                            m = re.match("^[0-9]{4}", isodate)
-                            return m.group(0)
+    for main_element in root:
+        logger.debug("looking at main element {}".format(main_element.tag))
 
-                        result['publication_year'] = only_year(metadata_tag.text)
+        if not re.match(".*metadata$", main_element.tag):
+            continue
+
+        for metadata_tag in main_element:
+            text = clean_string(metadata_tag.text)
+            if text is None:
+                continue
+            
+            if re.match(".*title$", metadata_tag.tag):
+                result['title'] = text
+            elif re.match(".*language$", metadata_tag.tag):
+                result['principal_language'] = text
+            elif re.match(".*creator$", metadata_tag.tag):
+                result['author_names'].append(text)
+            elif re.match(".*date$", metadata_tag.tag):
+                def only_year(iso_date):
+                    m = re.match("^[0-9]{4}", iso_date)
+                    if m is None:
+                        return None
                     else:
-                        logger.debug("Found %s => %s" % (metadata_tag.tag, metadata_tag.text))
-                        pass
+                        return m.group(0)
 
+                publication_year = only_year(text)
+                if publication_year is not None:
+                    result['publication_year'] = publication_year
+            else:
+                logger.debug("Found unsupported tag {} => {}".format(metadata_tag.tag, text))
+
+    return result
+
+
+def get_metadata(instream):
+    try:
+        with zipfile.ZipFile(instream, 'r') as inzip:
+            opf_path = _get_path_of_content_opf(inzip)
+            opf_content = _read_content_opf(inzip, opf_path)
+
+            result = get_metadata_from_opf_string(opf_content)
+    except zipfile.BadZipfile:
+        raise ValueError("Unable to open epub zip")
     instream.seek(0)
     return result
 
@@ -180,5 +207,4 @@ if __name__ == "__main__":
     outs = file("out.epub", "w+b")
     clear_metadata(ins, outs)
     # print get_metadata(ins)
-
 
