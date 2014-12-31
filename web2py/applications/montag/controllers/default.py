@@ -247,9 +247,7 @@ def view_tome_debug_info():
     }
 
 
-def _author_edit_form(author):
-   required_fidelity = pdb.calculate_required_author_fidelity(author['id'])
- 
+def _author_edit_form(author, required_fidelity):
    form = SQLFORM.factory(
         Field('name',requires=IS_NOT_EMPTY(), default=db_str_to_form(author['name']), comment=XML(r'<input type="button" value="Guess name case" onclick="title_case_field(&quot;no_table_name&quot;)">')),
         Field('date_of_birth', default=author['date_of_birth'], comment='ISO 8601, e.g. 1920-08-22'),
@@ -265,10 +263,12 @@ def edit_author():
     if author_doc is None:
         session.flash = "No such author"
         redirect(URL('tomesearch'))
+        
+    required_fidelity = pdb.calculate_required_author_fidelity(author_doc['id'])
 
     field_names = ['name', 'date_of_birth', 'date_of_death', 'fidelity']
 
-    form = _author_edit_form(author_doc)
+    form = _author_edit_form(author_doc, required_fidelity)
     response.title = "Edit %s - Montag" % author_doc['name']
 
     if form.process(keepvalues=True).accepted:
@@ -280,7 +280,7 @@ def edit_author():
         response.flash = 'Stored new values'
     elif form.errors:
         response.flash = 'form has errors'
-    return dict(form=form, author=author_doc)
+    return dict(form=form, author=author_doc, required_fidelity=required_fidelity)
 
 def _is_tome_or_author_guid(string):
     return re.match("[0-9a-z]{32}", string)
