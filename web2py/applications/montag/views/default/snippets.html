@@ -128,7 +128,7 @@ jQuery(document).ready(function(){
 
     {{ relevant_files = filter(lambda f: f['file_type']==FileType.Content and is_relevant(f), tome['files'])}}
     {{if relevant_files: }}
-        <span class='hide_show_button unselectable' onclick="jQuery('#tome_file_block_{{=tome_block_id}}').slideToggle(100)" > Show {{=len(relevant_files)}} Files </span>
+        <span class='hide_show_button unselectable' onclick="jQuery('#tome_file_block_{{=tome_block_id}}').slideToggle(100)" > Show {{=len(relevant_files)}} File{{='' if len(relevant_files)==1 else 's'}} </span>
         <div class="clearfix"></div>
     {{show_tome_file_block(tome, show_file_edit_button)}}
 
