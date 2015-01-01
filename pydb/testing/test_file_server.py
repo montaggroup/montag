@@ -25,7 +25,6 @@ class TestFileServer(unittest.TestCase):
 
         self.file_server = pydb.fileserver.build(os.path.join(pydb_base_dir, 'filestore'), pydbserver)
         print "filestore is in ", os.path.join(pydb_base_dir, 'filestore')
-        # @todo wait for ping ready instead of fixed time
         time.sleep(0.5)
 
         self.test_epub_path = os.path.join(script_path, 'test_data', 'pg1661.epub')
