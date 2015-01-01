@@ -30,6 +30,7 @@ class TestFileAddPerformance(unittest.TestCase):
             pydb_base_dir = tempfile.mkdtemp('pydb_file_add_performance')
             pydbserver = mock.MagicMock()
             self.file_server = pydb.fileserver.build(os.path.join(pydb_base_dir, 'filestore'), pydbserver)
+            # @todo wait for ping ready instead of fixed time
             time.sleep(0.5)
 
             script_path = os.path.dirname(__file__)

@@ -23,6 +23,9 @@ class FileStore():
         cache_path = self._calculate_cache_path(file_hash) + '.' + file_ext
         return os.path.abspath(cache_path)
 
+    def file_exists(self, file_hash, file_ext):
+        return os.path.exists(self.get_local_file_path(file_hash, file_ext))
+
     def add_file(self, source_path, file_hash, extension, move_file):
         size = os.path.getsize(source_path)
         if size == 0:
@@ -81,10 +84,10 @@ class FileStore():
 
 
 def hash_file(path):
-    return _hash_stream(open(path, 'rb'))
+    return hash_stream(open(path, 'rb'))
 
 
-def _hash_stream(stream):
+def hash_stream(stream):
     chunk_size_bytes = 100*1000
 
     hash_algo = hashlib.sha256()
@@ -94,20 +97,31 @@ def _hash_stream(stream):
         buf = stream.read(chunk_size_bytes)
     return hash_algo.hexdigest()
 
+def strip_file(source_stream, extension_without_dot, target_stream):
+    """ returns true if stripped successfully,
+        false if stripping not possible or not leading to a changed file
+        and raises an exception if the source file is broken
+    """
+    return ebook_metadata_tools.clear_metadata(source_stream, extension_without_dot, target_stream)
 
 def strip_file_to_temp(source_path, extension_without_dot, remove_original=False):
+    """ returns the name of the new file and the new hash if stripped,
+        None, None if stripping not possible or not leading to a new file
+        and raises an exception if the source file is broken
+    """
     (handle, filename_stripped) = tempfile.mkstemp(suffix='.' + extension_without_dot)
     logger.info("Writing to file %s" % filename_stripped)
     f = os.fdopen(handle, "w")
 
-    if ebook_metadata_tools.strip_file(source_path, extension_without_dot, f):
-        f.close()
-        if remove_original:
-            os.remove(source_path)
-        file_hash_after_stripping = hash_file(filename_stripped)
-        return filename_stripped, file_hash_after_stripping
+    with open(source_path, 'rb') as source_stream:
+        if strip_file(source_stream, extension_without_dot, f):
+            f.close()
+            if remove_original:
+                os.remove(source_path)
+            file_hash_after_stripping = hash_file(filename_stripped)
+            return filename_stripped, file_hash_after_stripping
 
-    else:
-        f.close()
-        os.remove(filename_stripped)
-        return None, None
+        else:
+            f.close()
+            os.remove(filename_stripped)
+            return None, None

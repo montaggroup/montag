@@ -1,6 +1,7 @@
 import os
 import logging
 import file_store
+import cStringIO
 
 logger = logging.getLogger('fileserver')
 
@@ -44,16 +45,15 @@ class FileServer:
         """ returns true if the file specified by source_path is already attached to at least one tome
             raises an ValueError if the file is broken
         """
-
-        # @todo we can do this in memory, too
-        temp_file, effective_hash = file_store.strip_file_to_temp(source_path, extension_without_dot)
-        if temp_file is None:
-            effective_hash = file_store.hash_file(source_path)
-        else:
-            os.remove(temp_file)
+        effective_hash = _calculate_effective_hash(source_path, extension_without_dot)
 
         used_links = self.db.get_tome_files_by_hash(effective_hash)
         return bool(used_links)
+
+    def is_file_in_store(self, source_path, extension_without_dot):
+        """ returns true if the file specified by source path is already in the file store """
+        effective_hash = _calculate_effective_hash(source_path, extension_without_dot)
+        return self.file_store.file_exists(effective_hash, extension_without_dot)
 
     def add_file_from_local_disk(self, source_path, extension, only_allowed_hash=None,
                                  move_file=False, strip_file=True):
@@ -116,7 +116,6 @@ class FileServer:
 
         return result
 
-
     def _execute_strip_file(self, source_path, extension, file_hash, only_allowed_hash, move_file):
         new_filename, file_hash_after_stripping = \
             file_store.strip_file_to_temp(source_path, extension, remove_original=move_file)
@@ -134,3 +133,14 @@ class FileServer:
                 self.db.add_file_hash_translation(file_hash, file_hash_after_stripping)
 
         return file_hash_after_stripping, new_filename
+
+
+def _calculate_effective_hash(source_path, extension_without_dot):
+    strip_output = cStringIO.StringIO()
+
+    if file_store.strip_file(source_path, extension_without_dot, strip_output):
+        strip_output.seek(0)
+        return file_store.hash_stream(strip_output)
+    else:
+        # hash the original file
+        return file_store.hash_file(source_path)
