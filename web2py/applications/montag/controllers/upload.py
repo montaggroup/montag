@@ -27,17 +27,18 @@ def upload_file_json():
             return dict(message=T('Upload error'))
 
 def _insert_file(file_stream, original_file_name):
-        (_,extension_with_dot) = os.path.splitext(original_file_name)
+        (_, extension_with_dot) = os.path.splitext(original_file_name)
 
-        (handle, file_path)=tempfile.mkstemp(suffix=extension_with_dot)
+        (handle, file_path) = tempfile.mkstemp(suffix=extension_with_dot)
 
         file=os.fdopen(handle, "w")
         file.write(file_stream.read())
         file.close()
 
-        (id, hash, size)=pdb.add_file_from_local_disk(file_path, extension_with_dot[1:], move_file = True)
+        file_server = pydb.pyrosetup.fileserver()
+        (id, hash, size) = file_server.add_file_from_local_disk(file_path, extension_with_dot[1:], move_file=True)
 
-        return id, hash,size
+        return id, hash, size
 
 
 def _create_upload_form():

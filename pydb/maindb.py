@@ -10,7 +10,6 @@ from mergedb import MergeDB
 from localdb import LocalDB
 from friendsdb import FriendsDB
 from foreigndb import ForeignDB
-import file_store
 from pydb import FileType, TomeType, pyrosetup
 from sqlitedb import Transaction
 from contextlib import contextmanager
@@ -27,54 +26,40 @@ def db_path(db_dir, db_name):
     return os.path.join(db_dir, db_name + ".db")
 
 
-def build(base_path, schema_path, enable_db_sync=True):
-    db_dir = os.path.join(base_path, "db")
-    if not os.path.exists(db_dir):
-        os.makedirs(db_dir)
-
+def build(db_dir, schema_path, enable_db_sync=True):
     foreign_db_dir = os.path.join(db_dir, "foreign")
     if not os.path.exists(foreign_db_dir):
         os.makedirs(foreign_db_dir)
-
-    store_dir = os.path.join(base_path, "filestore")
-    if not os.path.exists(store_dir):
-        os.mkdir(store_dir)
 
     local_db = LocalDB(db_path(db_dir, "local"), schema_path, enable_db_sync)
     merge_db = MergeDB(db_path(db_dir, "merge"), schema_path, enable_db_sync=False)
     merge_db.add_source(local_db)
     friends_db = FriendsDB(db_path(db_dir, "friends"), schema_path)
-    file_store_ = file_store.FileStore(store_dir)
 
     def build_foreign_db(friend_id):
         foreign_db_path = db_path(db_dir, os.path.join("foreign", str(friend_id)))
-        db = ForeignDB(foreign_db_path, schema_path, friend_id, enable_db_sync=enable_db_sync)
-        return db
+        foreign_db = ForeignDB(foreign_db_path, schema_path, friend_id, enable_db_sync=enable_db_sync)
+        return foreign_db
 
     index_server = pyrosetup.indexserver()
 
-    db = MainDB(local_db, friends_db, merge_db, file_store_, build_foreign_db, index_server)
+    db = MainDB(local_db, friends_db, merge_db, build_foreign_db, index_server)
     db.load_foreign_dbs()
 
     logger.info("DBs initialized")
     return db
 
 
-
 class MainDB:
-    def __init__(self, local_db, friends_db, merge_db, file_store, build_foreign_db, index_server):
+    def __init__(self, local_db, friends_db, merge_db, build_foreign_db, index_server):
         self.default_add_fidelity = 50
         self.local_db = local_db
         self.friends_db = friends_db
         self.merge_db = merge_db
         self.foreign_dbs = {}
-        self.file_store = file_store
         self.index_server = index_server
 
         self.build_foreign_db = build_foreign_db
-
-    def file_store_disk_usage(self):
-        return self.file_store.disk_usage()
 
     def _add_foreign_db(self, friend_id):
         logger.info("Loading foreign db for friend %d" % friend_id)
@@ -162,23 +147,11 @@ class MainDB:
         """ returns a dictionary of tag_fields for all tags linked to the given tome """
         return self.merge_db.get_tome_tags(tome_id)
 
-    def get_local_file_path(self, file_hash):
-        """ returns a string containing the path to the file identified by hash or None """
-        file_ext = self.get_file_extension(file_hash)
-        if file_ext is not None:
-            return self.file_store.get_local_file_path(file_hash, file_ext)
-
     def get_file_extension(self, file_hash):
         """ returns a string containing the file extension of the file identified by hash. """
         file_info = self.local_db.get_local_file_by_hash(file_hash)
         if file_info is not None:
             return file_info["file_extension"]
-
-    def get_local_file_size(self, file_hash):
-        """ returns a the file size of the file identified by hash if it's available locally. """
-        fp = self.get_local_file_path(file_hash)
-        if fp:
-            return os.path.getsize(fp)
 
     def get_all_file_hash_translation_sources(self, target_hash):
         """ returns a list of all hashes that translate to target_hash (including target_hash) """
@@ -370,7 +343,6 @@ class MainDB:
         except Pyro4.errors.CommunicationError, e:
             logger.error("Unable to connect to index_server: %s" % e)
 
-
     def add_author(self, name, guid=None, date_of_birth=None, date_of_death=None, fidelity=None):
         """ adds a new author, generating a guid, returns the id of the author """
         if not fidelity:
@@ -485,109 +457,17 @@ class MainDB:
             for affected_tome_guid in affected_tome_guids:
                 self.merge_db.request_tome_file_update(affected_tome_guid)
 
-    def add_files_from_local_disk(self, file_fields_list):
-        result = {}
-        with Transaction(self.merge_db):
-            with Transaction(self.local_db):
-                for friend_id, db in self.foreign_dbs.iteritems():
-                    db.begin()
+    def add_file_hash_translation(self, old_hash, new_hash):
+            self.local_db.add_file_hash_translation(old_hash, new_hash)
+            self._apply_file_hash_translation(old_hash, new_hash)
 
-                for file_fields in file_fields_list:
-                    f = file_fields
+    def add_local_file_exists(self, file_hash, extension_without_dot):
+        """ inserts a record that a local file with given hash and extension now exists locally """
 
-                    try:
-                        file_id, file_hash, size = \
-                            self.add_file_from_local_disk(f['source_path'], f['extension'], f['only_allowed_hash'],
-                                                          f['move_file'], f['strip_file'])
-                        if file_id is not None:
-                            result[f['source_path']] = True
-                        else:
-                            logger.error("Got error while adding: {}".format(f['source_path']))
-                            result[f['source_path']] = False
+        local_file_id = self.local_db.add_local_file(file_hash, extension_without_dot)
+        self.merge_db.insert_local_file({'hash': file_hash, 'file_extension': extension_without_dot})
 
-                    except EOFError:
-                        logger.warning("File {} was empty, ignoring".format(f['source_path']))
-
-                for friend_id, db in self.foreign_dbs.iteritems():
-                    db.commit()
-        return result
-
-    def is_local_file_known(self, source_path, extension_without_dot):
-        """ returns true if the file specified by source_path is already attached to at least one tome
-            raises an ValueError if the file is broken
-        """
-
-        # @todo we can do this in memory, too
-        temp_file, effective_hash = file_store.strip_file_to_temp(source_path, extension_without_dot)
-        if temp_file is None:
-            effective_hash = file_store.hash_file(source_path)
-        else:
-            os.remove(temp_file)
-
-        used_links = self.merge_db.get_tome_files_by_hash(effective_hash)
-        return bool(used_links)
-
-
-    def execute_strip_file(self, source_path, extension, file_hash, only_allowed_hash, move_file):
-        new_filename, file_hash_after_stripping = \
-            file_store.strip_file_to_temp(source_path, extension, remove_original=move_file)
-
-        if new_filename is None:
-            return None, None
-
-        if only_allowed_hash:
-            if file_hash_after_stripping != file_hash:
-                # the file hash changed by stripping but we were ordered to only accept one hash
-                # so now we have to update the translation table to change our request behaviour
-                logger.info("Hash changed after stripping, recording translation from %s to %s" %
-                            (file_hash, file_hash_after_stripping))
-                self.local_db.add_file_hash_translation(file_hash, file_hash_after_stripping)
-                self._apply_file_hash_translation(file_hash, file_hash_after_stripping)
-
-        return file_hash_after_stripping, new_filename
-
-    def add_file_from_local_disk(self, source_path, extension, only_allowed_hash=None,
-                                 move_file=False, strip_file=True):
-        """ adds a file to the local file collection, returns a tuple (id, hash,size ) of the LocalFile object
-            if only_allowed_hash is set, the file will only be accepted if the hash matches
-            strips the file by default of all metadata (provided the file format is recognized)
-            returns a tuple (id, hash, size)
-        """
-        logger.debug("called add_file_from_local_disk, source_path = %s, cwd= %s" % (source_path, os.getcwd()))
-
-        if os.path.getsize(source_path) == 0:
-            raise EOFError("File is empty")
-
-        file_hash = file_store.hash_file(source_path)
-
-        if extension[0:1] == '.':
-            extension = extension[1:]
-
-        if only_allowed_hash:
-            if file_hash != only_allowed_hash:
-                logger.error("Allowed hash %s did not match file hash %s, aborting insert" %
-                             (only_allowed_hash, file_hash))
-                return None, file_hash, None
-
-        if strip_file:
-            try:
-                new_hash, new_path = self.execute_strip_file(source_path, extension, file_hash,
-                                                                            only_allowed_hash, move_file)
-                if new_hash is not None:
-                    move_file = True  # remove the temp file later
-                    source_path = new_path
-                    file_hash = new_hash
-
-            except ValueError:
-                logger.warning("Could not strip file %s, seems to be broken" % source_path)
-                return None, None, None
-
-        size = self.file_store.add_file(source_path, file_hash, extension, move_file)
-
-        local_file_id = self.local_db.add_local_file(file_hash, extension)
-        self.merge_db.insert_local_file({'hash': file_hash, 'file_extension': extension})
-
-        return local_file_id, file_hash, size
+        return local_file_id
 
     def link_tome_to_file(self, tome_id, local_file_hash, local_file_size, file_extension,
                           file_type=FileType.Content, fidelity=None):
@@ -1119,7 +999,6 @@ class MainDB:
                 if key in new_tome_doc:
                     if key.lower() != "guid":
                         new_tome_doc[key] = data_tome[key]
-
 
         required_fidelity_1 = self.calculate_required_tome_fidelity(source_tome['id'])
         required_fidelity_2 = self.calculate_required_tome_fidelity(target_tome['id'])

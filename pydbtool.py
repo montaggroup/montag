@@ -307,8 +307,9 @@ def do_answer_file_list(args, db):
 
     found = 0
     with open(filename) as file_list_file:
+        file_server = pydb.pyrosetup.fileserver()
         for line in file_list_file:  # careful - line still contains a newline character
-            local_path = db().get_local_file_path(line.strip())
+            local_path = file_server.get_local_file_path(line.strip())
             if local_path:
                 shutil.copy(local_path, target_dir)
                 found += 1
@@ -321,7 +322,7 @@ def do_answer_file_list(args, db):
 def do_import_file_store(args, db):
     def insert_files(file_list):
         print "Inserting {} files".format(len(file_list))
-        result = db().add_files_from_local_disk(file_list)
+        result = pydb.pyrosetup.fileserver().add_files_from_local_disk(file_list)
         succ = 0
         failed = 0
         for fn, file_result in result.iteritems():
@@ -392,7 +393,9 @@ def do_fetch_updates(args, db):
 
     cc = pydb.com.client.ComClient(main_db, friend_id, friend_comm_data, com_service)
 
-    strategy = pydb.com.master_strategy.construct_master_client_strategy(main_db, com_service)
+    file_server = pydb.pyrosetup.fileserver()
+
+    strategy = pydb.com.master_strategy.construct_master_client_strategy(main_db, com_service, file_server)
     cc.connect_and_execute(strategy)
 
 
@@ -518,7 +521,7 @@ def do_show_comm_data_status(args, db):
 
 
 def do_show_disk_usage(args, db):
-    total, used, free = db().file_store_disk_usage()
+    total, used, free = pydb.pyrosetup.fileserver().file_store_disk_usage()
 
     gb = 1000 * 1000 * 1000.0
     print "Total: {} GB".format(round(total / gb, 1))

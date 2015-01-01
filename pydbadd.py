@@ -76,9 +76,10 @@ def add_file(filepath, fidelity, tome_type, delete_source):
     base, extension = os.path.splitext(filepath)
     extension = extension[1:]  # remove period
 
-    (file_id, hash, size) = db.add_file_from_local_disk(filepath, extension, move_file=delete_source)
+    (file_id, file_hash, size) = pydb.pyrosetup.fileserver().add_file_from_local_disk(filepath, extension,
+                                                                                      move_file=delete_source)
     if file_id:
-        db.link_tome_to_file(tome_id, hash, size, file_extension=extension, file_type=FileType.Content,
+        db.link_tome_to_file(tome_id, file_hash, size, file_extension=extension, file_type=FileType.Content,
                              fidelity=fidelity)
     else:
         print u"Unable to add file '{}' to db - check whether it might be defective".format(filepath)

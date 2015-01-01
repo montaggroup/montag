@@ -7,6 +7,7 @@ import sys
 import time
 import logging
 import filedownloadmonitor
+import pyrosetup
 
 logger = logging.getLogger('comservice')
 
@@ -181,7 +182,6 @@ def build():
 def exec_fetch_updates(friend_id, current_phase_store, progress_array):
     # noinspection PyUnresolvedReferences
     sys.excepthook = Pyro4.util.excepthook
-    import pyrosetup
 
     db = pyrosetup.pydbserver()
     comm_data_store = pyrosetup.comm_data_store()
@@ -198,7 +198,9 @@ def exec_fetch_updates(friend_id, current_phase_store, progress_array):
     friend_comm_data = comm_data_store.get_comm_data(friend_id)
     cc = com.client.ComClient(db, friend_id, friend_comm_data, com_service)
 
-    strategy = com.master_strategy.construct_master_client_strategy(db, com_service)
+    file_server = pyrosetup.fileserver()
+
+    strategy = com.master_strategy.construct_master_client_strategy(db, com_service, file_server)
 
     def update_progress(current_phase, progress_arg_1, progress_arg_2):
         current_phase_store.value = current_phase

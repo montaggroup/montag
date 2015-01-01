@@ -14,7 +14,7 @@ log_level = 'WARNING'  # see pyro log levels
 
 service_prefix = 'montag-'
 
-basenames = ["pydbserver", "comserver", "comservice", "indexserver", "web2py"]
+basenames = ["pydbserver", "fileserver", "comserver", "comservice", "indexserver", "web2py"]
 
 if using_py2exe():
     names = [service_prefix + name + ".exe" for name in basenames]

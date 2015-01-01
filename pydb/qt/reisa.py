@@ -13,9 +13,10 @@ from pydb import TomeType
 
 # REISA: RegExImportScannerAssistantToolThingy
 class Reisa(QtGui.QMainWindow):
-    def __init__(self, db):
+    def __init__(self, db, file_server):
         super(Reisa, self).__init__()
         self.db = db
+        self.file_server = file_server
         self.ui = None
         self.dir_name = None
         self.file_list = None
@@ -68,7 +69,7 @@ class Reisa(QtGui.QMainWindow):
         base, extension = os.path.splitext(file_path)
         extension = extension[1:]  # remove period
 
-        (file_id, file_hash, size) = self.db.add_file_from_local_disk(file_path, extension, move_file=True)
+        (file_id, file_hash, size) = self.file_server.add_file_from_local_disk(file_path, extension, move_file=True)
         if file_id:
             self.db.link_tome_to_file(tome_id, file_hash, size, file_extension=extension, file_type=FileType.Content,
                                       fidelity=default_fidelity)
@@ -187,11 +188,13 @@ def launch_reisa():
         print >> sys.stderr, "Unable to talk to server, is it running?`"
         sys.exit(-1)
 
+    file_server = pyrosetup.fileserver()
+
     app = QtGui.QApplication(sys.argv)
 
     # noinspection PyArgumentList
     cmdline_args = QtCore.QCoreApplication.arguments()
-    ui = Reisa(db)
+    ui = Reisa(db, file_server)
     print "args:", cmdline_args
     cmdline_args = cmdline_args[1:]
     if cmdline_args:

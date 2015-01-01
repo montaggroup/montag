@@ -6,7 +6,8 @@ import mock
 class TestProvider(unittest.TestCase):
     def setUp(self):
         self.db = None
-        self.provider = pydb.com.provider.Provider(self.db)
+        self.file_server = None
+        self.provider = pydb.com.provider.Provider(self.db, self.file_server)
 
     def test_empty(self):
         pass
