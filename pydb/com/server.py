@@ -13,19 +13,20 @@ logger = logging.getLogger("com.server")
 class Server():
     def __init__(self, tcp_port_number, upload_rate_limit_kbps):
         self.db = pyrosetup.pydbserver()
-        self.comservice = pyrosetup.comservice()
+        self.com_service = pyrosetup.comservice()
+        self.file_server = pyrosetup.fileserver()
 
         if self.db.ping() != "pong":
             raise Exception("Unable to talk to pydb server, is it running?")
 
-        tcp_server_factory = TcpServer(self.build_stack, self.comservice, upload_rate_limit_kbps * 1000)
+        tcp_server_factory = TcpServer(self.build_stack, self.com_service, upload_rate_limit_kbps * 1000)
         
         reactor.listenTCP(tcp_port_number, tcp_server_factory)
         logger.info("Server listening on port {}".format(tcp_port_number))
 
     def build_stack(self):
 
-        sc = SessionController(self.db, self.comservice)
+        sc = SessionController(self.db, self.com_service, self.file_server)
         session = JsonAndBinarySession(sc)
         sc.set_lower_layer(session)
 
@@ -41,12 +42,14 @@ class Server():
 
 
 class SessionController():
-    def __init__(self, main_db, comservice):
+    def __init__(self, main_db, com_service, file_server):
         self.job_id = None
-        self.comservice = comservice
+        self.com_service = com_service
+        self.file_server = file_server
 
         self._main_db = main_db
-        self._communication_strategy = master_strategy.construct_master_server_strategy(self._main_db, self.comservice)
+        self._communication_strategy = master_strategy.construct_master_server_strategy(self._main_db, self.com_service,
+                                                                                        self.file_server)
 
         self._session = None
 
@@ -54,10 +57,10 @@ class SessionController():
         self._session = session
 
     def _register_job_with_comservice(self, friend_id):
-        self.job_id = self.comservice.register_job("fetch_updates", friend_id)
+        self.job_id = self.com_service.register_job("fetch_updates", friend_id)
 
     def _report_progress_to_comservice(self, current_phase_id, current_items_to_do, current_items_done):
-        self.comservice.update_job_progress(self.job_id, current_phase_id, current_items_to_do, current_items_done)
+        self.com_service.update_job_progress(self.job_id, current_phase_id, current_items_to_do, current_items_done)
 
     def session_established(self, friend_id):
         try:
@@ -74,7 +77,7 @@ class SessionController():
     def _unregister_job(self):
         logging.info("Unregister job called, job is {}".format(self.job_id))
         if self.job_id is not None:
-            self.comservice.unregister_job(self.job_id)
+            self.com_service.unregister_job(self.job_id)
             self.job_id = None
 
     def strategy_completed(self):

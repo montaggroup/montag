@@ -27,17 +27,18 @@ def upload_file_json():
             return dict(message=T('Upload error'))
 
 def _insert_file(file_stream, original_file_name):
-        (_,extension_with_dot) = os.path.splitext(original_file_name)
+        (_, extension_with_dot) = os.path.splitext(original_file_name)
 
-        (handle, file_path)=tempfile.mkstemp(suffix=extension_with_dot)
+        (handle, file_path) = tempfile.mkstemp(suffix=extension_with_dot)
 
         file=os.fdopen(handle, "w")
         file.write(file_stream.read())
         file.close()
 
-        (id, hash, size)=pdb.add_file_from_local_disk(file_path, extension_with_dot[1:], move_file = True)
+        file_server = pydb.pyrosetup.fileserver()
+        (id, hash, size) = file_server.add_file_from_local_disk(file_path, extension_with_dot[1:], move_file=True)
 
-        return id, hash,size
+        return id, hash, size
 
 
 def _create_upload_form():
@@ -196,7 +197,7 @@ def add_tome_from_file():
         tome_id = pdb.find_or_create_tome(form.vars['title'].decode('utf-8'),form.vars['principal_language'].decode('utf-8'), author_ids, form.vars['subtitle'].decode('utf-8'),
                                          form.vars['tome_type'], fidelity, publication_year=form.vars['publication_year'])
         tome = pdb.get_tome(tome_id)
-        pdb.link_tome_to_file(tome_id,file_hash,file_size,file_extension,FileType.Content,fidelity)
+        pdb.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Content,fidelity)
         response.flash = 'Successfully created tome, please edit details now'
         redirect(URL(f='edit_tome',c='default', args=(tome['guid'])))
     elif form.errors:

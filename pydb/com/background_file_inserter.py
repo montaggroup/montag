@@ -26,9 +26,9 @@ class BackgroundFileInserter():
 
         def insert_it():
             logger.debug("Inserting {} in background".format(file_hash))
-            main_db = pydb.pyrosetup.pydbserver()
-            main_db.add_file_from_local_disk(completed_file_name, extension,
-                                             only_allowed_hash=file_hash, move_file=True)
+            file_server = pydb.pyrosetup.fileserver()
+            file_server.add_file_from_local_disk(completed_file_name, extension,
+                                                 only_allowed_hash=file_hash, move_file=True)
 
             com_service = pydb.pyrosetup.comservice()
             com_service.release_file_after_fetching(file_hash, success=True)

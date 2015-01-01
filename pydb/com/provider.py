@@ -13,8 +13,9 @@ def deferred_wait(time_in_seconds):
 
 
 class Provider():
-    def __init__(self, db):
+    def __init__(self, db, file_server):
         self.db = db
+        self.file_server = file_server
         self.lower_layer = None
         self._completion_callback = None
         self._failure_callback = None
@@ -74,7 +75,7 @@ class Provider():
 
     def command_request_file_received(self, file_hash):
         logger.debug("Request for file {} received".format(file_hash))
-        local_path = self.db.get_local_file_path(file_hash)
+        local_path = self.file_server.get_local_file_path(file_hash)
 
         if not local_path:
             logger.info("Sending negative reply for hash %s" % file_hash)

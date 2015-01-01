@@ -22,3 +22,6 @@ def comservice():
     return Pyro4.Proxy('PYRO:comservice@localhost:4513')
 
 
+def fileserver():
+    return Pyro4.Proxy('PYRO:fileserver@localhost:4514')
+

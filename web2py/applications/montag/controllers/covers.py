@@ -3,6 +3,7 @@ import tempfile
 import subprocess
 from pydb import FileType
 import cStringIO
+import os
 
 
 def edit_covers():
@@ -64,8 +65,10 @@ def set_cover_from_content():
         cover_file = os.fdopen(fd_cover,'wb')
         cover_file.write(cover_contents.getvalue())
         cover_file.close()
-        
-        (local_file_id, file_hash, file_size) = pdb.add_file_from_local_disk(path_cover, file_extension, move_file = True)
+
+        file_server = pydb.pyrosetup.fileserver()
+        (local_file_id, file_hash, file_size) = file_server.add_file_from_local_disk(path_cover, file_extension,
+                                                                                     move_file = True)
         
         pdb.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Cover, fidelity)
         redirect(URL('default', 'view_tome', args=(tome['guid'])))
@@ -89,7 +92,7 @@ def set_main_cover():
     tome = pdb.get_tome(tome_id)
     form = _set_main_cover_form()
     
-    file_size = pdb.get_local_file_size(file_hash)
+    file_size = pydb.pyrosetup.fileserver().get_local_file_size(file_hash)
 
     if form.process(keepvalues=True).accepted:
         fidelity = form.vars['fidelity']
@@ -101,7 +104,7 @@ def set_main_cover():
         tome_file_doc['fidelity'] = fidelity
 
         other_files.append(tome_file_doc)
-        doc['files']=other_files
+        doc['files'] = other_files
         pdb.load_own_tome_document(doc)
 
         redirect(URL('default', 'view_tome', args=(tome['guid'])))
@@ -109,7 +112,7 @@ def set_main_cover():
     return {'tome': tome, 'file_hash': file_hash, 'file_extension': file_extension, 'form': form}
 
 def _stream_image(file_hash, extension):
-    fp = pdb.get_local_file_path(file_hash)
+    fp = pydb.pyrosetup.fileserver().get_local_file_path(file_hash)
     if fp is None:
         return
     plain_file = open(fp,"rb")
@@ -140,10 +143,10 @@ def _extract_image_from_content(file_hash, extension):
     """    
     session.forget(response)
 
-    fp = pdb.get_local_file_path(file_hash)
+    fp = pydb.pyrosetup.fileserver().get_local_file_path(file_hash)
     if fp is None:
         raise KeyError("File not in file store")
-    with open(fp,"rb") as source_file:
+    with open(fp, "rb") as source_file:
         contents = source_file.read()
 
         return _get_cover_image(contents, extension)

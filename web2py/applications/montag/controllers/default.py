@@ -18,7 +18,7 @@ def getfile():
 
     tome_file = pdb.get_tome_file(tome_id, file_hash)
 
-    fp = pdb.get_local_file_path(file_hash)
+    fp = pydb.pyrosetup.fileserver().get_local_file_path(file_hash)
     plain_file = open(fp,"rb")
 
     return _stream_tome_file(tome_id, tome_file, plain_file)
@@ -45,7 +45,7 @@ def _get_converted_file(tome_id, file_hash, target_extension):
     tome_file = pdb.get_tome_file(tome_id, file_hash)
     extension = tome_file['file_extension']
 
-    fp = pdb.get_local_file_path(file_hash)
+    fp = pydb.pyrosetup.fileserver().get_local_file_path(file_hash)
     with open(fp,"rb") as source_file:
         if extension == target_extension:    
             return _stream_tome_file(tome_id, tome_file, source_file)
@@ -118,10 +118,9 @@ def get_cover():
     if tome_file is None:
         return
     
-    extension=tome_file['file_extension']
-    file_hash=tome_file['hash']
+    file_hash = tome_file['hash']
     
-    fp = pdb.get_local_file_path(file_hash)
+    fp = pydb.pyrosetup.fileserver().get_local_file_path(file_hash)
     if fp is None:
         return
     plain_file = open(fp,"rb")
@@ -513,8 +512,8 @@ def edit_tome_file_link():
 
 
 def link_tome_to_file():
-    tome_id=request.args[0]
-    tome=pdb.get_tome(tome_id)
+    tome_id = request.args[0]
+    tome = pdb.get_tome(tome_id)
  
     form = SQLFORM.factory(
         Field('hash'),
@@ -527,11 +526,11 @@ def link_tome_to_file():
     
     if form.process(keepvalues=True).accepted:
     
-        file_hash=form.vars['hash']
-        file_extension=form.vars['file_extension']
-        fidelity=form.vars['fidelity']
+        file_hash = form.vars['hash']
+        file_extension = form.vars['file_extension']
+        fidelity = form.vars['fidelity']
         
-        local_file_size=pdb.get_local_file_size(file_hash)
+        local_file_size = pydb.pyrosetup.fileserver().get_local_file_size(file_hash)
         
         if not local_file_size:
             response.flash = "This file is not known to the database, please check the hash"
