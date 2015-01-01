@@ -197,7 +197,7 @@ def add_tome_from_file():
         tome_id = pdb.find_or_create_tome(form.vars['title'].decode('utf-8'),form.vars['principal_language'].decode('utf-8'), author_ids, form.vars['subtitle'].decode('utf-8'),
                                          form.vars['tome_type'], fidelity, publication_year=form.vars['publication_year'])
         tome = pdb.get_tome(tome_id)
-        pdb.link_tome_to_file(tome_id,file_hash,file_size,file_extension,FileType.Content,fidelity)
+        pdb.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Content,fidelity)
         response.flash = 'Successfully created tome, please edit details now'
         redirect(URL(f='edit_tome',c='default', args=(tome['guid'])))
     elif form.errors:
