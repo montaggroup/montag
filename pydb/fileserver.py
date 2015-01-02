@@ -138,9 +138,10 @@ class FileServer:
 def _calculate_effective_hash(source_path, extension_without_dot):
     strip_output = cStringIO.StringIO()
 
-    if file_store.strip_file(source_path, extension_without_dot, strip_output):
-        strip_output.seek(0)
-        return file_store.hash_stream(strip_output)
-    else:
-        # hash the original file
-        return file_store.hash_file(source_path)
+    with open(source_path, 'rb') as source_stream:
+        if file_store.strip_file(source_stream, extension_without_dot, strip_output):
+            strip_output.seek(0)
+            return file_store.hash_stream(strip_output)
+        else:
+            # hash the original file
+            return file_store.hash_file(source_path)
