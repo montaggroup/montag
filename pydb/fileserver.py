@@ -126,11 +126,11 @@ class FileServer:
             return
 
         if new_hash is None:
-            logger.debug("File with hash {} did not need stripping".format(file_hash))
+            logger.debug("File with hash {} was not stripped stripping".format(file_hash))
             return
 
         if new_hash == file_hash:
-            logger.warning("File with hash {} ({}) was stripped, but did not change checksum".
+            logger.info("File with hash {} ({}) was stripped, but did not change checksum".
                            format(file_hash, file_extension_without_dot))
             os.unlink(new_path)
             return
