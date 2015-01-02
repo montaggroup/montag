@@ -137,6 +137,6 @@ class ProgressFile():
     def persist_mod_dates(self, min_mod_date_tomes, min_mod_date_authors):
         wp = {'min_mod_date_tomes': min_mod_date_tomes,
               'min_mod_date_authors': min_mod_date_authors}
-        json.dump(wp, open(self.progress_file_name, 'w'))
+        json.dump(wp, open(self.progress_file_name, 'wb'))
 
 

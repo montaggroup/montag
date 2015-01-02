@@ -139,7 +139,7 @@ class Metadata:
 
     def write_opf_to_file(self, filename):
         text = self.to_opf()
-        f = open(filename, 'w')
+        f = open(filename, 'wb')
         f.write(text)
 
 
