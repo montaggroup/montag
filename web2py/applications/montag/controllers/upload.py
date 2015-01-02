@@ -31,7 +31,7 @@ def _insert_file(file_stream, original_file_name):
 
         (handle, file_path) = tempfile.mkstemp(suffix=extension_with_dot)
 
-        file=os.fdopen(handle, "w")
+        file=os.fdopen(handle, "wb")
         file.write(file_stream.read())
         file.close()
 

@@ -121,7 +121,7 @@ class FileRequester(object):
 
         (handle, self.name_of_file_in_progress) = mkstemp(suffix='.' + extension)
         logger.info(u"Creating file: {}".format(self.name_of_file_in_progress))
-        self.handle_of_file_in_progress = os.fdopen(handle, "w")
+        self.handle_of_file_in_progress = os.fdopen(handle, "wb")
 
     def _positive_file_reply_received(self, file_hash, extension, content, more_parts_follow):
         # remove non-ascii characters from extension to enable the use of ascii-only-filename filesystems
