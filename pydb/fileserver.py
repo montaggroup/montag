@@ -116,6 +116,28 @@ class FileServer:
 
         return result
 
+    def re_strip_file(self, file_hash, file_extension_without_dot):
+        path = self.file_store.get_local_file_path(file_hash, file_extension_without_dot)
+
+        try:
+            new_hash, new_path = self._execute_strip_file(path, file_extension_without_dot, file_hash, file_hash, False)
+        except ValueError:
+            logger.warning("Could not strip file {}, seems to be broken".format(path))
+            return
+
+        if new_hash is None:
+            logger.debug("File with hash {} did not need stripping".format(file_hash))
+            return
+
+        if new_hash == file_hash:
+            logger.warning("File with hash {} ({}) was stripped, but did not change checksum".
+                           format(file_hash, file_extension_without_dot))
+            os.unlink(new_path)
+            return
+
+        self.file_store.add_file(new_path, new_hash, file_extension_without_dot, True)
+        self.db.add_local_file_exists(new_hash, file_extension_without_dot)
+
     def _execute_strip_file(self, source_path, extension, file_hash, only_allowed_hash, move_file):
         new_filename, file_hash_after_stripping = \
             file_store.strip_file_to_temp(source_path, extension, remove_original=move_file)
