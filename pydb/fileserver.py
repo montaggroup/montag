@@ -126,7 +126,7 @@ class FileServer:
             return
 
         if new_hash is None:
-            logger.debug("File with hash {} was not stripped stripping".format(file_hash))
+            logger.debug("File with hash {} was not stripped successfully.".format(file_hash))
             return
 
         if new_hash == file_hash:
