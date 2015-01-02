@@ -529,6 +529,10 @@ def do_show_disk_usage(args, db):
     print " Free: {} GB".format(round(free / gb, 1))
 
 
+def do_re_strip_file(args, db):
+    pydb.pyrosetup.fileserver().re_strip_file(args.filehash, args.file_extension)
+
+
 parser = argparse.ArgumentParser(description='Imports/Exports documents to/from the database.')
 
 subparsers = parser.add_subparsers(help='sub-command help')
@@ -701,6 +705,16 @@ parser_create_satellite = subparsers.add_parser('create_satellite',
                                                 help='Creates a satellite db for starting a friend\'s db')
 parser_create_satellite.add_argument('target_dir', help='target directory for satellite creation')
 parser_create_satellite.set_defaults(func=do_create_satellite)
+
+parser_re_strip_file = subparsers.add_parser('re_strip_file',
+                                                help='Commands the file server to try again to strip metadata '
+                                                     'of a file in the file store. Used usually after an '
+                                                     'change of the strip code.')
+parser_re_strip_file.add_argument('file_hash', help='hash of the file to strip again')
+parser_re_strip_file.add_argument('file_extension', help='extension of the file to strip again')
+
+parser_re_strip_file.set_defaults(func=do_re_strip_file)
+
 
 cmd_args = parser.parse_args()
 _db = None
