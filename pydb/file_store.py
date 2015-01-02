@@ -111,7 +111,7 @@ def strip_file_to_temp(source_path, extension_without_dot, remove_original=False
     """
     (handle, filename_stripped) = tempfile.mkstemp(suffix='.' + extension_without_dot)
     logger.info("Writing to file %s" % filename_stripped)
-    f = os.fdopen(handle, "w")
+    f = os.fdopen(handle, "wb")
 
     with open(source_path, 'rb') as source_stream:
         if strip_file(source_stream, extension_without_dot, f):

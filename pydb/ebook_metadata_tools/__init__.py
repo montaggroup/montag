@@ -17,7 +17,7 @@ def clear_metadata(source_stream, extension, output_stream):
     """ may raise a ValueError if the file could not be parsed ( ^= broken ) """
     m = responsible_module(extension)
     if m:
-        result = m.clear_metadata(source_stream , output_stream)
+        result = m.clear_metadata(source_stream, output_stream)
         if result is None:
             raise Exception("Module did not adhere to add strip_file api")
         return result

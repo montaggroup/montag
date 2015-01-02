@@ -39,6 +39,13 @@ class TestFileServer(unittest.TestCase):
         self.assertTrue(self.file_server.is_file_in_store(self.test_epub_path, 'epub'))
         self.assertFalse(self.file_server.is_file_in_store(self.test_txt_path, 'txt'))
 
+    def test_restrip_with_file_not_existing_leads_to_ioerror(self):
+        with self.assertRaises(IOError):
+            self.file_server.re_strip_file('1234567812345678123456781234567812345678123456781234567812345678', 'epub')
+
+    def test_restrip_without_change_does_not_crash(self):
+        local_file_id, file_hash, size = self.file_server.add_file_from_local_disk(self.test_epub_path, 'epub')
+        self.file_server.re_strip_file(file_hash, 'epub')
 
 if __name__ == "__main__":
     unittest.main()
