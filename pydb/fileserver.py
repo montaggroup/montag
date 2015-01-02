@@ -137,6 +137,8 @@ class FileServer:
 
         self.file_store.add_file(new_path, new_hash, file_extension_without_dot, True)
         self.db.add_local_file_exists(new_hash, file_extension_without_dot)
+        os.unlink(path)
+
 
     def _execute_strip_file(self, source_path, extension, file_hash, only_allowed_hash, move_file):
         new_filename, file_hash_after_stripping = \
