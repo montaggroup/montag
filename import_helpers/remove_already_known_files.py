@@ -20,7 +20,7 @@ def already_known_book(filepath):
 
     abspath = os.path.abspath(filepath)
     try:
-        return file_server.is_local_file_known(abspath, extension)
+        return file_server.is_file_known(abspath, extension)
     except ValueError:
         print "Ex"
         return False
