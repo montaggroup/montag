@@ -530,7 +530,7 @@ def do_show_disk_usage(args, db):
 
 
 def do_re_strip_file(args, db):
-    pydb.pyrosetup.fileserver().re_strip_file(args.filehash, args.file_extension)
+    pydb.pyrosetup.fileserver().re_strip_file(args.file_hash, args.file_extension)
 
 
 parser = argparse.ArgumentParser(description='Imports/Exports documents to/from the database.')
