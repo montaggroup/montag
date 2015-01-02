@@ -11,7 +11,7 @@ import pydb.pyrosetup
 
 logger = logging.getLogger("rakf")
 
-db = pydb.pyrosetup.pydbserver()
+file_server = pydb.pyrosetup.fileserver()
 
 
 def already_known_book(filepath):
@@ -20,7 +20,7 @@ def already_known_book(filepath):
 
     abspath = os.path.abspath(filepath)
     try:
-        return db.is_local_file_known(abspath, extension)
+        return file_server.is_local_file_known(abspath, extension)
     except ValueError:
         print "Ex"
         return False
