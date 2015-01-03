@@ -105,9 +105,9 @@ class BaseDB(sqlitedb.SqliteDB):
             fields = {key: row[key] for key in row.keys()}
             result.append(fields)
 
-        if subtitle_filter_text:
+        if subtitle_filter_text is not None:
             pre_result = result
-            result = [tome for tome in pre_result if tome['subtitle'].lower() == subtitle_filter_text.lower()]
+            result = [tome for tome in pre_result if (tome['subtitle'] or '').lower() == subtitle_filter_text.lower()]
 
         if authors_filter and len(
                 authors_filter) > 0:  # if a authors filter is given, the tome must have at least the given authors
@@ -832,8 +832,9 @@ class BaseDB(sqlitedb.SqliteDB):
                   
         add_check('files_with_strange_extension',
                   from_clause="files INNER JOIN tomes ON tomes.id=files.tome_id",
-                  where_clause="file_extension not in "
-                               "('epub', 'mobi', 'pdf','txt','pdb','jpg','html','lit','djvu','EPUB', 'rtf', 'azw3', 'png', 'gif') "
+                  where_clause="file_extension NOT IN "
+                               "('epub', 'mobi', 'pdf', 'txt', 'pdb', 'jpg', 'html', 'lit', "
+                               "'djvu','epub','rtf', 'azw3', 'png', 'gif') "
                                "AND files.fidelity >=?",
                   order_by_clause="files.hash",
                   params=[network_params.Min_Relevant_Fidelity])

@@ -1,5 +1,6 @@
 import sys
 import optparse
+
 import PyPDF2
 import PyPDF2.utils
 import logging
@@ -20,6 +21,8 @@ def extract_fulltext(source_stream):
 
 # noinspection PyUnusedLocal
 def add_metadata(source_stream, output_stream, author_docs, tome_doc, tome_file):
+    return False
+    # this is currently broken due to problems using pypdf2 - e.g. destroying of bookmarks, non-idempotency of strip
 
     try:
         merger = PyPDF2.PdfFileMerger()
@@ -75,6 +78,9 @@ def get_metadata(instream):
 
 # noinspection PyUnusedLocal
 def clear_metadata(source_stream, output_stream):
+    # this is currently broken due to problems using pypdf2 - e.g. destroying of bookmarks, non-idempotency of strip
+    return False
+
     try:
         merger = PyPDF2.PdfFileMerger()
         merger.append(source_stream)
@@ -119,3 +125,4 @@ if __name__ == "__main__":
         return 0
 
     sys.exit(main())
+    
