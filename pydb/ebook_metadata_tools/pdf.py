@@ -1,5 +1,9 @@
 import sys
 import optparse
+import os, sys
+
+sys.path.insert(0, (os.path.join(os.path.dirname(__file__), "..", "..", "libs", 'PyPDF2')))
+
 import PyPDF2
 import PyPDF2.utils
 import logging
@@ -119,3 +123,4 @@ if __name__ == "__main__":
         return 0
 
     sys.exit(main())
+    
