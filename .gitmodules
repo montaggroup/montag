@@ -1,3 +1,0 @@
-[submodule "libs/PyPDF2"]
-	path = libs/PyPDF2
-	url = https://github.com/montaggroup/PyPDF2.git/
