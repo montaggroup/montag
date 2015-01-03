@@ -73,3 +73,6 @@ web2py/**/errors/
 
 # Config file
 pydb.conf
+
+# virtual environment
+venv/
