@@ -1,0 +1,2 @@
+To get updates for forked foreign repos use command line git with
+git submodule update --init
