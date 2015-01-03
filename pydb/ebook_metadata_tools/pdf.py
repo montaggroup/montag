@@ -1,8 +1,5 @@
 import sys
 import optparse
-import os, sys
-
-sys.path.insert(0, (os.path.join(os.path.dirname(__file__), "..", "..", "libs", 'PyPDF2')))
 
 import PyPDF2
 import PyPDF2.utils
@@ -24,6 +21,8 @@ def extract_fulltext(source_stream):
 
 # noinspection PyUnusedLocal
 def add_metadata(source_stream, output_stream, author_docs, tome_doc, tome_file):
+    return False
+    # this is currently broken due to problems using pypdf2 - e.g. destroying of bookmarks, non-idempotency of strip
 
     try:
         merger = PyPDF2.PdfFileMerger()
@@ -79,6 +78,9 @@ def get_metadata(instream):
 
 # noinspection PyUnusedLocal
 def clear_metadata(source_stream, output_stream):
+    # this is currently broken due to problems using pypdf2 - e.g. destroying of bookmarks, non-idempotency of strip
+    return False
+
     try:
         merger = PyPDF2.PdfFileMerger()
         merger.append(source_stream)
