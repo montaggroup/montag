@@ -1,8 +1,18 @@
 Montag
 ======
 
-If knowledge can create problems, it is not through ignorance that we can solve them.
-                                                                        Isaac Asimov
+If knowledge can create problems, it is not through ignorance that we can solve them.  
+                                                                 ---      Isaac Asimov
+                                                                        
+                                                                        
+Installation
+============
+see [here](docs/INSTALL_BANANAPI.md) for instructions for installation on a banana pi running ubuntu.  
+Instructions for other systems running debian/ubuntu should not differ much.
+
+
+Motivation
+==========
 
 Montag is intended to be a means to cheap and widely available education. In the 21th century
 knowledge is the raw material without which success in life (however success may be defined in the readers culture)
