@@ -259,7 +259,7 @@ def _author_edit_form(author, required_fidelity):
 def edit_author():
     author_guid = request.args[0]
     author_doc = pdb.get_author_document_with_local_overlay_by_guid(author_guid)
-    if author_doc is None:
+    if 'name' not in author_doc:
         session.flash = "No such author"
         redirect(URL('tomesearch'))
         
@@ -270,7 +270,7 @@ def edit_author():
     form = _author_edit_form(author_doc, required_fidelity)
     response.title = "Edit %s - Montag" % author_doc['name']
 
-    if form.process(keepvalues=True).accepted:
+    if form.process(keepvalues=True, session=None).accepted:
         for f in field_names:
             author_doc[f] = form.vars[f].decode('utf-8')
 
