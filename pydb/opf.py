@@ -46,12 +46,12 @@ class Metadata:
         root = tree.getroot()
         result = cls()
         for child in root:
-            print child.tag
+            #print child.tag
             if child.tag.endswith('metadata'):
                 for meta in child:
-                    print "###%s %s %s", meta.tag, meta.attrib, meta.text
-                    #logger.debug("%s %s %s", meta.tag, meta.attrib, meta.text)
-                    text = clean_string(meta.text)
+                    logger.debug("%s %s %s", meta.tag, meta.attrib, meta.text)
+                    if meta.text:
+                        text = clean_string(meta.text)
                     if meta.tag.endswith('title'):
                         result.title = text
                     elif meta.tag.endswith('language'):
