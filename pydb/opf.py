@@ -5,6 +5,7 @@ import re
 
 logger = logging.getLogger('opf')
 
+
 DC11_NS = 'http://purl.org/dc/elements/1.1/'
 OPF2_NS = 'http://www.idpf.org/2007/opf'
 APP_NAME = "opf"
@@ -45,10 +46,11 @@ class Metadata:
         root = tree.getroot()
         result = cls()
         for child in root:
-            # print child.tag
+            print child.tag
             if child.tag.endswith('metadata'):
                 for meta in child:
-                    logger.debug("%s %s %s", meta.tag, meta.attrib, meta.text)
+                    print "###%s %s %s", meta.tag, meta.attrib, meta.text
+                    #logger.debug("%s %s %s", meta.tag, meta.attrib, meta.text)
                     text = clean_string(meta.text)
                     if meta.tag.endswith('title'):
                         result.title = text
@@ -139,8 +141,8 @@ class Metadata:
 
     def write_opf_to_file(self, filename):
         text = self.to_opf()
-        f = open(filename, 'wb')
-        f.write(text)
+        with open(filename, 'wb') as f:
+            f.write(text)
 
 
 if __name__ == "__main__":
