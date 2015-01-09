@@ -2,6 +2,7 @@
 
 import logging
 import re
+import defusedxml
 
 logger = logging.getLogger('opf')
 
@@ -33,7 +34,8 @@ class Metadata:
 
     @classmethod
     def from_file(cls, filename):
-        from lxml import etree
+        #from lxml import etree
+        import defusedxml.ElementTree as ET #use hardened xml implementation because reading unknown xml document
 
         def clean_string(string):
             string = string.strip()
@@ -41,8 +43,10 @@ class Metadata:
             return string
 
 
-        parser = etree.XMLParser(ns_clean=True)
-        tree = etree.parse(filename, parser)
+        #parser = etree.XMLParser(ns_clean=True)
+        #tree = etree.parse(filename, parser)
+        #root = tree.getroot()
+        tree = ET.parse(filename)
         root = tree.getroot()
         result = cls()
         for child in root:
@@ -80,10 +84,13 @@ class Metadata:
             self.title, "; ".join(self.authors), self.language, self.tags) + series_text
 
     def to_opf(self, as_string=True):
+        import xml.etree.ElementTree as ET #use standard xml library because writing and register_namespace is present
         from lxml import etree
         import textwrap
+        import StringIO
 
-        root = etree.fromstring(textwrap.dedent(
+        #root = etree.fromstring(textwrap.dedent(
+        tree = ET.parse(StringIO.StringIO(textwrap.dedent(
             '''
             <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id">
                 <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
@@ -92,7 +99,8 @@ class Metadata:
                     </metadata>
                 <guide/>
             </package>
-            ''' % dict(a=APP_NAME, id=123, uuid=123)))
+            ''' % dict(a=APP_NAME, id=123, uuid=123))))
+        root = tree.getroot()
         metadata = root[0]
         metadata[0].tail = '\n' + (' ' * 8)
 
@@ -136,8 +144,15 @@ class Metadata:
 
         metadata[-1].tail = '\n' + (' ' * 4)
 
-        return etree.tostring(root, pretty_print=True, encoding='utf-8',
-                              xml_declaration=True) if as_string else root
+        ET.register_namespace('', 'http://www.idpf.org/2007/opf')
+        if as_string:
+            string_file = StringIO.StringIO()
+            tree.write(file_or_filename=string_file,encoding='utf-8',xml_declaration=True)
+            return string_file.getvalue()
+        return root
+        #return (ET.tostring(element=root,encoding='utf-8',xml_declaration=True)) if as_string else root
+        #return etree.tostring(root, pretty_print=True, encoding='utf-8',
+        #                      xml_declaration=True) if as_string else root
 
     def write_opf_to_file(self, filename):
         text = self.to_opf()
