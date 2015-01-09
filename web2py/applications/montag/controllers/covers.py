@@ -14,6 +14,9 @@ def edit_covers():
     tome = pdb.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info=True,
                                                            include_author_detail=True)
 
+    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    response.title = "Edit Cover for {} - Montag".format(title_text)
+
     available_covers = []
     available_content = []
 
@@ -55,6 +58,10 @@ def set_cover_from_content():
 
     tome = pdb.get_tome(tome_id)
     form = _set_cover_from_content_form()
+    
+    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    response.title = "Set Cover for {} - Montag".format(title_text)
+
 
     if form.process(keepvalues=True).accepted:
         fidelity = form.vars['fidelity']
@@ -91,6 +98,9 @@ def set_main_cover():
 
     tome = pdb.get_tome(tome_id)
     form = _set_main_cover_form()
+    
+    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    response.title = "Set Cover for {} - Montag".format(title_text)
     
     file_size = pydb.pyrosetup.fileserver().get_local_file_size(file_hash)
 
