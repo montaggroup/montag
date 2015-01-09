@@ -3,13 +3,11 @@
 from pydb import pyrosetup
 
 def index():
-    return dict(message="hello from friends.py")
-
-
+    return dict(message='hello from friends.py')
 
 
 def list_friends():
-    response.title = "Friends - Montag"
+    response.title = 'Friends - Montag'
     
     comm_data_store = pydb.pyrosetup.comm_data_store()
     is_locking_active = comm_data_store.is_locking_active()
@@ -87,7 +85,7 @@ def edit_friend():
     comm_data = _load_comm_data(friend_id)
 
     form = _friend_edit_form(friend, comm_data)
-    response.title = "Edit friend {} - Montag".format(friend['name'])
+    response.title = u'Edit friend {} - Montag'.format(friend['name'])
 
     if form.process(keepvalues=True).accepted:
         comm_data = _load_comm_data(friend_id)
@@ -132,7 +130,7 @@ def remove_friend():
     
     form = _friend_remove_form()
     if friend is not None:
-        response.title = "Remove friend {} - Montag".format(friend['name'])
+        response.title = u'Remove friend {} - Montag'.format(friend['name'])
 
     if form.process(keepvalues=True).accepted:
         pdb.remove_friend(int(friend_id))
@@ -144,7 +142,7 @@ def remove_friend():
 
 def add_friend():
     form = _friend_add_form()
-    response.title = "Add friend"
+    response.title = 'Add friend'
     if form.process(keepvalues=True).accepted:
         friend_id = pdb.add_friend(form.vars['name'].decode('utf-8'))
         response.flash = 'Added new friend'
@@ -177,14 +175,14 @@ def fetch_updates_all():
 
 def _unlock_comm_data_form():
     form = SQLFORM.factory(
-        Field('unlock_password', 'password', requires=IS_NOT_EMPTY(), default=""),
+        Field('unlock_password', 'password', requires=IS_NOT_EMPTY(), default=''),
     )
     return form
 
 
 def unlock_comm_data():
     form = _unlock_comm_data_form()
-    response.title = "Unlock Comm Data"
+    response.title = 'Unlock Comm Data'
     if form.process(keepvalues=True).accepted:
         password = form.vars['unlock_password'].decode('utf-8')
         cds = pyrosetup.comm_data_store()

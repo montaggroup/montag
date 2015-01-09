@@ -14,6 +14,9 @@ def edit_covers():
     tome = pdb.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info=True,
                                                            include_author_detail=True)
 
+    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    response.title = u'Edit Cover for {} - Montag'.format(title_text)
+
     available_covers = []
     available_content = []
 
@@ -27,7 +30,7 @@ def edit_covers():
         elif tome_file['file_type'] == pydb.FileType.Cover:
             available_covers.append(tome_file)
         else:
-            raise ValueError("Invalid value for file type")
+            raise ValueError('Invalid value for file type')
 
     locally_available_covers = filter(lambda x: x['has_local_copy'], available_covers)
     
@@ -55,6 +58,10 @@ def set_cover_from_content():
 
     tome = pdb.get_tome(tome_id)
     form = _set_cover_from_content_form()
+    
+    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    response.title = u'Set Cover for {} - Montag'.format(title_text)
+
 
     if form.process(keepvalues=True).accepted:
         fidelity = form.vars['fidelity']
@@ -92,6 +99,9 @@ def set_main_cover():
     tome = pdb.get_tome(tome_id)
     form = _set_main_cover_form()
     
+    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    response.title = u'Set Cover for {} - Montag'.format(title_text)
+    
     file_size = pydb.pyrosetup.fileserver().get_local_file_size(file_hash)
 
     if form.process(keepvalues=True).accepted:
@@ -115,7 +125,7 @@ def _stream_image(file_hash, extension):
     fp = pydb.pyrosetup.fileserver().get_local_file_path(file_hash)
     if fp is None:
         return
-    plain_file = open(fp,"rb")
+    plain_file = open(fp,'rb')
 
     # \todo determine mime type and other image params
     # response.headers['Content-Type'] = 'image/jpeg'
@@ -145,8 +155,8 @@ def _extract_image_from_content(file_hash, extension):
 
     fp = pydb.pyrosetup.fileserver().get_local_file_path(file_hash)
     if fp is None:
-        raise KeyError("File not in file store")
-    with open(fp, "rb") as source_file:
+        raise KeyError('File not in file store')
+    with open(fp, 'rb') as source_file:
         contents = source_file.read()
 
         return _get_cover_image(contents, extension)
@@ -163,12 +173,10 @@ def _get_cover_image(ebook_contents, extension):
     fd_target, path_cover_target = tempfile.mkstemp('.jpg')
     os.close(fd_target)
     
-    print "Extracting cover of {} to {}".format(path_orig, path_cover_target)
     convert_result = subprocess.call(['ebook-meta',path_orig,'--get-cover', path_cover_target])
-    print "cv is", convert_result
     os.remove(path_orig)
     
-    with open(path_cover_target, "rb") as coverfile:
+    with open(path_cover_target, 'rb') as coverfile:
         result = cStringIO.StringIO(coverfile.read())
     os.remove(path_cover_target)
     
@@ -192,4 +200,4 @@ def extract_cover_image_from_content():
         
 
     
-def index(): return dict(message="hello from covers.py")
+def index(): return dict(message='hello from covers.py')

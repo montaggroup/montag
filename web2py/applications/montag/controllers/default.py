@@ -236,7 +236,7 @@ def view_tome_debug_info():
 
     friends = debug_info['friends']
     for friend_id, data in friends.iteritems():
-        debug_info['friend_{}'.format(friend_id)] = data
+        debug_info[u'friend_{}'.format(friend_id)] = data
         
     del debug_info['friends']
     
@@ -370,7 +370,7 @@ class tag_validator:
                 
                 value = value.strip()
                 if value in used_tag_values:
-                    return None,u"Duplicate tag names entered: {}".format(value)
+                    return None, u"Duplicate tag names entered: {}".format(value)
                 used_tag_values.add(value)
                 tags.append({"fidelity":fidelity, "tag_value" : value})
         return tags, None

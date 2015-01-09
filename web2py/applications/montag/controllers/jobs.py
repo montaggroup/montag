@@ -8,6 +8,8 @@ def _friend_name(friend_id):
     return friend['name']
 
 def list_jobs():
+    response.title = "List Jobs - Montag"
+
     com_service = pydb.pyrosetup.comservice()
     job_infos = com_service.get_job_list()
     for job_info in job_infos:

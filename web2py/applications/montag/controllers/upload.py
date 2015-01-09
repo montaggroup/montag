@@ -1,7 +1,7 @@
 # coding: utf8
 
 
-def index(): return dict(message="hello from upload.py")
+def index(): return dict(message='hello from upload.py')
 
 import tempfile
 import os
@@ -19,7 +19,7 @@ def upload_file_json():
 
             (id, hash, size) = _insert_file(f.file, f.filename)
 
-            res = dict(files=[ {"name": str(f.filename), "size": size}] )
+            res = dict(files=[ {'name': str(f.filename), 'size': size}] )
 
             return gluon.contrib.simplejson.dumps(res, separators=(',',':'))
 
@@ -31,7 +31,7 @@ def _insert_file(file_stream, original_file_name):
 
         (handle, file_path) = tempfile.mkstemp(suffix=extension_with_dot)
 
-        file=os.fdopen(handle, "wb")
+        file=os.fdopen(handle, 'wb')
         file.write(file_stream.read())
         file.close()
 
@@ -50,14 +50,14 @@ def _create_upload_form():
                                        requires=IS_NOT_EMPTY()))),
            TR(TD(INPUT(_type='submit',_value='Submit')))
            ,_class='upload_file'
-       ),  _class="dropzone", _id='dropzoneForm')
+       ),  _class='dropzone', _id='dropzoneForm')
     return form
 
 def _title_suggestion(filename):
     (title_suggestion,_) = os.path.splitext(filename)
     if isinstance(title_suggestion, str):
         title_suggestion = title_suggestion.decode('utf-8')
-    title_suggestion = title_suggestion.replace("_"," ").replace("."," ")
+    title_suggestion = title_suggestion.replace('_',' ').replace('.',' ')
     return title_suggestion
 
 def upload_file():
@@ -103,7 +103,7 @@ def upload_file_to_tome():
 
     tome = pdb.get_tome_by_guid(tome_guid)
     if tome is None:
-        response.flash("Tome not found")
+        response.flash('Tome not found')
         return dict(form=form, tome=None)
 
     if form.accepts(request.vars):
@@ -137,7 +137,7 @@ def upload_file_to_tome():
 
 
 class author_validator:
-    def __init__(self, format="a", error_message="b"):
+    def __init__(self, format='a', error_message='b'):
         pass
 
     def __call__(self, field_value):
@@ -145,26 +145,25 @@ class author_validator:
         authors_list=[]
         
         field_value=field_value.decode('utf-8')
-        for line in field_value.split("\n"):
+        for line in field_value.split('\n'):
             author_name = line.strip()
             if author_name:
                 if author_name in authors:
-                    return None,"Duplicate author names entered: {}".format(author_name)
+                    return None, u'Duplicate author names entered: {}'.format(author_name)
                 authors.add(author_name)
                 authors_list.append(author_name)
 
         if not authors:
-            return None,"Empty author field"
+            return None,'Empty author field'
         return authors_list, None
 
     def formatter(self, value):
         authors = value
-        return "\n".join([author['name'].encode('utf-8') for author in authors])
+        return '\n'.join([author['name'].encode('utf-8') for author in authors])
 
 
 def _add_tome_from_file_form(metadata):
-    print "Metadata is",metadata
-    def from_dict(the_dict, key, default_value=""):
+    def from_dict(the_dict, key, default_value=''):
         if not key in the_dict:
             return default_value
         else:
