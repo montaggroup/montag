@@ -7343,6 +7343,9 @@ EPUBJS.replace.links = function(_store, full, done, link){
 			setTimeout(function(){
 				done(url, full);
 			}, 5); //-- Allow for css to apply before displaying chapter
+		}, function(reason) {
+		    // we were unable to replace the style sheets
+		    done(null);
 		});
 	}else{
 		_store.getUrl(full).then(done, function(reason) {
@@ -7370,8 +7373,11 @@ EPUBJS.replace.stylesheets = function(_store, full) {
 
 		}, function(e) {
 			console.error(e);
+			deferrect.reject(e);
 		});
 		
+	}, function(reason) {
+		deferred.reject(reason);
 	});
 
 	return deferred.promise;
@@ -7475,7 +7481,10 @@ EPUBJS.Unarchiver.prototype.getText = function(url, encoding){
 	var _URL = window.URL || window.webkitURL || window.mozURL;
 
 	if(!entry) {
-		console.warn("File not found in the contained epub:", url);
+		deferred.reject({
+			message : "File not found in the epub: " + url,
+			stack : new Error().stack
+		});
 		return deferred.promise;
 	}
 
