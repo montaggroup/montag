@@ -13,11 +13,13 @@ We start with the necessary hardware:
 *   one [Banana Pi](http://www.bananapi.org/p/product.html) with a decent power supply
 *   one decent SD card (e.g. SanDisk, Kingston), it absolutely needs to support wear levelling
 
+Write an Ubuntu image to the SD card (Bananian may also work with this guide, but Ubuntu is the default).
+Boot, log in and execute the following commands:
 
 
         sudo apt-get update
         sudo apt-get install git python-pip python-virtualenv
-        sudo apt-get install libxml2-dev libxslt-dev libz-dev python-dev
+        sudo apt-get install libz-dev python-dev
         git clone https://github.com/montaggroup/montag.git
         cd montag
         virtualenv venv
