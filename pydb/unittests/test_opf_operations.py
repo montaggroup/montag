@@ -10,7 +10,7 @@ class TestOpfOperations(unittest.TestCase):
         self.metadata.title = "a title for test"
         self.metadata.authors = ["one author", "another author"]
         self.metadata.series = "a series for tests!"
-        self.metadata.series_index = 451
+        self.metadata.series_index = "451"
         self.metadata.title_sort = "title for test, a"
         self.metadata.tags = ["tag1", "tag team"]
         self.metadata.language = "en"
@@ -36,19 +36,13 @@ class TestOpfOperations(unittest.TestCase):
 
         pass
 
-    def _is_string_correct_opf(self, opf_string):
-        if ( (re.search('<?xml version=.+encoding=.+?>$', opf_string, flags=re.MULTILINE)) and
-        (re.search('<metadata.+xmlns:opf.*=.*"http://www.idpf.org/2007/opf".*>$', opf_string, flags=re.MULTILINE)) and
-        (re.search('<dc:title>a title for test</dc:title>$', opf_string, flags=re.MULTILINE)) and
-        (re.search('<dc:creator opf:role.*=.*"aut">one author</dc:creator>$', opf_string, flags=re.MULTILINE)) and
-        (re.search('<dc:creator opf:role.*=.*"aut">another author</dc:creator>$', opf_string, flags=re.MULTILINE)) and
-        (re.search('<meta.*content.*=.*"a series for tests!".*name.*=.*"calibre:series"/>$', opf_string,
-                    flags=re.MULTILINE)) and
-        (re.search('<meta.*content.*=.*"451".*name="calibre:series_index"/>$', opf_string, flags=re.MULTILINE)) and
-        (re.search('<dc:language>en</dc:language>$', opf_string, flags=re.MULTILINE)) ):
-            return True
-
-        return False
+    def _is_metadata_correct(self, metadata):
+        self.assertEquals(metadata.title, "a title for test")
+        self.assertEquals(metadata.authors, ["one author", "another author"])
+        self.assertEquals(metadata.series, "a series for tests!")
+        self.assertEquals(metadata.series_index, "451")
+        self.assertEquals(metadata.title_sort, "title for test, a")
+        self.assertEquals(metadata.tags, ["tag1", "tag team"])
 
     def test_create_metadata_object_from_code(self):
         mi = pydb.opf.Metadata()
@@ -56,18 +50,13 @@ class TestOpfOperations(unittest.TestCase):
         mi.title = "a title for test"
         mi.authors = ["one author", "another author"]
         mi.series = "a series for tests!"
-        mi.series_index = 451
+        mi.series_index = "451"
         mi.title_sort = "title for test, a"
         mi.tags = ["tag1", "tag team"]
         mi.language = "en"
 
         self.assertTrue(mi)
-        self.assertEquals(mi.title, "a title for test")
-        self.assertEquals(mi.authors, ["one author", "another author"])
-        self.assertEquals(mi.series, "a series for tests!")
-        self.assertEquals(mi.series_index, 451)
-        self.assertEquals(mi.title_sort, "title for test, a")
-        self.assertEquals(mi.tags, ["tag1", "tag team"])
+        self._is_metadata_correct(mi)
 
     def test_reading_metadata_from_file(self):
         fd,filename = tempfile.mkstemp()
@@ -75,26 +64,8 @@ class TestOpfOperations(unittest.TestCase):
         os.close(fd)
 
         metadata = pydb.opf.Metadata.from_file(filename)
-        opf_string = self.metadata.to_opf(as_string=True)
 
-        self.assertTrue(opf_string)
-        print opf_string
-#        self.assertTrue(self._is_string_correct_opf(opf_string))
+        self.assertTrue(metadata)
+        self._is_metadata_correct(metadata)
 
-    def test_writing_metadata_to_string(self):
-        opf_string = self.metadata.to_opf(as_string=True)
-
-        self.assertTrue(opf_string)
-        self.assertTrue(self._is_string_correct_opf(opf_string))
-
-    def test_writing_metadata_to_file(self):
-        fd,filename = tempfile.mkstemp()
-        os.close(fd)
-
-        self.metadata.write_opf_to_file(filename)
-        with open (filename, "r") as file:
-            opf_string=file.read()
-
-        self.assertTrue(opf_string)
-        self.assertTrue(self._is_string_correct_opf(opf_string))
 
