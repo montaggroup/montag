@@ -984,6 +984,11 @@ class MainDB:
          so that afterwards the fused tome has the tome data given by target_guid) """
         source_tome = self.get_tome_by_guid(source_guid)
         target_tome = self.get_tome_by_guid(target_guid)
+        
+        if source_tome is None:
+            raise KeyError("Source tome with guid {} does not exist.".format(source_guid))
+        if target_tome is None:
+            raise KeyError("Target tome with guid {} does not exist.".format(target_guid))
 
         data_tome = target_tome
 

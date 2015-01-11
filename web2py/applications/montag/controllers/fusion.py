@@ -163,9 +163,19 @@ def execute_merge_tomes():
     if use_data_from_first.lower()=="false":
         use_data_from_first = False
     
+    
+    
     if use_data_from_first:
-        pdb.fuse_tomes(second_tome_guid, target_guid=first_tome_guid)
+        source_guid = second_tome_guid
+        target_guid = first_tome_guid
     else:
-        pdb.fuse_tomes(first_tome_guid, target_guid=second_tome_guid)
+        source_guid = first_tome_guid
+        target_guid = second_tome_guid
+    
+    try:
+        pdb.fuse_tomes(source_guid, target_guid = target_guid)
+    except KeyError: # one or both tomes do not exit (anymore), do nothing as
+                     # the most probable cause is a merge that just happened
+        pass
 
     redirect(URL('default','view_tome', args=(first_tome_guid)))
