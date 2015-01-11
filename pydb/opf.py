@@ -144,7 +144,7 @@ class Metadata:
 
         metadata[-1].tail = '\n' + (' ' * 4)
 
-        ET.register_namespace('', 'http://www.idpf.org/2007/opf')
+        ET.register_namespace('', 'xmlns:opf="http://www.idpf.org/2007/opf')
         if as_string:
             string_file = StringIO.StringIO()
             tree.write(file_or_filename=string_file,encoding='utf-8',xml_declaration=True)
