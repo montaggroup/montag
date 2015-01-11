@@ -1,0 +1,21 @@
+<h1>Current cover:</h1>
+
+<div>
+    {{ if current_cover: }} 
+    <div class='current_cover'>
+        <img src="{{=URL( 'get_best_cover', args=[tome['id']]) }}" alt="Current Cover" />
+        <br>{{ = int(current_cover['fidelity']) }} / 100
+    </div>
+    {{ pass }}
+</div>
+<h1 class="room_above" >Possible covers:</h1>
+<div class='cover_list'>
+
+{{ for content in available_content: }} 
+    <div class='small_cover' style='width:80%'>
+        <a href="{{=URL('set_cover_from_content', args=[ tome['id'], content['hash'], content['file_extension'], True ]) }}">
+            <img style='width:80%' src="{{=URL( 'extract_cover_image_from_content', args=[ content['hash'], content['file_extension'] ]) }}" alt="No image found" />
+        </a>
+    </div>
+    {{ pass }}
+</div>

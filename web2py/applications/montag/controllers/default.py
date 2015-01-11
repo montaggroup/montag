@@ -316,9 +316,8 @@ def tomesearch():
     return retval
 
     
-def _tome_edit_form(tome_id, tome):
+def _tome_edit_form(tome, required_tome_fidelity):
     
-    required_tome_fidelity = pdb.calculate_required_tome_fidelity(tome_id)
     form = SQLFORM.factory(
         Field('title',requires=IS_NOT_EMPTY(), default=tome['title'].encode('utf-8'), comment=XML(r'<input type="button" value="Guess title case" onclick="title_case_field(&quot;no_table_title&quot;)">')),
         Field('subtitle', default=db_str_to_form(tome['subtitle']), comment=XML(r'<input type="button" value="Guess subtitle case" onclick="title_case_field(&quot;no_table_subtitle&quot;)">')),
@@ -413,7 +412,9 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
     syn_field_names=['content','fidelity']
     
     tome_id = tome_doc['id']
-    form= _tome_edit_form(tome_id, tome_doc)
+    required_tome_fidelity = pdb.calculate_required_tome_fidelity(tome_id)
+    
+    form = _tome_edit_form(tome_doc, required_tome_fidelity)
     synforms = list()
     
     relevant_synopses = list(relevant_items(tome_doc['synopses']))
@@ -446,7 +447,7 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
             elif synform.errors:
                 response.flash = 'form has errors'
     
-    if form.process(session = None, formname='edit_tome', keepvalues=True).accepted:
+    if form.process(session=None, formname='edit_tome', keepvalues=True).accepted:
         for f in field_names:
             if f == 'tags':
                 tome_doc[f] = form.vars[f]
@@ -467,7 +468,7 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
         response.flash = 'form has errors'
     
     tome_doc['id']=tome_id
-    return dict(form=form, tome=tome_doc, tome_id=tome_id, synforms=synforms)
+    return dict(form=form, tome=tome_doc, tome_id=tome_id, synforms=synforms, required_fidelity=required_tome_fidelity)
 
 
 def edit_tome_file_link():
