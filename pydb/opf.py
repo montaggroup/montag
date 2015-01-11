@@ -2,7 +2,7 @@
 
 import logging
 import re
-import defusedxml
+import defusedxml.ElementTree as ET #use hardened xml implementation because reading unknown xml document
 
 logger = logging.getLogger('opf')
 
@@ -34,22 +34,15 @@ class Metadata:
 
     @classmethod
     def from_file(cls, filename):
-        import defusedxml.ElementTree as ET #use hardened xml implementation because reading unknown xml document
-
         def clean_string(string):
             string = string.strip()
             string = re.sub("  +", " ", string)
             return string
 
-
-        #parser = etree.XMLParser(ns_clean=True)
-        #tree = etree.parse(filename, parser)
-        #root = tree.getroot()
         tree = ET.parse(filename)
         root = tree.getroot()
         result = cls()
         for child in root:
-            #print child.tag
             if child.tag.endswith('metadata'):
                 for meta in child:
                     logger.debug("%s %s %s", meta.tag, meta.attrib, meta.text)
