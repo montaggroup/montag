@@ -6,15 +6,6 @@ import tempfile
 
 class TestOpfOperations(unittest.TestCase):
     def setUp(self):
-        self.metadata = pydb.opf.Metadata()
-        self.metadata.title = "a title for test"
-        self.metadata.authors = ["one author", "another author"]
-        self.metadata.series = "a series for tests!"
-        self.metadata.series_index = "451"
-        self.metadata.title_sort = "title for test, a"
-        self.metadata.tags = ["tag1", "tag team"]
-        self.metadata.language = "en"
-
         self.reference_opf_string=\
             """<?xml version='1.0' encoding='utf-8'?>
                <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id">
@@ -36,27 +27,13 @@ class TestOpfOperations(unittest.TestCase):
 
         pass
 
-    def _is_metadata_correct(self, metadata):
+    def _assert_is_metadata_correct(self, metadata):
         self.assertEquals(metadata.title, "a title for test")
         self.assertEquals(metadata.authors, ["one author", "another author"])
         self.assertEquals(metadata.series, "a series for tests!")
         self.assertEquals(metadata.series_index, "451")
         self.assertEquals(metadata.title_sort, "title for test, a")
         self.assertEquals(metadata.tags, ["tag1", "tag team"])
-
-    def test_create_metadata_object_from_code(self):
-        mi = pydb.opf.Metadata()
-
-        mi.title = "a title for test"
-        mi.authors = ["one author", "another author"]
-        mi.series = "a series for tests!"
-        mi.series_index = "451"
-        mi.title_sort = "title for test, a"
-        mi.tags = ["tag1", "tag team"]
-        mi.language = "en"
-
-        self.assertTrue(mi)
-        self._is_metadata_correct(mi)
 
     def test_reading_metadata_from_file(self):
         fd,filename = tempfile.mkstemp()
@@ -66,6 +43,6 @@ class TestOpfOperations(unittest.TestCase):
         metadata = pydb.opf.Metadata.from_file(filename)
 
         self.assertTrue(metadata)
-        self._is_metadata_correct(metadata)
+        self._assert_is_metadata_correct(metadata)
 
 
