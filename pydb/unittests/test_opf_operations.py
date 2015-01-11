@@ -1,6 +1,6 @@
 import unittest
 import pydb.opf
-import re,os
+import os
 import tempfile
 
 
