@@ -1,41 +1,28 @@
-function uc_first_only(a) {
-    return a.substr(0,1).toUpperCase() + a.substr(1).toLowerCase();
-}
+/* 
+  * To Title Case 2.1 – http://individed.com/code/to-title-case/
+  * Copyright © 2008–2013 David Gouch. Licensed under the MIT License.
+ */
 
-var lowercase_words = new Array("to","a","an","the","at","in","with","and","but","or")
+String.prototype.toTitleCase = function(){
+  var smallWords = /^(a|an|and|as|at|but|by|en|for|if|in|nor|of|on|or|per|the|to|vs?\.?|via)$/i;
 
-function word_remains_lowercase(word)
-{
-    var i;
-
-    for(i=0; i< lowercase_words.length; i++) {
-        if(word == lowercase_words[i]) return true;
+  return this.replace(/[A-Za-z0-9\u00C0-\u00FF]+[^\s-]*/g, function(match, index, title){
+    if (index > 0 && index + match.length !== title.length &&
+      match.search(smallWords) > -1 && title.charAt(index - 2) !== ":" &&
+      (title.charAt(index + match.length) !== '-' || title.charAt(index - 1) === '-') &&
+      title.charAt(index - 1).search(/[^\s-]/) < 0) {
+      return match.toLowerCase();
     }
-    return false;
-}
 
-function title_case(text) {
-	var result = ''
+    if (match.substr(1).search(/[A-Z]|\../) > -1) {
+      return match;
+    }
 
-	var words = text.split(' ');
-        var i;
-	for (i=0; i<words.length; i++) {
-		var word=words[i].toLowerCase();
-                if(i!=0 && word_remains_lowercase(word)) {
-                    word=word.toLowerCase();
-                } else {
-                    word=uc_first_only(word)
-                }
-
-		if (result != '') result += ' ';
-		result += word;
-	}
-
-	return result;
-}
+    return match.charAt(0).toUpperCase() + match.substr(1);
+  });
+};
 
 
 function title_case_field(id) {
     el = document.getElementById(id)
-    el.value = title_case(el.value)
-}
+    el.value = el.value.toTitleCase()
