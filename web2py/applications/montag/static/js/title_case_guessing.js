@@ -2,6 +2,9 @@
   * To Title Case 2.1 – http://individed.com/code/to-title-case/
   * Copyright © 2008–2013 David Gouch. Licensed under the MIT License.
  */
+ 
+ /* Changed by dsk7 to allow changing suffixes words to lower case
+ */
 
 String.prototype.toTitleCase = function(){
   var smallWords = /^(a|an|and|as|at|but|by|en|for|if|in|nor|of|on|or|per|the|to|vs?\.?|via)$/i;
@@ -14,15 +17,12 @@ String.prototype.toTitleCase = function(){
       return match.toLowerCase();
     }
 
-    if (match.substr(1).search(/[A-Z]|\../) > -1) {
-      return match;
-    }
-
-    return match.charAt(0).toUpperCase() + match.substr(1);
+    return match.charAt(0).toUpperCase() + match.substr(1).toLowerCase();
   });
 };
 
 
 function title_case_field(id) {
-    el = document.getElementById(id)
-    el.value = el.value.toTitleCase()
+    el = document.getElementById(id);
+    el.value = el.value.toTitleCase();
+};
