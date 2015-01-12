@@ -26,7 +26,7 @@
 
 {{ for content in available_content: }} 
     <div class='small_cover'>
-        <a href="{{=URL('set_cover_from_content', args=[ tome['id'], content['hash'], content['file_extension'] ]) }}">
+        <a href="{{=URL('set_cover_from_content', args=[ tome['id'], content['hash'], content['file_extension'], False ]) }}">
             <img src="{{=URL( 'extract_cover_image_from_content', args=[ content['hash'], content['file_extension'] ]) }}" alt="No image found" />
         </a>
     </div>

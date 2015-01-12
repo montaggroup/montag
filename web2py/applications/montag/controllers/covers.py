@@ -43,6 +43,10 @@ def edit_covers():
             'available_content': available_content, 'current_cover': current_cover}
 
 
+def edit_covers_compact():
+    return edit_covers()
+
+
 def _set_cover_from_content_form():
    default_cover_fidelity = 80
    form = SQLFORM.factory(
@@ -55,6 +59,10 @@ def set_cover_from_content():
     tome_id = request.args[0]
     content_hash = request.args[1]
     content_extension = request.args[2]
+    only_display_cover_afterwards = request.args[3]
+    if only_display_cover_afterwards.lower() == 'false':
+        only_display_cover_afterwards = False
+    
 
     tome = pdb.get_tome(tome_id)
     form = _set_cover_from_content_form()
@@ -78,7 +86,11 @@ def set_cover_from_content():
                                                                                      move_file = True)
         
         pdb.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Cover, fidelity)
-        redirect(URL('default', 'view_tome', args=(tome['guid'])))
+        if only_display_cover_afterwards:
+            redirect(URL('covers', 'get_cover_image', args=(file_hash, file_extension)))
+        else:
+            redirect(URL('default', 'view_tome', args=(tome['guid'])))
+            
 
     return {'tome': tome, 'content_hash': content_hash, 'content_extension': content_extension, 'form': form}
 
