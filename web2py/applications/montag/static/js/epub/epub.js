@@ -7373,7 +7373,7 @@ EPUBJS.replace.stylesheets = function(_store, full) {
 
 		}, function(e) {
 			console.error(e);
-			deferrect.reject(e);
+			deferred.reject(e);
 		});
 		
 	}, function(reason) {
@@ -7399,6 +7399,8 @@ EPUBJS.replace.cssUrls = function(_store, base, text){
 		var full = EPUBJS.core.resolveUrl(base, str.replace(/url\(|[|\)|\'|\"]/g, ''));
 		var replaced = _store.getUrl(full).then(function(url){
 				text = text.replace(str, 'url("'+url+'")');
+			}, function(reason) {
+				deferred.reject(reason);
 			});
 		
 		promises.push(replaced);
