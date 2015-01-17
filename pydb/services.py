@@ -131,8 +131,7 @@ def logfile_path(service_name):
 def start(service_name):
     startargs = []
     if not using_py2exe():
-        startargs.append(r'C:\Python27\python.exe')
-        #startargs.append('python2.7')
+        startargs.append('python2.7')
     startargs.append(service_name)
     env = os.environ
     env['PYRO_LOGLEVEL'] = log_level
