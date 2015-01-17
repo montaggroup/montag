@@ -10,6 +10,7 @@ import time
 import sys
 from pydb.executionenvironment import using_py2exe
 import pydb.indexserver
+import pydb.config
 
 
 def get_main_dir():
@@ -35,6 +36,7 @@ if __name__ == "__main__":
     logger = logging.getLogger('indexserver')
     logger.info('### logging started at %s local time. ###', time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime()))
 
+    pydb.config.read_config()
     index_server = pydb.indexserver.IndexServer(base_path)
 
     daemon = Pyro4.Daemon(port=args.pyro_port)  # make a Pyro daemon

@@ -5,6 +5,7 @@ logging.basicConfig(level=logging.DEBUG)
 import os
 import sys
 from pydb.executionenvironment import using_py2exe
+import pydb.config
 
 
 def get_main_dir():
@@ -12,6 +13,8 @@ def get_main_dir():
         return os.path.dirname(sys.executable)
     return os.path.dirname(sys.argv[0])
 
+
+pydb.config.read_config()
 os.chdir(os.path.join(get_main_dir(), 'web2py'))
 sys.path.append('.')
 sys.path.append('gluon')
