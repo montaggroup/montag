@@ -11,6 +11,7 @@ import time
 import atexit
 from pydb.executionenvironment import get_main_dir
 import pydb.commdatastore
+import pydb.config
 
 
 def schema_path():
@@ -45,6 +46,7 @@ if __name__ == "__main__":
     if not os.path.exists(db_dir):
         os.makedirs(db_dir)
 
+    pydb.config.read_config()
     main_db = pydb.maindb.build(db_dir, schema_path=schema_path(), enable_db_sync=not args.no_sync)
 
     def term_handler():

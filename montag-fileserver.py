@@ -11,6 +11,8 @@ import time
 from pydb.executionenvironment import get_main_dir
 import pydb.commdatastore
 import pydb.pyrosetup
+import pydb.config
+
 
 if __name__ == "__main__":
 
@@ -25,6 +27,7 @@ if __name__ == "__main__":
                         action="store_true", default=False)
 
     args = parser.parse_args()
+    pydb.config.read_config()
 
     logger = logging.getLogger('fileserver')
     logger.info('### logging started at %s local time. ###', time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime()))

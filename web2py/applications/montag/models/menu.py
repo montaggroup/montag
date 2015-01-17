@@ -18,10 +18,12 @@ response.google_analytics_id = None
 #########################################################################
 
 response.menu = [
-    (T('Logout'), False,URL('default', 'user',args='logout'), []),
     (T('Search'), False, URL('default', 'index'), []),
     (T('Timeline'), False, URL('default', 'timeline'), []),
     (T('Add Tome'), False, URL('upload', 'upload_file'), []),
     (T('Friends'), False, URL('friends', 'list_friends'), []),
     (T('More...'), False, URL('default', 'more_actions'), [])
     ]
+
+if pydb.config.enable_web_auth():
+    response.menu.append((T('Logout'), False,URL('default', 'user',args='logout'), []))
