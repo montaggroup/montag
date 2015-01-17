@@ -6,7 +6,7 @@ def _select_author_merge_partner_form(first_author):
     return form
 
 
-
+@auth.requires_login()
 def select_author_merge_partner():
     first_author_guid = request.args[0]
     first_author = pdb.get_author_by_guid(first_author_guid)
@@ -59,6 +59,8 @@ def _fetch_tomes_by_author(author_id):
             tomelist.append(tome)
     return tomelist
 
+
+@auth.requires_login()
 def confirm_merge_authors():
     first_author_guid = request.args[0]
     first_author = pdb.get_author_by_guid(first_author_guid)
@@ -79,6 +81,7 @@ def confirm_merge_authors():
             'second_author': second_author, 'second_author_tomes': second_author_tomes}
     
 
+@auth.requires_login()
 def execute_merge_authors():
     first_author_guid = request.args[0]
     second_author_guid = request.args[1]
@@ -102,6 +105,7 @@ def _select_tome_merge_partner_form(first_tome):
     return form
 
 
+@auth.requires_login()
 def select_tome_merge_partner():
     first_tome_guid = request.args[0]
     first_tome = pdb.get_tome_by_guid(first_tome_guid)
@@ -137,6 +141,7 @@ def select_tome_merge_partner():
     return retval
 
 
+@auth.requires_login()
 def confirm_merge_tomes():
     first_tome_guid = request.args[0]
     first_tome = pdb.get_tome_document_with_local_overlay_by_guid(first_tome_guid, include_local_file_info=True, include_author_detail=True)
@@ -155,6 +160,7 @@ def confirm_merge_tomes():
     return {'first_tome': first_tome, 'second_tome': second_tome}
 
 
+@auth.requires_login()
 def execute_merge_tomes():
     first_tome_guid = request.args[0]
     second_tome_guid = request.args[1]
@@ -163,15 +169,15 @@ def execute_merge_tomes():
     if use_data_from_first.lower()=="false":
         use_data_from_first = False
     
-    
-    
+
+
     if use_data_from_first:
         source_guid = second_tome_guid
         target_guid = first_tome_guid
     else:
         source_guid = first_tome_guid
         target_guid = second_tome_guid
-    
+
     try:
         pdb.fuse_tomes(source_guid, target_guid = target_guid)
     except KeyError: # one or both tomes do not exit (anymore), do nothing as

@@ -8,6 +8,7 @@ import os
 from pydb import ebook_metadata_tools, FileType, TomeType
 
 
+@auth.requires_login()
 def upload_file_json():
         """
         File upload handler for the ajax form of the plugin jquery-file-upload
@@ -26,12 +27,13 @@ def upload_file_json():
         except:
             return dict(message=T('Upload error'))
 
+
 def _insert_file(file_stream, original_file_name):
         (_, extension_with_dot) = os.path.splitext(original_file_name)
 
         (handle, file_path) = tempfile.mkstemp(suffix=extension_with_dot)
 
-        file=os.fdopen(handle, 'wb')
+        file=os.fdopen(handle, "wb")
         file.write(file_stream.read())
         file.close()
 
@@ -53,6 +55,7 @@ def _create_upload_form():
        ),  _class='dropzone', _id='dropzoneForm')
     return form
 
+
 def _title_suggestion(filename):
     (title_suggestion,_) = os.path.splitext(filename)
     if isinstance(title_suggestion, str):
@@ -60,6 +63,8 @@ def _title_suggestion(filename):
     title_suggestion = title_suggestion.replace('_',' ').replace('.',' ')
     return title_suggestion
 
+
+@auth.requires_login()
 def upload_file():
     response.enable_dropzone = True
     form = _create_upload_form()
@@ -95,6 +100,8 @@ def upload_file():
         response.flash = 'form has errors'
     return dict(form=form)
 
+
+@auth.requires_login()
 def upload_file_to_tome():
     tome_guid = request.args[0]
 
@@ -182,6 +189,7 @@ def _add_tome_from_file_form(metadata):
     return form
 
 
+@auth.requires_login()
 def add_tome_from_file():
     file_hash=request.args[0]
     file_extension=request.args[1]
@@ -220,6 +228,7 @@ def _upload_cover_form():
     return form
 
 
+@auth.requires_login()
 def upload_cover():
     tome_id = request.args[0]
     tome = pdb.get_tome(tome_id)

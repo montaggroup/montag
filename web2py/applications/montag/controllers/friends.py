@@ -2,10 +2,13 @@
 
 from pydb import pyrosetup
 
+
+@auth.requires_login()
 def index():
     return dict(message='hello from friends.py')
 
 
+@auth.requires_login()
 def list_friends():
     response.title = 'Friends - Montag'
     
@@ -79,6 +82,8 @@ def _load_friend(friend_id):
     friend = pdb.get_friend(friend_id)
     return friend
 
+
+@auth.requires_login()
 def edit_friend():
     friend_id = request.args[0]
     friend = _load_friend(friend_id)
@@ -124,6 +129,8 @@ def _friend_remove_form():
     )
     return form
 
+
+@auth.requires_login()
 def remove_friend():
     friend_id = request.args[0]
     friend = _load_friend(friend_id)
@@ -140,6 +147,8 @@ def remove_friend():
         response.flash = 'form  has errors'
     return dict(form=form, friend=friend)
 
+
+@auth.requires_login()
 def add_friend():
     form = _friend_add_form()
     response.title = 'Add friend'
@@ -152,6 +161,8 @@ def add_friend():
         response.flash = 'form has errors'
     return dict(form=form)
 
+
+@auth.requires_login()
 def fetch_updates():
     friend_id = request.args[0]
     com_service = pydb.pyrosetup.comservice()
@@ -161,7 +172,9 @@ def fetch_updates():
     except ValueError as e:
         session.flash = e.message
         redirect('../list_friends')
-        
+
+
+@auth.requires_login()
 def fetch_updates_all():
     com_service = pydb.pyrosetup.comservice()
     friends = pdb.get_friends()
@@ -180,6 +193,7 @@ def _unlock_comm_data_form():
     return form
 
 
+@auth.requires_login()
 def unlock_comm_data():
     form = _unlock_comm_data_form()
     response.title = 'Unlock Comm Data'
@@ -196,6 +210,8 @@ def unlock_comm_data():
         response.flash = 'form has errors'
     return dict(form=form)
 
+
+@auth.requires_login()
 def clear_completed_jobs():
     com_service = pydb.pyrosetup.comservice()
     com_service.clean_jobs()
