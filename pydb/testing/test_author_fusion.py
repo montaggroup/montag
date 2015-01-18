@@ -1,14 +1,11 @@
 import unittest
 import copy
 import os
-
-import logging
-logger = logging.getLogger('test_author_fusion')
-
 import helpers
 
 
-
+import logging
+logger = logging.getLogger('test_author_fusion')
 logging.basicConfig(level=logging.INFO)
 
 
