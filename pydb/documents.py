@@ -132,30 +132,44 @@ def overlay_document(merge_doc, local_doc):
     return merge_doc
 
 
+def _overlay_item(local_items_by_key, merge_item, item_id):
+    if item_id not in local_items_by_key:
+        return merge_item
+
+    local_item = local_items_by_key[item_id]
+    local_fidelity = local_item['fidelity']
+    merge_fidelity = merge_item['fidelity']
+    if abs(local_fidelity) > abs(merge_fidelity) or local_fidelity * merge_fidelity < 0:
+        new_item = copy.deepcopy(local_item)
+        if 'id' in merge_item:
+            new_item['id'] = merge_item['id']
+        if 'detail' in merge_item:
+            detail = merge_item['detail']
+            if 'id' in detail:
+                new_item['detail']['id'] = detail['id']
+
+        result_item = new_item
+    else:
+        result_item = merge_item
+
+    return result_item
+
+
 def overlay_local_items(mergedb_items, localdb_items, key_name):
     local_items_by_key = _list_to_dict(localdb_items, key_name)
 
     overlaid_items = []
+    merged_ids = set()
     for merge_item in mergedb_items:
         item_id = merge_item[key_name]
-        if item_id in local_items_by_key:
-            local_item = local_items_by_key[item_id]
-            local_fidelity = local_item['fidelity']
-            merge_fidelity = merge_item['fidelity']
-            if abs(local_fidelity) > abs(merge_fidelity) or local_fidelity * merge_fidelity < 0:
-                new_item = copy.deepcopy(local_item)
-                if 'id' in merge_item:
-                    new_item['id'] = merge_item['id']
-                if 'detail' in merge_item:
-                    detail = merge_item['detail']
-                    if 'id' in detail:
-                        new_item['detail']['id'] = detail['id']
+        result_item = _overlay_item(local_items_by_key, merge_item, item_id)
+        overlaid_items.append(result_item)
+        merged_ids.add(item_id)
 
-                overlaid_items.append(new_item)
-            else:
-                overlaid_items.append(merge_item)
-        else:
-            overlaid_items.append(merge_item)
+    # add the ids only present in the local entry
+    local_only_ids = set(local_items_by_key.keys()) - merged_ids
+    for local_only_id in local_only_ids:
+        overlaid_items.append(local_items_by_key[local_only_id])
 
     return overlaid_items
 
