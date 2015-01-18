@@ -5,6 +5,9 @@ logging.basicConfig(level=logging.DEBUG)
 import argparse
 import sys
 import pydb.services as services
+import time
+import pydb.pyrosetup
+import Pyro4
 
 
 def do_list_services(args):
@@ -23,10 +26,30 @@ def do_start_services(args):
             print 'starting service {}, log {}'.format(name, services.logfile_path(name))
             try:
                 services.start(name, log_level=args.log_level)
+                if 'pydbserver' in name:  # allow service to start up
+                    _wait_for_db_ping_ok()
             except EnvironmentError:
                 print 'could not start service %s' % name
                 sys.exit(1)
 
+
+def _wait_for_db_ping_ok():
+    db = pydb.pyrosetup.pydbserver()
+    db_ok = False
+
+    tries = 0
+    while not db_ok and tries < 500:
+        try:
+            if db.ping() == 'pong':
+               db_ok = True
+               break
+        except Pyro4.errors.CommunicationError:
+            pass
+
+        time.sleep(0.5)
+        tries += 1
+
+    return db_ok
 
 def do_stop_services(args):
     services_status = services.get_current_services_status()
