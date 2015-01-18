@@ -8,6 +8,8 @@ import pydb.services as services
 import time
 import pydb.pyrosetup
 import Pyro4
+import pydb.config
+
 
 def do_list_services(args):
     services_status = services.get_current_services_status()
@@ -66,6 +68,7 @@ def do_restart_services(args):
     do_start_services(args)
 
 
+pydb.config.read_config()
 parser = argparse.ArgumentParser(description='Controls and lists montag services.')
 
 subparsers = parser.add_subparsers(help='sub-command help')

@@ -8,6 +8,10 @@ from pydb.com.server import Server
 import pydb.config as config
 from twisted.python import log
 
+import pydb.config
+
+pydb.config.read_config()
+
 observer = log.PythonLoggingObserver()
 observer.start()
 

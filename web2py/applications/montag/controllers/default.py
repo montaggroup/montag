@@ -12,6 +12,7 @@ import json
 import re
 
 
+@auth.requires_login()
 def getfile():
     tome_id = request.args[0]
     file_hash = request.args[1]
@@ -24,12 +25,14 @@ def getfile():
     return _stream_tome_file(tome_id, tome_file, plain_file)
 
 
+@auth.requires_login()
 def getfile_as_mobi():
     tome_id = request.args[0]
     file_hash = request.args[1]
     return _get_converted_file(tome_id, file_hash, 'mobi')
 
 
+@auth.requires_login()
 def getfile_as_epub():
     tome_id = request.args[0]
     file_hash = request.args[1]
@@ -111,6 +114,7 @@ def _stream_tome_file(tome_id, tome_file, contents_stream):
     return response.stream(enriched_file, chunk_size=20000)
 
 
+@auth.requires_login()
 def get_cover():
     tome_id = request.args[0]
 
@@ -131,6 +135,7 @@ def get_cover():
     return response.stream(plain_file, chunk_size=20000)
 
 
+@auth.requires_login()
 def timeline():
     items_per_page = 20
 
@@ -162,6 +167,8 @@ def timeline():
         'number_results_total': number_results_total
     }
 
+
+@auth.requires_login()
 def random_tomes():
     response.title = "Random Tomes - Montag"
     
@@ -178,11 +185,13 @@ def random_tomes():
     }
 
 
+@auth.requires_login()
 def timeline_json():
     result = timeline()
     return json.dumps(result['tome_info'])
 
 
+@auth.requires_login()
 def view_author():
     author_guid = request.args[0]
 
@@ -208,6 +217,8 @@ def view_author():
         'tome_info': tomelist
     }
 
+
+@auth.requires_login()
 def view_tome():
     tome_guid = request.args[0]
     
@@ -224,6 +235,8 @@ def view_tome():
         'tome': tome
     }
 
+
+@auth.requires_login()
 def view_tome_debug_info():
     tome_guid = request.args[0]
     
@@ -256,6 +269,7 @@ def _author_edit_form(author, required_fidelity):
    return form
 
 
+@auth.requires_login()
 def edit_author():
     author_guid = request.args[0]
     author_doc = pdb.get_author_document_with_local_overlay_by_guid(author_guid)
@@ -284,6 +298,8 @@ def edit_author():
 def _is_tome_or_author_guid(string):
     return re.match("[0-9a-z]{32}", string)
 
+
+@auth.requires_login()
 def tomesearch():
     retval = {}
     form = _build_search_form()
@@ -378,6 +394,8 @@ class tag_validator:
         tags = value
         return "\n".join(["%.1f %s" %(tag['fidelity'], tag['tag_value'].encode('utf-8')) for tag in tags])
 
+
+@auth.requires_login()
 def add_synopsis_to_tome():
     tome_guid = request.args[0]
     tome = pdb.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info=True, include_author_detail=True)
@@ -391,7 +409,8 @@ def add_synopsis_to_tome():
     
     return _edit_tome(tome, is_add_synopsis=True)
     
-    
+
+@auth.requires_login()
 def edit_tome():
     tome_guid = request.args[0]
     tome_doc = pdb.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info=True, include_author_detail=True)
@@ -413,7 +432,7 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
     
     tome_id = tome_doc['id']
     required_tome_fidelity = pdb.calculate_required_tome_fidelity(tome_id)
-    
+
     form = _tome_edit_form(tome_doc, required_tome_fidelity)
     synforms = list()
     
@@ -471,6 +490,7 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
     return dict(form=form, tome=tome_doc, tome_id=tome_id, synforms=synforms, required_fidelity=required_tome_fidelity)
 
 
+@auth.requires_login()
 def edit_tome_file_link():
     tome_id=request.args[0]
     file_hash=request.args[1]
@@ -512,6 +532,7 @@ def edit_tome_file_link():
     return dict(form=form, tome=tome,file=tome_file)
 
 
+@auth.requires_login()
 def link_tome_to_file():
     tome_id = request.args[0]
     tome = pdb.get_tome(tome_id)
@@ -544,6 +565,8 @@ def link_tome_to_file():
         
     return dict(form=form, tome=tome)
 
+
+@auth.requires_login()
 def edit_tome_author_link():
     tome_id=request.args[0]
     author_id=request.args[1]
@@ -591,6 +614,7 @@ def edit_tome_author_link():
     return dict(form=form, tome=tome, author = tome_author, authors=tome_authors)
 
 
+@auth.requires_login()
 def link_tome_to_author():
     tome_id=request.args[0]
     tome=pdb.get_tome(tome_id)
@@ -630,10 +654,14 @@ def link_tome_to_author():
 
     return dict(form=form, tome=tome, authors=tome_authors)
 
+
+@auth.requires_login()
 def more_actions():
     response.title = "More Actions - Montag"
     return dict()
 
+
+@auth.requires_login()
 def index():
     """
     example action using the internationalization operator T and flash
@@ -644,6 +672,7 @@ def index():
     return dict() #(message=T('Hello World'))
 
 
+@auth.requires_login()
 def call():
     """
     exposes services. for example:
@@ -652,3 +681,7 @@ def call():
     supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
     """
     return service()
+
+
+def user():
+    return dict(form=auth())

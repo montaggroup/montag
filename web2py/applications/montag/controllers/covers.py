@@ -6,6 +6,7 @@ import cStringIO
 import os
 
 
+@auth.requires_login()
 def edit_covers():
     tome_id = request.args[0]
     tome = pdb.get_tome(tome_id)
@@ -43,6 +44,7 @@ def edit_covers():
             'available_content': available_content, 'current_cover': current_cover}
 
 
+@auth.requires_login()
 def edit_covers_compact():
     return edit_covers()
 
@@ -55,6 +57,7 @@ def _set_cover_from_content_form():
    return form
 
 
+@auth.requires_login()
 def set_cover_from_content():
     tome_id = request.args[0]
     content_hash = request.args[1]
@@ -62,11 +65,11 @@ def set_cover_from_content():
     only_display_cover_afterwards = request.args[3]
     if only_display_cover_afterwards.lower() == 'false':
         only_display_cover_afterwards = False
-    
+
 
     tome = pdb.get_tome(tome_id)
     form = _set_cover_from_content_form()
-    
+
     title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
     response.title = u'Set Cover for {} - Montag'.format(title_text)
 
@@ -90,7 +93,7 @@ def set_cover_from_content():
             redirect(URL('covers', 'get_cover_image', args=(file_hash, file_extension)))
         else:
             redirect(URL('default', 'view_tome', args=(tome['guid'])))
-            
+
 
     return {'tome': tome, 'content_hash': content_hash, 'content_extension': content_extension, 'form': form}
 
@@ -103,6 +106,8 @@ def _set_main_cover_form():
         )
    return form
 
+
+@auth.requires_login()
 def set_main_cover():
     tome_id = request.args[0]
     file_hash = request.args[1]
@@ -113,7 +118,7 @@ def set_main_cover():
     
     title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
     response.title = u'Set Cover for {} - Montag'.format(title_text)
-    
+
     file_size = pydb.pyrosetup.fileserver().get_local_file_size(file_hash)
 
     if form.process(keepvalues=True).accepted:
@@ -144,12 +149,16 @@ def _stream_image(file_hash, extension):
 
     return response.stream(plain_file, chunk_size=20000)
 
+
+@auth.requires_login()
 def get_cover_image():
     image_hash = request.args[0]
     image_extension = request.args[1]
    
     return _stream_image(image_hash, image_extension)
 
+
+@auth.requires_login()
 def get_best_cover():
     tome_id = request.args[0]
 
@@ -202,6 +211,8 @@ def _stream_image_from_content(file_hash, extension):
 
     return response.stream(cover_target, chunk_size=20000)
 
+
+@auth.requires_login()
 def extract_cover_image_from_content():
     file_hash = request.args[0]
     file_extension = request.args[1]
@@ -209,7 +220,7 @@ def extract_cover_image_from_content():
     return _stream_image_from_content(file_hash, file_extension)
 
 
-        
 
-    
+
+@auth.requires_login()
 def index(): return dict(message='hello from covers.py')

@@ -8,3 +8,6 @@ request_files_on_incoming_connection=True
 max_file_size_to_request_bytes=1000000000
 keep_alive_send_interval_seconds=120
 read_timeout_seconds=1200
+
+[web]
+enable_auth=False

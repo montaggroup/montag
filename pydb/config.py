@@ -5,11 +5,16 @@ import logging
 
 logger = logging.getLogger('config')
 
-parser = ConfigParser.SafeConfigParser()
-try:
-    parser.read('pydb.conf')
-except Exception as e:
-    logger.error('could not read config file: {}'.format(e.message))
+parser = None
+
+
+def read_config(config_path='pydb.conf'):
+    global parser
+    parser = ConfigParser.SafeConfigParser()
+    try:
+        parser.read(config_path)
+    except Exception as e:
+        logger.error('could not read config file: {}'.format(e.message))
 
 
 def get_boolean_option(section, name, default):
@@ -54,6 +59,10 @@ def comserver_port():
 
 def max_file_size_to_request_bytes():
     return get_int_option('comserver', 'max_file_size_to_request_bytes', 100*1000*1000)
+
+
+def enable_web_auth():
+    return get_boolean_option('web', 'enable_auth', False)
 
 
 def _load():
