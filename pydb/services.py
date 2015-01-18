@@ -1,28 +1,24 @@
 import tempfile
 import os
 import getpass
-import re
-from pydb.executionenvironment import using_py2exe
+import pydb.executionenvironment as executionenvironment
 import psutil
 
 # configuration options
 
 log_path = tempfile.gettempdir()
-log_level = 'WARNING'  # see pyro log levels
 
 # end of configuration options
 
+DEFAULT_LOG_LEVEL = 'WARNING'  # see pyro log levels
+
 service_prefix = 'montag-'
+basenames = ["pydbserver", "comserver", "comservice", "indexserver", "web2py"]
 
-basenames = ["pydbserver", "fileserver", "comserver", "comservice", "indexserver", "web2py"]
-
-if using_py2exe():
-    names = [service_prefix + name + ".exe" for name in basenames]
-else:
-    names = [service_prefix + name + ".py" for name in basenames]
+extension = executionenvironment.script_extension()
+names = [ service_prefix + name + "." + extension for name in basenames ]
 
 PSUTIL2 = psutil.version_info >= (2, 0)
-
 
 def pidlist():
     if PSUTIL2:
@@ -51,20 +47,21 @@ def as_dict_for_monkey_patching_old_psutils(self, attrs=[], ad_value=None):
     AccessDenied exception is raised when retrieving that particular
     process information.
     """
-    excluded_names = {'send_signal', 'suspend', 'resume', 'terminate', 'kill', 'wait', 'is_running', 'as_dict',
-                      'parent', 'get_children', 'nice', 'get_rlimit'}
+    excluded_names = set(['send_signal', 'suspend', 'resume', 'terminate',
+                          'kill', 'wait', 'is_running', 'as_dict', 'parent',
+                          'get_children', 'nice', 'get_rlimit'])
     retdict = dict()
-    for service_name in set(attrs or dir(self)):
-        if service_name.startswith('_'):
+    for name in set(attrs or dir(self)):
+        if name.startswith('_'):
             continue
-        if service_name.startswith('set_'):
+        if name.startswith('set_'):
             continue
-        if service_name in excluded_names:
+        if name in excluded_names:
             continue
         try:
-            attr = getattr(self, service_name)
+            attr = getattr(self, name)
             if callable(attr):
-                if service_name == 'get_cpu_percent':
+                if name == 'get_cpu_percent':
                     ret = attr(interval=0)
                 else:
                     ret = attr()
@@ -79,15 +76,14 @@ def as_dict_for_monkey_patching_old_psutils(self, attrs=[], ad_value=None):
             if attrs:
                 raise
             continue
-        if service_name.startswith('get'):
-            if service_name[3] == '_':
-                service_name = service_name[4:]
-            elif service_name == 'getcwd':
-                service_name = 'cwd'
-        retdict[service_name] = ret
+        if name.startswith('get'):
+            if name[3] == '_':
+                name = name[4:]
+            elif name == 'getcwd':
+                name = 'cwd'
+        retdict[name] = ret
     return retdict
-
-
+                                                                                                                                                                                                                                                                                                
 if not hasattr(psutil.Process, 'as_dict'):
     psutil.Process.as_dict = as_dict_for_monkey_patching_old_psutils
 
@@ -99,25 +95,9 @@ def get_current_services_status():
             p = psutil.Process(pid)
             pinfo = p.as_dict(attrs=['name', 'exe', 'username', 'status', 'cmdline'])
 
-            # skip windows system or idle process
-            if pinfo['username'] is None:
-                continue
-            # remove domain name on windows
-            process_username = re.sub(r".*\\", "", pinfo['username'])
-
-            if using_py2exe():
-                if process_username == getpass.getuser():
-                    for srv in names:
-                        if srv.lower() in pinfo['name'].lower():
-                            services_status[srv] = {'status': p.status, 'pid': pid, 'process': p}
-            else:
-                name = pinfo['name']
-                if (name == 'python' or name == 'python2.7' or name == 'python.exe') and \
-                                process_username == getpass.getuser():
-                    for arg in pinfo['cmdline']:
-                        for srv in names:
-                            if srv in arg:
-                                services_status[srv] = {'status': pinfo['status'], 'pid': pid, 'process': p}
+            detected_service_name = executionenvironment.is_montag_process(pinfo, names)
+            if detected_service_name is not None:
+                services_status[detected_service_name] = {'status': pinfo['status'], 'pid': pid, 'process': p}
         except psutil.AccessDenied:
             pass
 
@@ -128,11 +108,8 @@ def logfile_path(service_name):
     return os.path.join(log_path, getpass.getuser() + '-' + service_name.replace('.py', '.log').replace('.exe', '.log'))
 
 
-def start(service_name):
-    startargs = []
-    if not using_py2exe():
-        startargs.append('python2.7')
-    startargs.append(service_name)
+def start(service_name, log_level=DEFAULT_LOG_LEVEL):
+    startargs = executionenvironment.base_args_to_start_service(service_name)
     env = os.environ
     env['PYRO_LOGLEVEL'] = log_level
     env['PYRO_LOGFILE'] = '{stderr}'
