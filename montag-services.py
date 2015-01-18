@@ -11,6 +11,7 @@ import Pyro4
 import pydb.config
 
 
+
 def do_list_services(args):
     services_status = services.get_current_services_status()
     for name in services_status.keys():
@@ -26,7 +27,7 @@ def do_start_services(args):
         if services_status[name]['status'] == 'not running':
             print 'starting service {}, log {}'.format(name, services.logfile_path(name))
             try:
-                services.start(name)
+                services.start(name, log_level=args.log_level)
                 if 'pydbserver' in name:  # allow service to start up
                     _wait_for_db_ping_ok()
             except EnvironmentError:
