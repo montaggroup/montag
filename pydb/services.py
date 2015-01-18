@@ -13,7 +13,7 @@ log_path = tempfile.gettempdir()
 DEFAULT_LOG_LEVEL = 'WARNING'  # see pyro log levels
 
 service_prefix = 'montag-'
-basenames = ["pydbserver", "comserver", "comservice", "indexserver", "web2py"]
+basenames = ["pydbserver", "comserver", "comservice", "indexserver", "fileserver", "web2py"]
 
 extension = executionenvironment.script_extension()
 names = [ service_prefix + name + "." + extension for name in basenames ]
