@@ -87,6 +87,7 @@ def upload_file():
         if not 'title' in metadata:
             metadata['title'] = _title_suggestion(filename)
 
+        f.file.seek(0)    
         (id, hash, size) =  _insert_file(filepath, filename)
         session.metadata = metadata
         
