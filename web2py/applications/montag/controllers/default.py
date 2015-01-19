@@ -1,16 +1,19 @@
 # -*- coding: utf-8 -*-
-from ide_fake import *
+if False:
+    from web2py.applications.montag.models.ide_fake import *
+
 import os
 import subprocess
 import cStringIO
+import tempfile
+import json
+import re
+
 from pydb import FileType, TomeType
 import pydb.title
 import pydb.ebook_metadata_tools
 import pydb.pyrosetup
 import pydb.network_params
-import tempfile
-import json
-import re
 
 
 @auth.requires_login()

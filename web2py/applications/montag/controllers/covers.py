@@ -1,11 +1,14 @@
 # coding: utf8
-from ide_fake import *
+if False:
+    from web2py.applications.montag.models.ide_fake import *
 
 import tempfile
 import subprocess
-from pydb import FileType
 import cStringIO
 import os
+
+
+from pydb import FileType
 
 
 

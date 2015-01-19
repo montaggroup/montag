@@ -1,5 +1,6 @@
 # coding: utf8
-from ide_fake import *
+if False:
+    from web2py.applications.montag.models.ide_fake import *
 
 @auth.requires_login()
 def show_stats():

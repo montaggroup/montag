@@ -1,6 +1,10 @@
 # coding: utf8
-from ide_fake import *
+if False:
+    from web2py.applications.montag.models.ide_fake import *
+
 import tempfile
+
+
 import pydb.pyrosetup
 from pydb import ebook_metadata_tools, FileType, TomeType
 

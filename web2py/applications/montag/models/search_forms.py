@@ -1,4 +1,6 @@
-from ide_fake import *
+if False:
+    from ide_fake import *
+
 
 def _pass_paged_query_results_to_view(query, view_dict, page_number):
     items_per_page = 20
