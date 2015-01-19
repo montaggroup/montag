@@ -108,7 +108,7 @@ def _select_tome_merge_partner_form(first_tome):
 @auth.requires_login()
 def select_tome_merge_partner():
     first_tome_guid = request.args[0]
-    first_tome = pdb.get_tome_by_guid(first_tome_guid)
+    first_tome = pdb.get_tome_document_with_local_overlay_by_guid(first_tome_guid, include_local_file_info=False, include_author_detail=True)
     if first_tome is None:
         session.flash = "Tome not found"
         redirect(URL('default', 'tomesearch'))

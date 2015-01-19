@@ -18,6 +18,11 @@ def authors_links(author_link_infos):
     links=[ author_link(author_link_info['detail']) for author_link_info in relevant_items(author_link_infos) ]
     return _concat_link_list(links)
 
+def author_list(author_link_infos):
+    items=[ author_link_info['detail']['name'] for author_link_info in relevant_items(author_link_infos) ]
+    return _concat_link_list(items)
+
+
 def search_link(text, query, class_="search_link"):
     return A(text, _class=class_, _href=URL( 'default', 'tomesearch', vars={ 'query': query.encode('utf-8'), '_formname':'search', 'principal_language': '', 'tome_type':'Z'}))
 
