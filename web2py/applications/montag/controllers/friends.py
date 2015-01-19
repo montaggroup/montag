@@ -1,4 +1,5 @@
 # coding: utf8
+from ide_fake import *
 
 from pydb import pyrosetup
 

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from ide_fake import *
 
 #########################################################################
 ## This scaffolding model makes your app work on Google App Engine too

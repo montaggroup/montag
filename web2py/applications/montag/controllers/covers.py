@@ -1,9 +1,12 @@
 # coding: utf8
+from ide_fake import *
+
 import tempfile
 import subprocess
 from pydb import FileType
 import cStringIO
 import os
+
 
 
 @auth.requires_login()

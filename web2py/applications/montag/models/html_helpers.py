@@ -1,4 +1,6 @@
 # coding: utf8
+from ide_fake import *
+
 import time
 import re
 

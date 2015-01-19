@@ -1,11 +1,12 @@
 # coding: utf8
-
-
-def index(): return dict(message='hello from upload.py')
-
+from ide_fake import *
 import tempfile
-import os
+import pydb.pyrosetup
 from pydb import ebook_metadata_tools, FileType, TomeType
+
+
+def index():
+    return dict(message='hello from upload.py')
 
 
 @auth.requires_login()
@@ -110,7 +111,7 @@ def upload_file_to_tome():
 
     tome = pdb.get_tome_by_guid(tome_guid)
     if tome is None:
-        response.flash('Tome not found')
+        response.flash = 'Tome not found'
         return dict(form=form, tome=None)
 
     if form.accepts(request.vars):

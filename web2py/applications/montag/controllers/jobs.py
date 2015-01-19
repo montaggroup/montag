@@ -1,5 +1,5 @@
 # coding: utf8
-# try something like
+from ide_fake import *
 
 
 @auth.requires_login()

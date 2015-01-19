@@ -1,4 +1,5 @@
 # coding: utf8
+from ide_fake import *
 
 @auth.requires_login()
 def show_stats():

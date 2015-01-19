@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from ide_fake import *
 import os
 import subprocess
 import cStringIO
