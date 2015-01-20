@@ -1,4 +1,8 @@
 # coding: utf8
+if False:
+    from ide_fake import *
+
+
 import time
 import re
 

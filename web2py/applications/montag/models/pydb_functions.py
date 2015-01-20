@@ -1,4 +1,7 @@
 # coding: utf8
+if False:
+    from ide_fake import *
+
 import Pyro4
 import os
 import sys

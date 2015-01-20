@@ -1,12 +1,15 @@
 # coding: utf8
+if False:
+    from web2py.applications.montag.models.ide_fake import *
+
+import tempfile
+
+import pydb.pyrosetup
+from pydb import ebook_metadata_tools, FileType, TomeType
 
 
 def index():
     return dict(message='hello from upload.py')
-
-import tempfile
-import os
-from pydb import ebook_metadata_tools, FileType, TomeType
 
 
 @auth.requires_login()
@@ -109,7 +112,7 @@ def upload_file_to_tome():
 
     tome = pdb.get_tome_by_guid(tome_guid)
     if tome is None:
-        response.flash('Tome not found')
+        response.flash = 'Tome not found'
         return dict(form=form, tome=None)
 
     if form.accepts(request.vars):

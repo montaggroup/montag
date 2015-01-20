@@ -1,3 +1,6 @@
+if False:
+    from web2py.applications.montag.models.ide_fake import *
+
 def _select_author_merge_partner_form(first_author):
     form = SQLFORM.factory(
         Field('query',requires=IS_NOT_EMPTY(), default=db_str_to_form(first_author['name']), label="Search for"),
