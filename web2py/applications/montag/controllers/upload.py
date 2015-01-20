@@ -1,7 +1,8 @@
 # coding: utf8
 
 
-def index(): return dict(message='hello from upload.py')
+def index():
+    return dict(message='hello from upload.py')
 
 import tempfile
 import os
@@ -73,24 +74,22 @@ def upload_file():
         f = request.vars.file
         is_dropzone = False
         
-        if isinstance(f, list): #  dropzone uploads result in lists
-            f=f[1]
+        if isinstance(f, list):  # dropzone uploads result in lists
+            f = f[1]
             is_dropzone = True
         
-        filename = f.filename
-        filepath = f.file
-            
-        _, extension_with_dot = os.path.splitext(filename)
+        _, extension_with_dot = os.path.splitext(f.filename)
         extension = extension_with_dot[1:]
 
-        metadata=ebook_metadata_tools.extract_metadata(f.file, extension)
-        if not 'title' in metadata:
-            metadata['title'] = _title_suggestion(filename)
+        metadata = ebook_metadata_tools.extract_metadata(f.file, extension)
+        if 'title' not in metadata:
+            metadata['title'] = _title_suggestion(f.filename)
 
-        (id, hash, size) =  _insert_file(filepath, filename)
+        f.file.seek(0)    
+        (_, file_hash, size) = _insert_file(f.file, f.filename)
         session.metadata = metadata
         
-        target_url = URL('add_tome_from_file', args=(hash, extension, size ))
+        target_url = URL('add_tome_from_file', args=(file_hash, extension, size))
         if is_dropzone:
             return target_url
         else:
@@ -117,21 +116,18 @@ def upload_file_to_tome():
         f = request.vars.file
         is_dropzone = False
         
-        if isinstance(f, list): #  dropzone uploads result in lists
-            f=f[1]
+        if isinstance(f, list):  # dropzone uploads result in lists
+            f = f[1]
             is_dropzone = True
-        
-        filename = f.filename
-        filepath = f.file
         
         _, extension_with_dot = os.path.splitext(f.filename)
         extension = extension_with_dot[1:]
 
         fidelity = 60
-        (id, file_hash, size) =  _insert_file(f.file, f.filename)
+        (_, file_hash, size) = _insert_file(f.file, f.filename)
 
         pdb.link_tome_to_file(tome['id'], file_hash, size, extension, FileType.Content, fidelity)
-        target_url = URL('default', 'view_tome', args=(tome_guid))
+        target_url = URL('default', 'view_tome', args=tome_guid)
         if is_dropzone:
             return target_url
         else:
