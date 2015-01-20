@@ -50,12 +50,11 @@ Tome not found in database.
 {{ pass }}
 
 
-<script>
+<script type="text/javascript">
 $(document).keydown(function(e) {
     if(e.keyCode === 69) { //e
         e.stopPropagation();
-        var target_link=$("#edit_tome")[0]
-        target_link.click()
+        $("#edit_tome")[0].click(); 
     }
 });
 </script>

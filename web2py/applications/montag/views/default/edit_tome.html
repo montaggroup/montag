@@ -31,14 +31,23 @@
 <br>
 
 <h2> Operations </h2>
-{{=A("Merge", _href=URL( 'fusion', 'select_tome_merge_partner',args=[tome['guid']]))}}<br>
+{{=A('Merge', _id='merge_tome', _href=URL( 'fusion', 'select_tome_merge_partner',args=[tome['guid']]))}}<br>
 
 
-<script>
+<script type="text/javascript">
 jQuery(document).ready(function(){
    $("#no_table_title").focus();
 });
-    
-    
+  
+$(window).keydown(function(e) {
+    console.log(e.target);
+    var tagName = e.target.tagName.toLowerCase();    
+    if(tagName != 'input' && tagName != 'textarea'){
+        if(e.keyCode === 77) { //m
+            e.stopPropagation();
+            $("#merge_tome")[0].click();
+        }
+    }
+});
     
 </script>
