@@ -4,6 +4,7 @@ import json
 import mock
 import copy
 
+
 class test_overlay_document(unittest.TestCase):
     def test_overlay_with_merge_entry_none_returns_none(self):
         self.assertIsNone(documents.overlay_document(None, {}))
@@ -40,12 +41,28 @@ class test_overlay_document(unittest.TestCase):
 
         overlay = documents.overlay_document(merge_document, local_document)
         result_files = overlay['files']
-        self.assertEqual(len(result_files), 1)
-        result_file = result_files[0]
-        self.assertEqual(result_file['fidelity'], 80)
+        self.assertEqual(len(result_files), 2)
+        result_file_1, result_file_2 = result_files
+
+        if result_file_1['fidelity'] > result_file_2['fidelity']:
+            result_file_1, result_file_2 = result_file_2, result_file_1
+
+        self.assertEqual(result_file_1['fidelity'], -10)
+        self.assertEqual(result_file_2['fidelity'], 80)
 
     def test_overlay_merge_db_high_fidelity_file_is_overwritten_by_negative_local_fidelity(self):
         merge_document = {'files': [{'hash': '1234', 'fidelity': 80}]}
+        local_document = {'files': [{'hash': '1234', 'fidelity': -10}]}
+
+        overlay = documents.overlay_document(merge_document, local_document)
+        result_files = overlay['files']
+        self.assertEqual(len(result_files), 1)
+        result_file = result_files[0]
+        self.assertEqual(result_file['fidelity'], -10)
+
+    def test_overlay_merge_db_file_only_in_local_is_contained_in_result(self):
+        """ this is the special case where due to fidelity filter the resulting entry is not in merge db """
+        merge_document = {'files': []}
         local_document = {'files': [{'hash': '1234', 'fidelity': -10}]}
 
         overlay = documents.overlay_document(merge_document, local_document)
@@ -74,14 +91,13 @@ class test_overlay_document(unittest.TestCase):
         self.assertEqual(result_author['id'], 14)
 
     def test_overlay_local_db_author_gets_detail_merge_db_id_if_overwritten(self):
-        merge_document = {'authors': [{'guid': '1234', 'fidelity': 80,'detail': {'id': 14}}]}
+        merge_document = {'authors': [{'guid': '1234', 'fidelity': 80, 'detail': {'id': 14}}]}
         local_document = {'authors': [{'guid': '1234', 'fidelity': -10, 'detail': {'id': 12}}]}
 
         overlay = documents.overlay_document(merge_document, local_document)
         result_authors = overlay['authors']
         result_author = result_authors[0]
         self.assertEqual(result_author['detail']['id'], 14)
-
 
 
 class TestPrepareTomeDocument(unittest.TestCase):
@@ -159,7 +175,6 @@ class TestPrepareAuthorDocument(unittest.TestCase):
         self.assertEqual(prepped['date_of_birth'], '2014-01-01')
         self.assertEqual(prepped['date_of_death'], '2014-01-02')
         self.assertFalse(prepped['fusion_sources'])
-
 
     def test_raises_value_error_on_non_float_fidelity(self):
         a = copy.deepcopy(self.author)
