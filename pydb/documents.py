@@ -166,10 +166,7 @@ def overlay_local_items(mergedb_items, localdb_items, key_name):
         overlaid_items.append(result_item)
         merged_ids.add(item_id)
 
-    # add the ids only present in the local entry
-    local_only_ids = set(local_items_by_key.keys()) - merged_ids
-    for local_only_id in local_only_ids:
-        overlaid_items.append(local_items_by_key[local_only_id])
+    # do not add the ids only present in the local entry - they might be already in here via fusion notes
 
     return overlaid_items
 

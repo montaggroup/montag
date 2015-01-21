@@ -88,7 +88,7 @@ class TestOverlayDocuments(unittest.TestCase):
         self.assertEqual(len(result['files']), 1)
         self.assertEqual(result['files'][0]['fidelity'], -80.0)
 
-    def test_with_a_small_negative_local_fidelity_value_no_entry_is_returned(self):
+    def test_with_a_small_negative_local_fidelity_value_an_entry_is_returned(self):
         loc = _build_local_doc(-40)
         self.main_db.load_own_tome_document(loc)
 

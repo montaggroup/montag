@@ -192,7 +192,6 @@ class MainDB:
                                                        include_author_detail=include_author_detail)
 
     def get_tome_document_with_local_overlay_by_guid(self, tome_guid,
-                                                     ignore_fidelity_filter=False,
                                                      include_local_file_info=False,
                                                      include_author_detail=False):
         """ returns the full tome document (including files, tags..) for a given tome identified by id
@@ -201,13 +200,15 @@ class MainDB:
             is of larger magnitude.
             The result will also contain the tome id
         """
-        
-        merge_tome = self.get_tome_document_by_guid(tome_guid, ignore_fidelity_filter,
+
+        """ note: we need to ignore the fidelity filters here, as the local tome (that might have a
+        sigificant fidelity value) will otherwise not be included in the result """
+        merge_tome = self.get_tome_document_by_guid(tome_guid, ignore_fidelity_filter=True,
                                                     include_author_detail=include_author_detail, keep_id=True)
         if 'title' not in merge_tome:
             return merge_tome                                                    
                                                     
-        local_tome = self.get_local_tome_document_by_guid(tome_guid, ignore_fidelity_filter,
+        local_tome = self.get_local_tome_document_by_guid(tome_guid, ignore_fidelity_filter=False,
                                                           include_author_detail=include_author_detail)
 
         result = documents.overlay_document(merge_tome, local_tome)
