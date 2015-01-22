@@ -1,5 +1,6 @@
 import pydb.zipfile.zipfile as zipfile
 import xml.etree.ElementTree as etree
+import defusedxml.ElementTree as ET
 import re
 import logging
 from pydb import title
@@ -16,7 +17,7 @@ def _get_path_of_content_opf(zip_file):
         ocf_metadata = zip_file.read("META-INF/container.xml")
     except KeyError:
         raise ValueError("Unable to find META-INF/container.xml in epub file")
-    root = etree.fromstring(ocf_metadata)
+    root = ET.fromstring(ocf_metadata)
     rootfiletag = root.find(".//*[@full-path]")
     content_opf_path = rootfiletag.attrib['full-path']
     # logger.debug("content file is at" % content_opf_path)
@@ -51,7 +52,7 @@ def clear_metadata(instream, outstream):
 
             removed_a_node = False
             try:
-                root = etree.fromstring(opf_content)
+                root = ET.fromstring(opf_content)
                 for main_element in root:
                     logger.debug("main el %s " % main_element.tag)
                     if re.match(".*metadata$", main_element.tag):
@@ -63,7 +64,7 @@ def clear_metadata(instream, outstream):
                             logger.debug("Removing node %s" % node_to_remove.tag)
                             main_element.remove(node_to_remove)
                             removed_a_node = True
-            except etree.ParseError, e:
+            except ET.ParseError, e:
                 logger.error("Caught a parse error while trying to clear epub metadata: %s" % repr(e))
                 raise ValueError("Invalid EPUB syntax")
 
@@ -75,7 +76,7 @@ def clear_metadata(instream, outstream):
                     except zipfile.BadZipfile, e:
                         raise ValueError("Caught a BadZipFile exception: %s" % repr(e))
 
-                    new_content = etree.tostring(root)
+                    new_content = ET.tostring(root)
                     _write_content_opf(outzip, opf_path, new_content)
     except zipfile.BadZipfile:
         raise ValueError("Unable to open epub zip")
@@ -101,7 +102,7 @@ def add_metadata(instream, outstream, author_docs, tome_doc, tome_file):
             opf_path = _get_path_of_content_opf(inzip)
             opf_content = _read_content_opf(inzip, opf_path)
 
-            root = etree.fromstring(opf_content)
+            root = ET.fromstring(opf_content)
             for main_element in root:
                 logger.debug("main el %s" % main_element.tag)
                 if re.match(".*metadata$", main_element.tag):
@@ -144,8 +145,8 @@ def get_metadata_from_opf_string(opf_content):
         return string.strip()
 
     try:
-        root = etree.fromstring(opf_content)
-    except etree.ParseError:
+        root = ET.fromstring(opf_content)
+    except:
         logger.error("Unable to parse opf xml")
         return result
 
