@@ -40,15 +40,8 @@ class test_overlay_document(unittest.TestCase):
         local_document = {'files': [{'hash': '12345', 'fidelity': -10}]}
 
         overlay = documents.overlay_document(merge_document, local_document)
-        result_files = overlay['files']
-        self.assertEqual(len(result_files), 2)
-        result_file_1, result_file_2 = result_files
-
-        if result_file_1['fidelity'] > result_file_2['fidelity']:
-            result_file_1, result_file_2 = result_file_2, result_file_1
-
-        self.assertEqual(result_file_1['fidelity'], -10)
-        self.assertEqual(result_file_2['fidelity'], 80)
+        result_file = overlay['files'][0]
+        self.assertEqual(result_file['fidelity'], 80)
 
     def test_overlay_merge_db_high_fidelity_file_is_overwritten_by_negative_local_fidelity(self):
         merge_document = {'files': [{'hash': '1234', 'fidelity': 80}]}
@@ -60,16 +53,13 @@ class test_overlay_document(unittest.TestCase):
         result_file = result_files[0]
         self.assertEqual(result_file['fidelity'], -10)
 
-    def test_overlay_merge_db_file_only_in_local_is_contained_in_result(self):
-        """ this is the special case where due to fidelity filter the resulting entry is not in merge db """
+    def test_overlay_merge_db_file_only_in_local_is_not_contained_in_result(self):
         merge_document = {'files': []}
         local_document = {'files': [{'hash': '1234', 'fidelity': -10}]}
 
         overlay = documents.overlay_document(merge_document, local_document)
         result_files = overlay['files']
-        self.assertEqual(len(result_files), 1)
-        result_file = result_files[0]
-        self.assertEqual(result_file['fidelity'], -10)
+        self.assertEqual(len(result_files), 0)
 
     def test_overlay_merge_db_tag_is_overwritten_by_negative_local_fidelity(self):
         merge_document = {'tags': [{'tag_value': '1234', 'fidelity': 10}]}
