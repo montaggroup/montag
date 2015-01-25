@@ -15,42 +15,47 @@ left_sidebar_enabled=True
 
 <div id="loader"><img src="{{=URL(r=request,c='static',f='/images/loader.gif') }}"></div>
 <script>
-
 var currentPdf = null;
-var currentPage = 0;
+var currentPageNumber = 0;
 var renderTarget = null;
 var rendering = false;
 
 function prevPage()
 {
-    if(rendering) {
-        return;
-    }
-
-    if(currentPage > 1) {
-        rendering = true;
-        currentPage -= 1;    
-        currentPdf.getPage(currentPage).then(function(page) {
-            renderPage(renderTarget, page); 
-	});
+    if(currentPageNumber > 1) {
+        gotoPageNum(currentPageNumber-1);
     }
 }
 
 
 function nextPage()
 {
+    if(currentPageNumber < currentPdf.numPages) {
+        gotoPageNum(currentPageNumber+1);
+    }
+}
+
+
+function gotoPageNum(pageNum)
+{
     if(rendering) {
         return;
     }
 
-    if(currentPage < currentPdf.numPages) {
-        rendering = true;
-        currentPage += 1;    
-        currentPdf.getPage(currentPage).then(function(page) {
-            renderPage(renderTarget, page); 
-	});
-    }
+    rendering = true;
+    currentPageNumber = pageNum;    
+    var newHash = "";
+    if(pageNum != 1)
+        newHash = "#" + pageNum;
+
+    if (location.hash != newHash)
+        location.hash = newHash;
+
+    currentPdf.getPage(currentPageNumber).then(function(page) {
+        renderPage(renderTarget, page); 
+    });
 }
+
 
 function renderPage(renderTarget, page)
 {
@@ -81,16 +86,23 @@ function renderPage(renderTarget, page)
     });
 }
 
-function renderBook(url, targetDivId)
+
+function renderBook(url, targetDivId, initialPageNumber)
 {
     renderTarget = document.getElementById(targetDivId);
     PDFJS.getDocument(url).then(function(pdf) {
         currentPdf = pdf;
-        currentPage = 0;
-        nextPage();
+        gotoPageNum(initialPageNumber);
     });
 
 }
+
+
+function hideLoader()
+{
+    document.getElementById("loader").style.display = "none";
+}
+
 
 $("body").on("keydown", function(e){
     var thisIndex = $(".selected").index();
@@ -110,17 +122,15 @@ $("body").on("keydown", function(e){
     }
 })
 
-initialBookPosition = null;
+
+var initialPageNumber = 1;
 if(location.hash) {
-    initialBookPosition = location.hash.slice(1);
+    initialPageNumber = location.hash.slice(1);
 }
 
-renderBook("{{=book_url}}", "reader_area");
+renderBook("{{=book_url}}", "reader_area", initialPageNumber);
 
-function hideLoader()
-{
-    document.getElementById("loader").style.display = "none";
-}
+
 </script>
 
 
