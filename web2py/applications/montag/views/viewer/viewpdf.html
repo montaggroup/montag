@@ -115,23 +115,12 @@ if(location.hash) {
     initialBookPosition = location.hash.slice(1);
 }
 
-
-
 renderBook("{{=book_url}}", "reader_area");
-
-function showLoader()
-{
-    document.getElementById("loader").style.display = "block";
-}
 
 function hideLoader()
 {
     document.getElementById("loader").style.display = "none";
 }
-
-//book.on('renderer:chapterDisplayed', hideLoader);
-//book.on('renderer:chapterUnloaded', showLoader);
-
 </script>
 
 
