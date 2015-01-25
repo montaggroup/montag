@@ -22,6 +22,8 @@ def show_file_operation_links(tome, file):
     =' '
     if file['file_extension']=='epub':
         =A('VIEW', _href=URL( c='viewfile', a='viewer',args=[tome['id'],file['hash']] ))
+    elif file['file_extension']=='pdf':
+        =A('VIEW', _href=URL( c='viewpdf', a='viewer',args=[tome['id'],file['hash']] ))
     elif pydb.config.has_ebook_convert():
         =A('VIEW*', _href=URL( c='viewfile', a='viewer',args=[tome['id'],file['hash']] ))
     pass
