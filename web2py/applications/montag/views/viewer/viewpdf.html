@@ -11,6 +11,9 @@ left_sidebar_enabled=True
 <div id="reader_prev" class="unselectable" onclick="prevPage();">‹</div>
 <div id="reader_area"></div>
 <div id="reader_next" class="unselectable" onclick="nextPage();">›</div>
+<div class='page_number_info'>
+<span id="current_page_num"></span> / <span id="page_count"> / </span>
+</div>
 
 
 <div id="loader"><img src="{{=URL(r=request,c='static',f='/images/loader.gif') }}"></div>
@@ -51,6 +54,7 @@ function gotoPageNum(pageNum)
     if (location.hash != newHash)
         location.hash = newHash;
 
+    $("#current_page_num").text(currentPageNumber);
     currentPdf.getPage(currentPageNumber).then(function(page) {
         renderPage(renderTarget, page); 
     });
@@ -83,6 +87,7 @@ function renderPage(renderTarget, page)
     page.render(renderContext).then(function() {
         hideLoader();
         rendering = false;
+        $("#current_page_num").text(currentPageNumber);
     });
 }
 
@@ -92,6 +97,7 @@ function renderBook(url, targetDivId, initialPageNumber)
     renderTarget = document.getElementById(targetDivId);
     PDFJS.getDocument(url).then(function(pdf) {
         currentPdf = pdf;
+        $("#page_count").text(currentPdf.numPages);
         gotoPageNum(initialPageNumber);
     });
 
@@ -125,7 +131,10 @@ $("body").on("keydown", function(e){
 
 var initialPageNumber = 1;
 if(location.hash) {
-    initialPageNumber = location.hash.slice(1);
+    initialPageNumber = parseInt(location.hash.slice(1));
+    if(!$.isNumeric(initialPageNumber)) {
+        initialPageNumber = 1;
+    }
 }
 
 renderBook("{{=book_url}}", "reader_area", initialPageNumber);
