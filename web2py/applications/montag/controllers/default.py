@@ -42,6 +42,13 @@ def getfile_as_epub():
     file_hash = request.args[1]
     return _get_converted_file(tome_id, file_hash, 'epub')
 
+@auth.requires_login()
+def getfile_as_pdf():
+    tome_id = request.args[0]
+    file_hash = request.args[1]
+    return _get_converted_file(tome_id, file_hash, 'pdf')
+
+
 def _get_converted_file(tome_id, file_hash, target_extension):
     """ requires a calibre installation
     """
@@ -54,7 +61,7 @@ def _get_converted_file(tome_id, file_hash, target_extension):
 
     fp = pydb.pyrosetup.fileserver().get_local_file_path(file_hash)
     with open(fp,"rb") as source_file:
-        if extension == target_extension:    
+        if extension == target_extension:
             return _stream_tome_file(tome_id, tome_file, source_file)
         else:
             contents = source_file.read()
@@ -99,10 +106,8 @@ def _stream_tome_file(tome_id, tome_file, contents_stream):
     enriched_file = cStringIO.StringIO()
     added = pydb.ebook_metadata_tools.add_plain_metadata(contents_stream, tome_file, enriched_file, author_docs, tome_doc)
     if not added: #use the file stream just as was passed, no metadata could be added.
-        enriched_file = contents_stream
+        enriched_file = cStringIO.StringIO(contents_stream.read())
 
-    enriched_file.seek(0)
-    
     enriched_file.seek(0, os.SEEK_END)
     file_size = enriched_file.tell()
     enriched_file.seek(0)

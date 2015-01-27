@@ -1,0 +1,152 @@
+{{
+response.files.append(URL(c='static',f='/js/pdf/pdf.js'))
+book_url = URL('default', 'getfile_as_pdf',args=[tome_id,file_hash,'.pdf'])
+response.title="View: {}".format(tome['title'].encode('utf-8'))
+response.breadcrumb_bar = XML("View {} by {}".format(tome_link(tome), authors_links(tome['authors'])))
+left_sidebar_enabled=True
+}}
+
+{{extend 'layout.html'}}
+
+<div id="reader_prev" class="unselectable" onclick="prevPage();">‹</div>
+<div id="reader_area"></div>
+<div id="reader_next" class="unselectable" onclick="nextPage();">›</div>
+<div class='page_number_info'>
+<span id="current_page_num"></span> / <span id="page_count"> / </span>
+</div>
+
+
+<div id="loader"><img src="{{=URL(r=request,c='static',f='/images/loader.gif') }}"></div>
+<script>
+var currentPdf = null;
+var currentPageNumber = 0;
+var renderTarget = null;
+var rendering = false;
+
+function prevPage()
+{
+    if(currentPageNumber > 1) {
+        gotoPageNum(currentPageNumber-1);
+    }
+}
+
+
+function nextPage()
+{
+    if(currentPageNumber < currentPdf.numPages) {
+        gotoPageNum(currentPageNumber+1);
+    }
+}
+
+
+function gotoPageNum(pageNum)
+{
+    if(rendering) {
+        return;
+    }
+
+    rendering = true;
+    currentPageNumber = pageNum;    
+    var newHash = "";
+    if(pageNum != 1)
+        newHash = "#" + pageNum;
+
+    if (location.hash != newHash)
+        location.hash = newHash;
+
+    $("#current_page_num").text(currentPageNumber);
+    currentPdf.getPage(currentPageNumber).then(function(page) {
+        renderPage(renderTarget, page); 
+    });
+}
+
+
+function renderPage(renderTarget, page)
+{
+    var viewport = page.getViewport(1);
+
+    var desiredWidth = renderTarget.offsetWidth;
+    var scale = desiredWidth / viewport.width;
+    var scaledViewport = page.getViewport(scale);		
+
+    var canvas = renderTarget.firstChild;
+    if(canvas == null) {
+        canvas = document.createElement('canvas');
+        renderTarget.appendChild(canvas);
+    }
+
+    var context = canvas.getContext('2d');
+    canvas.height = scaledViewport.height;
+    canvas.width = scaledViewport.width;
+
+    var renderContext = {
+            canvasContext: context,
+            viewport: scaledViewport
+    };
+
+    page.render(renderContext).then(function() {
+        hideLoader();
+        rendering = false;
+        $("#current_page_num").text(currentPageNumber);
+    });
+}
+
+
+function renderBook(url, targetDivId, initialPageNumber)
+{
+    renderTarget = document.getElementById(targetDivId);
+    PDFJS.getDocument(url).then(function(pdf) {
+        currentPdf = pdf;
+        $("#page_count").text(currentPdf.numPages);
+        gotoPageNum(initialPageNumber);
+    });
+
+}
+
+
+function hideLoader()
+{
+    document.getElementById("loader").style.display = "none";
+}
+
+
+$("body").on("keydown", function(e){
+    var thisIndex = $(".selected").index();
+    var newIndex = null;
+    if(e.keyCode === 38 // up
+      || e.keyCode === 37 // left
+      ) {
+        
+       prevPage();
+    }
+    else if(e.keyCode === 40 // down
+            || e.keyCode === 39 // right
+            || e.keyCode === 32 // space
+           ) {
+
+       nextPage();
+    }
+})
+
+
+var initialPageNumber = 1;
+if(location.hash) {
+    initialPageNumber = parseInt(location.hash.slice(1));
+    if(!$.isNumeric(initialPageNumber)) {
+        initialPageNumber = 1;
+    }
+}
+
+renderBook("{{=book_url}}", "reader_area", initialPageNumber);
+
+
+</script>
+
+
+{{block left_sidebar}}
+<div id="toc_container">
+<ul id="toc">
+
+</ul>
+</div>
+{{end}}

@@ -82,6 +82,13 @@ h2 {
      display: inline-block;
 }
 
+.page_number_info {
+     clear: both;
+     width: 100%;
+     text-align: right;
+
+}
+
 .unselectable {
     user-select: none;
     -moz-user-select: none;
