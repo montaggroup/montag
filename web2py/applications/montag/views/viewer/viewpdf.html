@@ -38,6 +38,13 @@ function nextPage()
     }
 }
 
+function gotoDest(dest)
+{
+     currentPdf.getPageIndex(dest).then(function(pageIndex) {
+         var pageNum = pageIndex + 1;
+         gotoPageNum(pageNum);
+     });
+}
 
 function gotoPageNum(pageNum)
 {
@@ -92,16 +99,60 @@ function renderPage(renderTarget, page)
 }
 
 
-function renderBook(url, targetDivId, initialPageNumber)
+// adapted from bindLink (pdf.js)
+function createLink(element, item)
+{
+    var dest = item.dest;
+    if (dest instanceof Array) {
+        var firstDest = dest[0];
+        element.onclick = function goToDestination(e) {
+            gotoDest(firstDest);
+            return false;
+        };
+    }
+}
+
+// adapted from PDFOutlineView_render (pdf.js)
+function renderOutline(outline, container, linkCreateFct)
+{
+    var queue = [{ parent: container, items: outline }];
+    while (queue.length > 0) {
+       var levelData = queue.shift();
+       for (var i = 0, len = levelData.items.length; i < len; i++) {
+           var item = levelData.items[i];
+           var div = document.createElement('div');
+           div.className = 'outlineItem';
+           var element = document.createElement('a');
+
+           linkCreateFct(element, item);
+           element.textContent = item.title;
+           div.appendChild(element);
+           if (item.items.length > 0) {
+               var itemsDiv = document.createElement('div');
+               itemsDiv.className = 'outlineItems';
+               div.appendChild(itemsDiv);
+               queue.push({ parent: itemsDiv, items: item.items });
+           }
+           levelData.parent.appendChild(div);
+       }
+   }
+}
+
+function renderBook(url, targetDivId, outlineDivId, initialPageNumber)
 {
     renderTarget = document.getElementById(targetDivId);
     PDFJS.getDocument(url).then(function(pdf) {
         currentPdf = pdf;
         $("#page_count").text(currentPdf.numPages);
         gotoPageNum(initialPageNumber);
-    });
 
+        currentPdf.getOutline().then(function(outline) {
+            var outlineContainer = document.getElementById(outlineDivId);
+            renderOutline(outline, outlineContainer, createLink);
+        });
+    });
 }
+
 
 
 function hideLoader()
@@ -137,7 +188,7 @@ if(location.hash) {
     }
 }
 
-renderBook("{{=book_url}}", "reader_area", initialPageNumber);
+renderBook("{{=book_url}}", "reader_area", "toc_container", initialPageNumber);
 
 
 </script>
@@ -145,8 +196,5 @@ renderBook("{{=book_url}}", "reader_area", initialPageNumber);
 
 {{block left_sidebar}}
 <div id="toc_container">
-<ul id="toc">
-
-</ul>
 </div>
 {{end}}
