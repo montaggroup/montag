@@ -14,10 +14,10 @@
 {{ from operator import itemgetter }}
 {{
 def show_file_operation_links(tome, file):
-    =A(generate_download_filename(tome, file), _href=URL( 'getfile',args=[tome['id'],file['hash']]))
+    =A(generate_download_filename(tome, file), _href=URL( 'default', 'getfile',args=[tome['id'],file['hash']]))
     if pydb.config.has_ebook_convert():
         =' '
-        =A('MOBI', _href=URL( 'getfile_as_mobi',args=[tome['id'],file['hash']] ))
+        =A('MOBI', _href=URL( 'default', 'getfile_as_mobi',args=[tome['id'],file['hash']] ))
     pass
     =' '
     if file['file_extension']=='epub':
