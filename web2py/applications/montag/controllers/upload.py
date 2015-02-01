@@ -153,7 +153,7 @@ def _add_tome_from_file_form(metadata):
         Field('tome_type', default=TomeType.Fiction , widget=SQLFORM.widgets.radio.widget,
               requires=IS_IN_SET({TomeType.Fiction:'fiction',TomeType.NonFiction:'non-fiction'})),
         Field('authors','text', requires=AuthorValidator(), default= [ {'name': n} for n in metadata['author_names']]),
-        Field('fidelity', requires=FidelityValidator(), default=60.0))
+        Field('fidelity', requires=FidelityValidator(), default=60.0)
         )
     return form
 

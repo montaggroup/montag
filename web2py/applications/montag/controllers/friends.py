@@ -149,7 +149,7 @@ def add_friend():
     form = _friend_add_form()
     response.title = 'Add friend'
     if form.process(keepvalues=True).accepted:
-        friend_id = pdb.add_friend(read_form_field(form, 'name']))
+        friend_id = pdb.add_friend(read_form_field(form, 'name'))
         response.flash = 'Added new friend'
         redirect(URL('edit_friend', args=[friend_id]))
 
@@ -194,7 +194,7 @@ def unlock_comm_data():
     form = _unlock_comm_data_form()
     response.title = 'Unlock Comm Data'
     if form.process(keepvalues=True).accepted:
-        password = read_form_field(form, 'unlock_password'])
+        password = read_form_field(form, 'unlock_password')
         cds = pyrosetup.comm_data_store()
         try:
             cds.unlock(str(password))
