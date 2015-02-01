@@ -225,8 +225,3 @@ def extract_cover_image_from_content():
 
     return _stream_image_from_content(file_hash, file_extension)
 
-
-
-
-@auth.requires_login()
-def index(): return dict(message='hello from covers.py')

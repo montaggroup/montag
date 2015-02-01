@@ -6,11 +6,6 @@ from pydb import pyrosetup
 
 
 @auth.requires_login()
-def index():
-    return dict(message='hello from friends.py')
-
-
-@auth.requires_login()
 def list_friends():
     response.title = 'Friends - Montag'
     

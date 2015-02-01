@@ -8,10 +8,6 @@ import pydb.pyrosetup
 from pydb import ebook_metadata_tools, FileType, TomeType
 
 
-def index():
-    return dict(message='hello from upload.py')
-
-
 @auth.requires_login()
 def upload_file_json():
         """

@@ -634,13 +634,8 @@ def more_actions():
 
 @auth.requires_login()
 def index():
-    """
-    example action using the internationalization operator T and flash
-    rendered by views/default/index.html or views/generic.html
-    """
-    response.flash = "Welcome to web2py!"
     redirect(URL('tomesearch'))
-    return dict() #(message=T('Hello World'))
+    return dict()
 
 
 @auth.requires_login()
