@@ -28,7 +28,7 @@ def select_author_merge_partner():
 
     if search_form.validate(formname = 'search', session = None, request_vars=request.vars, message_onsuccess='', keepvalues=True):
         author_to_search_for = read_form_field(search_form, 'query')
-        retval['query'] = search_form.vars['query']
+        retval['query'] = read_form_field(form,'query')
     else:
         author_to_search_for = first_author['name']
         retval['query'] = author_to_search_for

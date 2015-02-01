@@ -99,11 +99,10 @@ def edit_friend():
 
         comm_data_fields = ['hostname', 'type', 'port', 'secret']
         for f in comm_data_fields:
-            if type(form.vars[f]) == str:
-                if f != 'secret' or (f == 'secret' and form.vars[f].count('*') != len(form.vars[f])):
-                    comm_data [f] = read_form_field(form, f)
-            else:
-                comm_data[f] = form.vars[f]
+            value = read_form_field(form, f)
+            if f != 'secret' or (f == 'secret' and value.count('*') != len(value)):
+                comm_data[f] = value
+
         cds = pyrosetup.comm_data_store()
         cds.set_comm_data(friend_id, comm_data)
         
@@ -112,7 +111,7 @@ def edit_friend():
             friend['name'] = new_name
             pdb.set_friend_name(friend['id'], friend['name'])
             
-        new_can_connect_to = '1' if form.vars['can_connect_to'] else '0'
+        new_can_connect_to = '1' if read_form_field(form, 'can_connect_to') else '0'
         if new_can_connect_to != friend['can_connect_to']:
             friend['can_connect_to'] = new_can_connect_to
             pdb.set_friend_can_connect_to(friend['id'], new_can_connect_to)

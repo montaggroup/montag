@@ -58,7 +58,7 @@ def edit_covers_compact():
 def _set_cover_from_content_form():
    default_cover_fidelity = 80
    form = SQLFORM.factory(
-        Field('fidelity',default=default_cover_fidelity)
+        Field('fidelity', requires=FidelityValidator(), default=default_cover_fidelity)
         )
    return form
 
@@ -81,7 +81,7 @@ def set_cover_from_content():
 
 
     if form.process(keepvalues=True).accepted:
-        fidelity = form.vars['fidelity']
+        fidelity = read_form_field(form, 'fidelity')
         cover_contents = _extract_image_from_content(content_hash, content_extension)
 
         file_extension = 'jpg'
@@ -108,7 +108,7 @@ def _set_main_cover_form():
    default_cover_fidelity = 80
     # \todo use a more sensible value for fidelity
    form = SQLFORM.factory(
-        Field('fidelity',default=default_cover_fidelity)
+        Field('fidelity',requires=FidelityValidator(), default=default_cover_fidelity)
         )
    return form
 
@@ -128,7 +128,7 @@ def set_main_cover():
     file_size = pydb.pyrosetup.fileserver().get_local_file_size(file_hash)
 
     if form.process(keepvalues=True).accepted:
-        fidelity = form.vars['fidelity']
+        fidelity = read_form_field(form,'fidelity')
         pdb.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Cover, fidelity)
 
         doc = pdb.get_tome_document_by_guid(tome['guid'])

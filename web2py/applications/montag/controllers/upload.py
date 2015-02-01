@@ -142,32 +142,6 @@ def upload_file_to_tome():
     return dict(form=form, tome=tome)
 
 
-class author_validator:
-    def __init__(self, format='a', error_message='b'):
-        pass
-
-    def __call__(self, field_value):
-        authors=set()
-        authors_list=[]
-        
-        field_value=field_value.decode('utf-8')
-        for line in field_value.split('\n'):
-            author_name = line.strip()
-            if author_name:
-                if author_name in authors:
-                    return None, u'Duplicate author names entered: {}'.format(author_name)
-                authors.add(author_name)
-                authors_list.append(author_name)
-
-        if not authors:
-            return None,'Empty author field'
-        return authors_list, None
-
-    def formatter(self, value):
-        authors = value
-        return '\n'.join([author['name'].encode('utf-8') for author in authors])
-
-
 def _add_tome_from_file_form(metadata):
     def from_dict(the_dict, key, default_value=''):
         if not key in the_dict:
@@ -182,8 +156,8 @@ def _add_tome_from_file_form(metadata):
         Field('publication_year', default=str(from_dict(metadata,'publication_year','')).encode('utf-8')),
         Field('tome_type', default=TomeType.Fiction , widget=SQLFORM.widgets.radio.widget,
               requires=IS_IN_SET({TomeType.Fiction:'fiction',TomeType.NonFiction:'non-fiction'})),
-        Field('authors','text', requires=author_validator(), default= [ {'name': n} for n in metadata['author_names']]),
-        Field('fidelity', default=str(60.0).encode('utf-8'))
+        Field('authors','text', requires=AuthorValidator(), default= [ {'name': n} for n in metadata['author_names']]),
+        Field('fidelity', requires=FidelityValidator(), default=60.0))
         )
     return form
 
@@ -218,9 +192,9 @@ def _upload_cover_form():
                                        _name='new_tome_cover',
                                        requires=IS_NOT_EMPTY()))),
            TR(TD('Fidelity:'), TD(INPUT(   _type='text',
-                                       value=str(75.0).encode('utf-8'),
+                                       value=75.0,
                                        _name='fidelity',
-                                       requires=IS_NOT_EMPTY()))),
+                                       requires=FidelityValidator()))),
            TR(TD(INPUT(_type='submit',_value='Submit')))
        ))
 
