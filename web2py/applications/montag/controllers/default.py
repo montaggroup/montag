@@ -273,7 +273,7 @@ def _author_edit_form(author, required_fidelity):
         Field('name',requires=IS_NOT_EMPTY(), default=db_str_to_form(author['name']), comment=XML(r'<input type="button" value="Guess name case" onclick="title_case_field(&quot;no_table_name&quot;)">')),
         Field('date_of_birth', default=author['date_of_birth'], comment='ISO 8601, e.g. 1920-08-22'),
         Field('date_of_death',default=author['date_of_death'], comment='ISO 8601, e.g. 2012-06-05'),
-        Field('fidelity', default=str(required_fidelity).encode('utf-8'), comment='Current Value: {}'.format(author['fidelity'])),
+        Field('fidelity', requires=FidelityValidator(), default=required_fidelity, comment='Current Value: {}'.format(author['fidelity'])),
         )
    return form
 
@@ -295,7 +295,7 @@ def edit_author():
 
     if form.process(keepvalues=True, session=None).accepted:
         for f in field_names:
-            author_doc[f] = form.vars[f].decode('utf-8')
+            author_doc[f] = read_form_field(f)
 
         pdb.load_own_author_document(author_doc)
         author_doc = pdb.get_author_document_with_local_overlay_by_guid(author_guid)
@@ -314,7 +314,7 @@ def tomesearch():
     form = _build_search_form()
 
     if form.validate(formname = 'search', session = None, request_vars=request.vars, message_onsuccess='', keepvalues=True):
-        query = form.vars['query'].strip()
+        query = read_form_field(form,'query').strip()
         if _is_tome_or_author_guid(query):
             tome = pdb.get_tome_by_guid(query)
             if tome is not None:
@@ -335,7 +335,7 @@ def tomesearch():
 
 
     retval['form'] = form
-    retval['query'] = form.vars['query']
+    retval['query'] = read_form_field(form, 'query')
     retval['request'] = request
         
     return retval
@@ -349,9 +349,9 @@ def _tome_edit_form(tome, required_tome_fidelity):
         Field('edition',default=db_str_to_form(tome['edition'])),
         Field('principal_language',default=db_str_to_form(tome['principal_language'])),
         Field('publication_year', default=str(tome['publication_year']).encode('utf-8')),
-        Field('tags','text', default=tome['tags'], requires=tag_validator()),
+        Field('tags','text', default=tome['tags'], requires=TagValidator()),
         Field('type', default=tome['type'] , widget=SQLFORM.widgets.radio.widget, requires=IS_IN_SET({TomeType.Fiction:'fiction',TomeType.NonFiction:'non-fiction'})),
-        Field('fidelity', default=str(required_tome_fidelity).encode('utf-8'), comment='Current Value: {}'.format(tome['fidelity'])),
+        Field('fidelity', requires=FidelityValidator(), default=required_tome_fidelity, comment='Current Value: {}'.format(tome['fidelity'])),
         name="edit_tome"
         )
 
@@ -361,7 +361,7 @@ def _tome_edit_form(tome, required_tome_fidelity):
 def _tome_synopses_form(synopsis):
     form = SQLFORM.factory(
         Field('content','text', default=synopsis['content'].encode('utf-8')),
-        Field('fidelity', default=str(synopsis['fidelity']+0.1).encode('utf-8')),
+        Field('fidelity', requires=FidelityValidator(), default=synopsis['fidelity']+0.1),
         hidden={
                 'guid': synopsis['guid'],
                 '_formname':'edit_synopsis_{}'.format(synopsis['guid'])
@@ -370,38 +370,6 @@ def _tome_synopses_form(synopsis):
     return form
 
 
-class tag_validator:
-    def __init__(self, format="a", error_message="b"):
-        pass
-        
-    def __call__(self, field_value):
-        used_tag_values = set()
-        tags = []
-        
-        field_value = field_value.decode('utf-8')
-        for line_index, line in enumerate(field_value.split("\n")):
-            line = line.strip()
-            if line:
-                fidelity = pydb.network_params.Default_Manual_Fidelity
-                value = line
-                if " " in line:
-                    (fidelity_string, value_string) = line.split(" ",1)
-                    try:
-                        fidelity = float(fidelity_string)
-                        value = value_string
-                    except ValueError:
-                        pass
-                
-                value = value.strip()
-                if value in used_tag_values:
-                    return None, u"Duplicate tag names entered: {}".format(value)
-                used_tag_values.add(value)
-                tags.append({"fidelity":fidelity, "tag_value" : value})
-        return tags, None
-     
-    def formatter(self, value):
-        tags = value
-        return "\n".join(["%.1f %s" %(tag['fidelity'], tag['tag_value'].encode('utf-8')) for tag in tags])
 
 
 @auth.requires_login()
@@ -468,7 +436,7 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
                     tome_doc['synopses'].append(synopsis_to_edit)
     
                 for sf in syn_field_names:
-                    synopsis_to_edit[sf]=synform.vars[sf].decode('utf-8')
+                    synopsis_to_edit[sf] = read_form_field(synform, sf)
                 pdb.load_own_tome_document(tome_doc)
                 redirect(URL('edit_tome', args=(tome_doc['guid']), anchor= 'synopses'))
 
@@ -477,10 +445,7 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
     
     if form.process(session=None, formname='edit_tome', keepvalues=True).accepted:
         for f in field_names:
-            if f == 'tags':
-                tome_doc[f] = form.vars[f]
-            else:
-                tome_doc[f] = form.vars[f].decode('utf-8')
+            tome_doc[f] = read_form_field(form, f)
         if not 'authors' in tome_doc:
             tome_doc['authors']=[]
         if not 'files' in tome_doc:
@@ -511,7 +476,7 @@ def edit_tome_file_link():
 
     form = SQLFORM.factory(
         Field('file_extension', default=tome_file['file_extension'].encode('utf-8')),
-        Field('fidelity', default=tome_file['fidelity']+0.1)
+        Field('fidelity', requires=FidelityValidator(), default=tome_file['fidelity']+0.1)
     )
 
     title_text=pydb.title.coalesce_title(tome['title'], tome['subtitle'])
@@ -525,10 +490,7 @@ def edit_tome_file_link():
         tome_file_doc=filter( lambda x: x['hash']==file_hash, doc['files'])[0]
 
         for f in field_names:
-            if f == 'file_extension':
-                tome_file_doc[f] = form.vars[f].decode('utf-8')
-            else:
-                tome_file_doc[f] = form.vars[f]
+            tome_file_doc[f] = read_form_field(form, f)
 
         other_files.append(tome_file_doc)
         doc['files']=other_files    
@@ -549,7 +511,7 @@ def link_tome_to_file():
     form = SQLFORM.factory(
         Field('hash'),
         Field('file_extension', default="epub"),
-        Field('fidelity', default=70)        
+        Field('fidelity', requires=FidelityValidator(), default=70)
     )
     
     title_text=pydb.title.coalesce_title(tome['title'], tome['subtitle'])
@@ -557,9 +519,9 @@ def link_tome_to_file():
     
     if form.process(keepvalues=True).accepted:
     
-        file_hash = form.vars['hash']
-        file_extension = form.vars['file_extension']
-        fidelity = form.vars['fidelity']
+        file_hash = read_form_field(form, 'hash')
+        file_extension = read_form_field(form, 'file_extension')
+        fidelity = read_form_field(form, 'fidelity')
         
         local_file_size = pydb.pyrosetup.fileserver().get_local_file_size(file_hash)
         
@@ -594,7 +556,7 @@ def edit_tome_author_link():
     
     form = SQLFORM.factory(
         Field('order', default=tome_author['author_order']),
-        Field('fidelity', default=tome_author['link_fidelity']+0.1)
+        Field('fidelity', requires=FidelityValidator(), default=tome_author['link_fidelity']+0.1)
     )
 
     title_text=pydb.title.coalesce_title(tome['title'], tome['subtitle'])
@@ -608,7 +570,7 @@ def edit_tome_author_link():
         tome_author_doc=filter( lambda x: x['guid']==author_guid, doc['authors'])[0]
 
         for f in field_names:
-            tome_author_doc[f]=form.vars[f]
+            tome_author_doc[f]=read_form_field(form, f)
 
         other_authors.append(tome_author_doc)
         doc['authors']=other_authors
@@ -639,7 +601,7 @@ def link_tome_to_author():
     form = SQLFORM.factory(
         Field('author_name'),
         Field('order', default=max_author_order+1, label='Order Value'),
-        Field('fidelity', default=70)
+        Field('fidelity', requires=FidelityValidator(), default=70)
     )
 
     title_text=pydb.title.coalesce_title(tome['title'], tome['subtitle'])
@@ -647,11 +609,11 @@ def link_tome_to_author():
 
     if form.process(keepvalues=True).accepted:
 
-        author_name=form.vars['author_name'].decode('utf-8')
-        fidelity=float(form.vars['fidelity'])
-        author_order=float(form.vars['order'])
+        author_name = read_form_field(form, 'author_name')
+        fidelity = read_form_field(form, 'fidelity')
+        author_order = float(read_form_field(form, 'order'))
 
-        author_ids = pdb.find_or_create_authors([author_name],fidelity)
+        author_ids = pdb.find_or_create_authors([author_name], fidelity)
         author_id = author_ids[0]
 
         pdb.link_tome_to_author(tome_id, author_id, author_order, fidelity)
@@ -672,13 +634,8 @@ def more_actions():
 
 @auth.requires_login()
 def index():
-    """
-    example action using the internationalization operator T and flash
-    rendered by views/default/index.html or views/generic.html
-    """
-    response.flash = "Welcome to web2py!"
     redirect(URL('tomesearch'))
-    return dict() #(message=T('Hello World'))
+    return dict()
 
 
 @auth.requires_login()

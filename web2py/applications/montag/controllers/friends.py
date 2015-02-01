@@ -6,11 +6,6 @@ from pydb import pyrosetup
 
 
 @auth.requires_login()
-def index():
-    return dict(message='hello from friends.py')
-
-
-@auth.requires_login()
 def list_friends():
     response.title = 'Friends - Montag'
     
@@ -99,20 +94,19 @@ def edit_friend():
 
         comm_data_fields = ['hostname', 'type', 'port', 'secret']
         for f in comm_data_fields:
-            if type(form.vars[f]) == str:
-                if f != 'secret' or (f == 'secret' and form.vars[f].count('*') != len(form.vars[f])):
-                    comm_data [f] = str(form.vars[f]).decode('utf-8')
-            else:
-                comm_data[f] = form.vars[f]
+            value = read_form_field(form, f)
+            if f != 'secret' or (f == 'secret' and value.count('*') != len(value)):
+                comm_data[f] = value
+
         cds = pyrosetup.comm_data_store()
         cds.set_comm_data(friend_id, comm_data)
         
-        new_name = form.vars['name'].decode('utf-8')
+        new_name = read_form_field(form, name)
         if new_name != friend['name']:
             friend['name'] = new_name
             pdb.set_friend_name(friend['id'], friend['name'])
             
-        new_can_connect_to = '1' if form.vars['can_connect_to'] else '0'
+        new_can_connect_to = '1' if read_form_field(form, 'can_connect_to') else '0'
         if new_can_connect_to != friend['can_connect_to']:
             friend['can_connect_to'] = new_can_connect_to
             pdb.set_friend_can_connect_to(friend['id'], new_can_connect_to)
@@ -155,7 +149,7 @@ def add_friend():
     form = _friend_add_form()
     response.title = 'Add friend'
     if form.process(keepvalues=True).accepted:
-        friend_id = pdb.add_friend(form.vars['name'].decode('utf-8'))
+        friend_id = pdb.add_friend(read_form_field(form, 'name'))
         response.flash = 'Added new friend'
         redirect(URL('edit_friend', args=[friend_id]))
 
@@ -200,7 +194,7 @@ def unlock_comm_data():
     form = _unlock_comm_data_form()
     response.title = 'Unlock Comm Data'
     if form.process(keepvalues=True).accepted:
-        password = form.vars['unlock_password'].decode('utf-8')
+        password = read_form_field(form, 'unlock_password')
         cds = pyrosetup.comm_data_store()
         try:
             cds.unlock(str(password))

@@ -9,6 +9,8 @@ if False:
     from web2py.applications.montag.models.html_helpers import *
     from web2py.applications.montag.models.menu import *
     from web2py.applications.montag.models.search_forms import *
+    from web2py.applications.montag.models.web2py_helpers import *
+    from web2py.applications.montag.models.validators import *
 
     request = current.request
     response = current.response

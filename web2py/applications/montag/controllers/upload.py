@@ -8,10 +8,6 @@ import pydb.pyrosetup
 from pydb import ebook_metadata_tools, FileType, TomeType
 
 
-def index():
-    return dict(message='hello from upload.py')
-
-
 @auth.requires_login()
 def upload_file_json():
         """
@@ -142,32 +138,6 @@ def upload_file_to_tome():
     return dict(form=form, tome=tome)
 
 
-class author_validator:
-    def __init__(self, format='a', error_message='b'):
-        pass
-
-    def __call__(self, field_value):
-        authors=set()
-        authors_list=[]
-        
-        field_value=field_value.decode('utf-8')
-        for line in field_value.split('\n'):
-            author_name = line.strip()
-            if author_name:
-                if author_name in authors:
-                    return None, u'Duplicate author names entered: {}'.format(author_name)
-                authors.add(author_name)
-                authors_list.append(author_name)
-
-        if not authors:
-            return None,'Empty author field'
-        return authors_list, None
-
-    def formatter(self, value):
-        authors = value
-        return '\n'.join([author['name'].encode('utf-8') for author in authors])
-
-
 def _add_tome_from_file_form(metadata):
     def from_dict(the_dict, key, default_value=''):
         if not key in the_dict:
@@ -182,8 +152,8 @@ def _add_tome_from_file_form(metadata):
         Field('publication_year', default=str(from_dict(metadata,'publication_year','')).encode('utf-8')),
         Field('tome_type', default=TomeType.Fiction , widget=SQLFORM.widgets.radio.widget,
               requires=IS_IN_SET({TomeType.Fiction:'fiction',TomeType.NonFiction:'non-fiction'})),
-        Field('authors','text', requires=author_validator(), default= [ {'name': n} for n in metadata['author_names']]),
-        Field('fidelity', default=str(60.0).encode('utf-8'))
+        Field('authors','text', requires=AuthorValidator(), default= [ {'name': n} for n in metadata['author_names']]),
+        Field('fidelity', requires=FidelityValidator(), default=60.0)
         )
     return form
 
@@ -198,10 +168,10 @@ def add_tome_from_file():
     form=_add_tome_from_file_form(session.metadata)
 
     if form.process(keepvalues=True, dbio=False).accepted:
-        fidelity = form.vars['fidelity'].decode('utf-8')
-        author_ids = pdb.find_or_create_authors(form.vars['authors'],fidelity)
-        tome_id = pdb.find_or_create_tome(form.vars['title'].decode('utf-8'),form.vars['principal_language'].decode('utf-8'), author_ids, form.vars['subtitle'].decode('utf-8'),
-                                         form.vars['tome_type'], fidelity, publication_year=form.vars['publication_year'])
+        fidelity = read_form_field(form, 'fidelity')
+        author_ids = pdb.find_or_create_authors(read_form_field(form, authors), fidelity)
+        tome_id = pdb.find_or_create_tome(read_form_field(form, 'title'), read_form_field(form, 'principal_language'), author_ids, read_form_field(form, 'subtitle'),
+                                          read_form_field(form, 'tome_type'), fidelity, publication_year=read_form_field(form, 'publication_year'))
         tome = pdb.get_tome(tome_id)
         pdb.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Content,fidelity)
         response.flash = 'Successfully created tome, please edit details now'
@@ -218,9 +188,9 @@ def _upload_cover_form():
                                        _name='new_tome_cover',
                                        requires=IS_NOT_EMPTY()))),
            TR(TD('Fidelity:'), TD(INPUT(   _type='text',
-                                       value=str(75.0).encode('utf-8'),
+                                       value=75.0,
                                        _name='fidelity',
-                                       requires=IS_NOT_EMPTY()))),
+                                       requires=FidelityValidator()))),
            TR(TD(INPUT(_type='submit',_value='Submit')))
        ))
 
@@ -235,7 +205,7 @@ def upload_cover():
     form = _upload_cover_form()
 
     if form.process(keepvalues=True, dbio=False).accepted:
-        fidelity = form.vars['fidelity'].decode('utf-8')
+        fidelity = read_form_field(form, 'fidelity')
 
         f = request.vars.new_tome_cover
         (_, extension_with_dot)=os.path.splitext(f.filename)
