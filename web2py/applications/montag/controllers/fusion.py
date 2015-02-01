@@ -27,7 +27,7 @@ def select_author_merge_partner():
     response.title = "Select Merge Target - Montag"
 
     if search_form.validate(formname = 'search', session = None, request_vars=request.vars, message_onsuccess='', keepvalues=True):
-        author_to_search_for = search_form.vars['query'].decode('utf-8')
+        author_to_search_for = read_form_field(search_form, 'query')
         retval['query'] = search_form.vars['query']
     else:
         author_to_search_for = first_author['name']
@@ -130,7 +130,7 @@ def select_tome_merge_partner():
         search_query = _build_search_query(search_form)
         if 'page' in request.vars:
             page_number = int(request.vars.page)
-        retval['query'] = search_form.vars['query'].decode('utf-8')
+        retval['query'] = read_form_field(search_form, 'query')
     else:
         search_query = first_tome['title']
         retval['query'] = search_query

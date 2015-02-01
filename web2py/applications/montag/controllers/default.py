@@ -278,13 +278,6 @@ def _author_edit_form(author, required_fidelity):
    return form
 
 
-def _read_form_field(form, fieldname):
-    val = form.vars[fieldname]
-    if isinstance(val, str):
-        val = val.decode('utf-8')
-    return val
-
-
 @auth.requires_login()
 def edit_author():
     author_guid = request.args[0]
@@ -302,7 +295,7 @@ def edit_author():
 
     if form.process(keepvalues=True, session=None).accepted:
         for f in field_names:
-            author_doc[f] = _read_form_field(f)
+            author_doc[f] = read_form_field(f)
 
         pdb.load_own_author_document(author_doc)
         author_doc = pdb.get_author_document_with_local_overlay_by_guid(author_guid)
@@ -491,7 +484,7 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
                     tome_doc['synopses'].append(synopsis_to_edit)
     
                 for sf in syn_field_names:
-                    synopsis_to_edit[sf] = _read_form_field(synform, sf)
+                    synopsis_to_edit[sf] = read_form_field(synform, sf)
                 pdb.load_own_tome_document(tome_doc)
                 redirect(URL('edit_tome', args=(tome_doc['guid']), anchor= 'synopses'))
 
@@ -500,7 +493,7 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
     
     if form.process(session=None, formname='edit_tome', keepvalues=True).accepted:
         for f in field_names:
-            tome_doc[f] = _read_form_field(form, f)
+            tome_doc[f] = read_form_field(form, f)
         if not 'authors' in tome_doc:
             tome_doc['authors']=[]
         if not 'files' in tome_doc:
@@ -545,7 +538,7 @@ def edit_tome_file_link():
         tome_file_doc=filter( lambda x: x['hash']==file_hash, doc['files'])[0]
 
         for f in field_names:
-            tome_file_doc[f] = _read_form_field(form, f)
+            tome_file_doc[f] = read_form_field(form, f)
 
         other_files.append(tome_file_doc)
         doc['files']=other_files    
@@ -664,9 +657,9 @@ def link_tome_to_author():
 
     if form.process(keepvalues=True).accepted:
 
-        author_name = _read_form_field(form, 'author_name')
-        fidelity = _read_form_field(form, 'fidelity')
-        author_order = float(_read_form_field(form, 'order'))
+        author_name = read_form_field(form, 'author_name')
+        fidelity = read_form_field(form, 'fidelity')
+        author_order = float(read_form_field(form, 'order'))
 
         author_ids = pdb.find_or_create_authors([author_name], fidelity)
         author_id = author_ids[0]

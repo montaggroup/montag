@@ -198,10 +198,10 @@ def add_tome_from_file():
     form=_add_tome_from_file_form(session.metadata)
 
     if form.process(keepvalues=True, dbio=False).accepted:
-        fidelity = form.vars['fidelity'].decode('utf-8')
-        author_ids = pdb.find_or_create_authors(form.vars['authors'],fidelity)
-        tome_id = pdb.find_or_create_tome(form.vars['title'].decode('utf-8'),form.vars['principal_language'].decode('utf-8'), author_ids, form.vars['subtitle'].decode('utf-8'),
-                                         form.vars['tome_type'], fidelity, publication_year=form.vars['publication_year'])
+        fidelity = read_form_field(form, 'fidelity')
+        author_ids = pdb.find_or_create_authors(read_form_field(form, authors), fidelity)
+        tome_id = pdb.find_or_create_tome(read_form_field(form, 'title'), read_form_field(form, 'principal_language'), author_ids, read_form_field(form, 'subtitle'),
+                                          read_form_field(form, 'tome_type'), fidelity, publication_year=read_form_field(form, 'publication_year'))
         tome = pdb.get_tome(tome_id)
         pdb.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Content,fidelity)
         response.flash = 'Successfully created tome, please edit details now'
@@ -235,7 +235,7 @@ def upload_cover():
     form = _upload_cover_form()
 
     if form.process(keepvalues=True, dbio=False).accepted:
-        fidelity = form.vars['fidelity'].decode('utf-8')
+        fidelity = read_form_field(form, 'fidelity')
 
         f = request.vars.new_tome_cover
         (_, extension_with_dot)=os.path.splitext(f.filename)
