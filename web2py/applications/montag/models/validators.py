@@ -39,9 +39,9 @@ class FidelityValidator:
     def __call__(self, field_value):
         fidelity = float(field_value)
         if fidelity < -100:
-            return None, u('Fidelity must be at least -100.');
+            return None, u'Fidelity must be at least -100.';
         if fidelity > 100:
-            return None, u('Fidelity must be at max 100.');
+            return None, u'Fidelity must be at max 100.';
 
         return fidelity, None
 
