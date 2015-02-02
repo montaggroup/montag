@@ -10,7 +10,7 @@ def calc_author_name_key(author_name):
 
     remainder = []
     for l in nfkd:
-        if l in ' ._:-;&?`':
+        if l in ' ._:-;&?`%':
             continue
         if unicodedata.combining(l):
             continue
