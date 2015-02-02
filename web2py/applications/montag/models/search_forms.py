@@ -74,10 +74,10 @@ def get_query_page(query, start_offset, end_offset):
 
 
 def get_author_query_page(query, start_offset, end_offset):
-    result_authors = pdb.find_authors(query)
+    result_authors = pdb.find_authors_with_same_name_key(query)
 
-    authorlist=result_authors[start_offset:end_offset]
-    return len(result_authors), authorlist
+    authors = result_authors[start_offset:end_offset]
+    return len(result_authors), authors
 
 
 def pass_paged_author_query_results_to_view(query, view_dict, page_number):
