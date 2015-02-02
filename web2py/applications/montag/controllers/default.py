@@ -311,7 +311,7 @@ def _is_tome_or_author_guid(string):
 @auth.requires_login()
 def tomesearch():
     retval = {}
-    form = _build_search_form()
+    form = build_search_form()
 
     if form.validate(formname = 'search', session = None, request_vars=request.vars, message_onsuccess='', keepvalues=True):
         query = read_form_field(form,'query').strip()
@@ -326,12 +326,12 @@ def tomesearch():
 
         
         response.title = "Search Results - Montag"
-        search_query = _build_search_query(form)
+        search_query = build_search_query(form)
 
         page_number = 0
         if 'page' in request.vars:
             page_number = int(request.vars.page)
-        _pass_paged_query_results_to_view(search_query, retval, page_number)
+        pass_paged_query_results_to_view(search_query, retval, page_number)
 
 
     retval['form'] = form
