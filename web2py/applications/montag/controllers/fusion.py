@@ -28,7 +28,7 @@ def select_author_merge_partner():
 
     if search_form.validate(formname = 'search', session = None, request_vars=request.vars, message_onsuccess='', keepvalues=True):
         author_to_search_for = read_form_field(search_form, 'query')
-        retval['query'] = read_form_field(form,'query')
+        retval['query'] = read_form_field(search_form,'query')
     else:
         author_to_search_for = first_author['name']
         retval['query'] = author_to_search_for
@@ -44,7 +44,7 @@ def select_author_merge_partner():
     if 'page' in request.vars:
         page_number = int(request.vars.page)
             
-    _pass_paged_author_query_results_to_view(author_to_search_for, retval, page_number)
+    pass_paged_author_query_results_to_view(author_to_search_for, retval, page_number)
 
     retval['form'] = search_form
     retval['request'] = request
@@ -127,7 +127,7 @@ def select_tome_merge_partner():
     page_number = 0
     
     if search_form.validate(formname = 'search', session = None, request_vars=request.vars, message_onsuccess='', keepvalues=True):
-        search_query = _build_search_query(search_form)
+        search_query = build_search_query(search_form)
         if 'page' in request.vars:
             page_number = int(request.vars.page)
         retval['query'] = read_form_field(search_form, 'query')
@@ -135,7 +135,7 @@ def select_tome_merge_partner():
         search_query = first_tome['title']
         retval['query'] = search_query
         
-    _pass_paged_query_results_to_view(search_query, retval, page_number)
+    pass_paged_query_results_to_view(search_query, retval, page_number)
 
     retval['form'] = search_form
     retval['request'] = request
