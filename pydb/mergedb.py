@@ -560,6 +560,17 @@ class MergeDB(pydb.basedb.BaseDB):
                 [min_file_fidelity, min_tome_fidelity, max_file_size_to_request_bytes, max_items]):
             yield row[0]
 
+    def find_authors_with_same_name_key(self, author_name):
+        """ finds a author by name key """
+        key = pydb.names.calc_author_name_key(author_name)
+
+        result = []
+        for row in self.cur.execute("SELECT * FROM authors WHERE name_key=? ORDER BY name", [key]):
+            fields = {key: row[key] for key in row.keys()}
+            result.append(fields)
+
+        return result
+
     def document_modification_date_by_guid(self, doc_type, guid):
         table_name = doc_type + "_document_changes"
         for row in self.cur.execute("SELECT last_modification_date FROM " + table_name + " WHERE document_guid=?",
