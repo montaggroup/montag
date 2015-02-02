@@ -1,4 +1,5 @@
 from pydb.basedb import data_fields_equal
+import pydb.names
 from network_params import *
 import time
 from collections import defaultdict
@@ -6,6 +7,7 @@ import logging
 import databases
 import pydb
 import copy
+import sqlitedb
 
 logger = logging.getLogger('mergedb')
 
@@ -24,6 +26,23 @@ class MergeDB(pydb.basedb.BaseDB):
             self._execute_sql_file('db-schema-update-merge_db_1.sql')
             logger.info("Migration complete")
             self._update_schema_if_necessary()
+        if self._get_schema_version() == 1:
+            logger.info("Migrating MergeDB to V2, please wait")
+            self._execute_sql_file('db-schema-update-merge_db_2.sql')
+            logger.info("Generating data for new fields")
+            self._update_all_author_name_keys()
+            logger.info("Migration complete")
+            self._update_schema_if_necessary()
+
+    def _update_all_author_name_keys(self):
+        with sqlitedb.Transaction(self):
+            authors = self.get_all_authors()
+            for author in authors:
+                name_key = pydb.names.calc_author_name_key(author['name'])
+                author_data = {
+                    'name_key': name_key,
+                }
+                self.update_object('authors', {'id': author['id']}, author_data)
 
     def delete_all(self):
         for table in (databases.data_tables + databases.local_tables):
@@ -88,9 +107,11 @@ class MergeDB(pydb.basedb.BaseDB):
             return
 
         doc = new_author_fields
+        name_key = pydb.names.calc_author_name_key(doc['name'])
         author_data = {
             'guid': doc['guid'],
             'name': doc['name'],
+            'name_key': name_key,
             'date_of_birth': doc['date_of_birth'],
             'date_of_death': doc['date_of_death'],
             'fidelity': doc['fidelity'],
