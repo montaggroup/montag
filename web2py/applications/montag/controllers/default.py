@@ -295,7 +295,7 @@ def edit_author():
 
     if form.process(keepvalues=True, session=None).accepted:
         for f in field_names:
-            author_doc[f] = read_form_field(f)
+            author_doc[f] = read_form_field(form, f)
 
         pdb.load_own_author_document(author_doc)
         author_doc = pdb.get_author_document_with_local_overlay_by_guid(author_guid)
