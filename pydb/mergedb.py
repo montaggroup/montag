@@ -742,7 +742,7 @@ class MergeDB(pydb.basedb.BaseDB):
                                "a1.fidelity >=? AND "
                                "a2.fidelity >=? AND "
                                "a1.name != a2.name COLLATE NOCASE",
-                  order_by_clause="a1.name COLLATE NOCASE",
+                  order_by_clause="a1.name_key",
                   params=[network_params.Min_Relevant_Fidelity, network_params.Min_Relevant_Fidelity])
 
         add_check('authors_with_multiple_spaces_in_name',
