@@ -101,7 +101,7 @@ def edit_friend():
         cds = pyrosetup.comm_data_store()
         cds.set_comm_data(friend_id, comm_data)
         
-        new_name = read_form_field(form, name)
+        new_name = read_form_field(form, 'name')
         if new_name != friend['name']:
             friend['name'] = new_name
             pdb.set_friend_name(friend['id'], friend['name'])
