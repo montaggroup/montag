@@ -13,11 +13,16 @@ guid_is_tome = True
 if 'author' in category:
     guid_is_tome = False
 pass    
-    
+
 i = items[0]
 headings = list(i.iterkeys())
-
-    for heading in headings: }}
+if 'name_key' in headings:
+    headings.remove('name_key')
+pass
+if 'last_modification_date' in headings:
+    headings.remove('last_modification_date')
+pass
+for heading in headings: }}
     <th>{{=nice_name(heading)}}</th>
     {{pass}}
 </tr>
@@ -33,6 +38,7 @@ headings = list(i.iterkeys())
                     {{=A(item[heading], _href=URL( 'default','view_tome', args=item[heading]))}}
                 {{ else: }}
                     {{=A(item[heading], _href=URL( 'default','view_author', args=item[heading]))}}
+                    {{=A('Merge', _href=URL('fusion','select_author_merge_partner', args=item[heading]))}}
                 {{ pass }}
             {{elif 'last_modification_date' in heading: }}
                {{=human_readble_time(item[heading])}}

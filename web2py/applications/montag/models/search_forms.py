@@ -74,10 +74,21 @@ def get_query_page(query, start_offset, end_offset):
 
 
 def get_author_query_page(query, start_offset, end_offset):
-    result_authors = pdb.find_authors(query)
+    result_authors = pdb.find_authors(query) + pdb.find_authors_with_same_name_key(query)
 
-    authorlist=result_authors[start_offset:end_offset]
-    return len(result_authors), authorlist
+    guids = set()
+    dedup_authors = []
+    for author in result_authors:
+        guid = author['guid']
+        if guid in guids:
+            continue
+        guids.add(guid)
+        dedup_authors.append(author)
+
+    dedup_authors.sort(key=lambda a: (a['name'], a['date_of_birth'], a['guid']))
+
+    authors_slice = dedup_authors[start_offset:end_offset]
+    return len(dedup_authors), authors_slice
 
 
 def pass_paged_author_query_results_to_view(query, view_dict, page_number):

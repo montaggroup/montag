@@ -1,11 +1,13 @@
 from pydb.basedb import data_fields_equal
-from network_params import *
+import pydb.names
+import network_params
 import time
 from collections import defaultdict
 import logging
 import databases
 import pydb
 import copy
+import sqlitedb
 
 logger = logging.getLogger('mergedb')
 
@@ -24,6 +26,23 @@ class MergeDB(pydb.basedb.BaseDB):
             self._execute_sql_file('db-schema-update-merge_db_1.sql')
             logger.info("Migration complete")
             self._update_schema_if_necessary()
+        if self._get_schema_version() == 1:
+            logger.info("Migrating MergeDB to V2, please wait")
+            self._execute_sql_file('db-schema-update-merge_db_2.sql')
+            logger.info("Generating data for new fields")
+            self._update_all_author_name_keys()
+            logger.info("Migration complete")
+            self._update_schema_if_necessary()
+
+    def _update_all_author_name_keys(self):
+        with sqlitedb.Transaction(self):
+            authors = self.get_all_authors()
+            for author in authors:
+                name_key = pydb.names.calc_author_name_key(author['name'])
+                author_data = {
+                    'name_key': name_key,
+                }
+                self.update_object('authors', {'id': author['id']}, author_data)
 
     def delete_all(self):
         for table in (databases.data_tables + databases.local_tables):
@@ -88,9 +107,11 @@ class MergeDB(pydb.basedb.BaseDB):
             return
 
         doc = new_author_fields
+        name_key = pydb.names.calc_author_name_key(doc['name'])
         author_data = {
             'guid': doc['guid'],
             'name': doc['name'],
+            'name_key': name_key,
             'date_of_birth': doc['date_of_birth'],
             'date_of_death': doc['date_of_death'],
             'fidelity': doc['fidelity'],
@@ -283,7 +304,7 @@ class MergeDB(pydb.basedb.BaseDB):
         # authors: unipolar, as there is only one possible opinion per (author, peer)
         best_author = item_with_best_opinion_unipolar(author_data)
 
-        if not best_author or best_author['fidelity'] < Min_Relevant_Fidelity:
+        if not best_author or best_author['fidelity'] < network_params.Min_Relevant_Fidelity:
             self._replace_author(guid, None)
         else:
             self._replace_author(guid, best_author)
@@ -392,7 +413,7 @@ class MergeDB(pydb.basedb.BaseDB):
         # tomes: unipolar, as there is only one possible opinion per (tome, peer)
         best_tome = item_with_best_opinion_unipolar(tome_data)
 
-        if not best_tome or best_tome['fidelity'] < Min_Relevant_Fidelity:
+        if not best_tome or best_tome['fidelity'] < network_params.Min_Relevant_Fidelity:
             self._replace_tome(guid, None)
         else:
             self._replace_tome(guid, best_tome)
@@ -539,6 +560,17 @@ class MergeDB(pydb.basedb.BaseDB):
                 [min_file_fidelity, min_tome_fidelity, max_file_size_to_request_bytes, max_items]):
             yield row[0]
 
+    def find_authors_with_same_name_key(self, author_name):
+        """ finds a author by name key """
+        key = pydb.names.calc_author_name_key(author_name)
+
+        result = []
+        for row in self.cur.execute("SELECT * FROM authors WHERE name_key=? ORDER BY name", [key]):
+            fields = {key: row[key] for key in row.keys()}
+            result.append(fields)
+
+        return result
+
     def document_modification_date_by_guid(self, doc_type, guid):
         table_name = doc_type + "_document_changes"
         for row in self.cur.execute("SELECT last_modification_date FROM " + table_name + " WHERE document_guid=?",
@@ -657,6 +689,111 @@ class MergeDB(pydb.basedb.BaseDB):
             guid = row['guid']
             logger.debug("Updating tome authors for {}".format(guid))
             self.request_tome_authors_update(guid)
+
+    def check_for_content_problems(self, filter_string=None):
+        """ filter_string = None => show all
+            filter_string = __list__ => show no items, just list the checks
+            filter_string = something => only execute checks with "something" in name
+        """
+
+        problems = {}
+
+        def add_check(name, from_clause, where_clause, order_by_clause=None, params=()):
+            if filter_string is not None:
+                if filter_string == "__list__":
+                    problems[name] = []
+                    return
+                elif filter_string not in name:
+                    return
+
+            items = self.get_rows(from_clause, where_clause, order_by_clause, params)
+            problems[name] = items
+
+        add_check('authors_with_many_name_parts_and_fidelity_smaller_70',
+                  from_clause='authors',
+                  where_clause="(LENGTH(name) - LENGTH(REPLACE(name, ' ', ''))) > 5 AND fidelity < 70 AND fidelity >=?",
+                  params=[network_params.Min_Relevant_Fidelity])
+
+        add_check('authors_with_commas_in_name_and_fidelity_smaller_70',
+                  from_clause='authors',
+                  where_clause="name LIKE '%,%' AND name NOT LIKE '%, Jr.%' AND fidelity < 70 AND fidelity >=?",
+                  params=[network_params.Min_Relevant_Fidelity])
+
+        add_check('files_with_strange_extension',
+                  from_clause="files INNER JOIN tomes ON tomes.id=files.tome_id",
+                  where_clause="file_extension NOT IN "
+                               "('epub', 'mobi', 'pdf', 'txt', 'pdb', 'jpg', 'html', 'lit', "
+                               "'djvu','epub','rtf', 'azw3', 'png', 'gif') "
+                               "AND files.fidelity >=?",
+                  order_by_clause="files.hash",
+                  params=[network_params.Min_Relevant_Fidelity])
+
+        add_check('authors_with_identical_names',
+                  from_clause="authors a1 INNER JOIN authors a2 ON a1.name=a2.name COLLATE NOCASE",
+                  where_clause="a1.guid != a2.guid AND "
+                               "a1.fidelity >=? AND "
+                               "a2.fidelity >=?",
+                  order_by_clause="a1.name COLLATE NOCASE",
+                  params=[network_params.Min_Relevant_Fidelity, network_params.Min_Relevant_Fidelity])
+
+        add_check('authors_with_highly_similar_names',
+                  from_clause="authors a1 INNER JOIN authors a2 ON a1.name_key=a2.name_key",
+                  where_clause="a1.guid != a2.guid AND "
+                               "a1.fidelity >=? AND "
+                               "a2.fidelity >=? AND "
+                               "a1.name != a2.name COLLATE NOCASE",
+                  order_by_clause="a1.name_key",
+                  params=[network_params.Min_Relevant_Fidelity, network_params.Min_Relevant_Fidelity])
+
+        add_check('authors_with_multiple_spaces_in_name',
+                  from_clause='authors',
+                  where_clause='name like "%  %" AND fidelity >= ?',
+                  params=[network_params.Min_Relevant_Fidelity])
+
+        add_check('files_linked_to_multiple_tomes',
+                  from_clause="files f1 INNER JOIN tomes ON tomes.id=f1.tome_id",
+                  where_clause="(SELECT count(*) from files f2 where f1.hash=f2.hash AND f2.fidelity >= ?) > 1 "
+                               "AND f1.fidelity >=?",
+                  order_by_clause="f1.hash",
+                  params=[network_params.Min_Relevant_Fidelity, network_params.Min_Relevant_Fidelity])
+
+        add_check('authors_completely_uppercase_with_fidelity_smaller_70',
+                  from_clause='authors',
+                  where_clause='name=upper(name) AND name!=lower(name) AND fidelity < 70 AND fidelity >= ?',
+                  params=[network_params.Min_Relevant_Fidelity])
+
+        add_check('authors_having_whitespace_at_the_start_or_end',
+                  from_clause='authors',
+                  where_clause='name != trim(name)',
+                  params=[])
+
+        add_check('authors_completely_lowercase_with_fidelity_smaller_70',
+                  from_clause='authors',
+                  where_clause='name=lower(name) AND name!=upper(name) AND fidelity < 70 AND fidelity >= ?',
+                  params=[network_params.Min_Relevant_Fidelity])
+
+        add_check('tomes_completely_uppercase_with_fidelity_smaller_70',
+                  from_clause='tomes',
+                  where_clause='title=upper(title) AND title!=lower(title) AND fidelity < 70 AND fidelity >= ?',
+                  params=[network_params.Min_Relevant_Fidelity])
+
+        add_check('tomes_completely_lowercase_with_fidelity_smaller_70',
+                  from_clause='tomes',
+                  where_clause='title=lower(title) AND title!=upper(title) AND fidelity < 70 AND fidelity >= ?',
+                  params=[network_params.Min_Relevant_Fidelity])
+
+        add_check('tomes_with_invalid_type',
+                  from_clause='tomes',
+                  where_clause='type IS NOT NULL AND type NOT IN (1,2) AND fidelity >= ?',
+                  params=[network_params.Min_Relevant_Fidelity])
+
+        add_check('tomes_with_multiple_spaces_in_title_or_subtitle',
+                  from_clause='tomes',
+                  where_clause='title like "%  %" or subtitle like "%  %" AND fidelity >= ?',
+                  params=[network_params.Min_Relevant_Fidelity])
+
+        return problems
+
 
 
 def merge_items_bipolar(items, group_fun):
