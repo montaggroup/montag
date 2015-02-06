@@ -253,6 +253,11 @@ def do_show_tome_debug_info(args, db):
 
     print json.dumps(doc, indent=json_indent, separators=json_separators)
 
+def do_show_author_debug_info(args, db):
+    doc = db().get_debug_info_for_author_by_guid(args.guid)
+
+    print json.dumps(doc, indent=json_indent, separators=json_separators)
+
 
 def do_get_latest_tome_related_change(args, db):
     doc = db().get_latest_tome_related_change(args.guid)
@@ -565,6 +570,11 @@ parser_edit_tome.set_defaults(func=do_edit_tome)
 parser_show_tome_debug_info = subparsers.add_parser('show_tome_debug_info', help='shows debugging info about a tome')
 parser_show_tome_debug_info.add_argument('guid', help='tome guid to show')
 parser_show_tome_debug_info.set_defaults(func=do_show_tome_debug_info)
+
+parser_show_author_debug_info = subparsers.add_parser('show_author_debug_info', help='shows debugging info about a author')
+parser_show_author_debug_info.add_argument('guid', help='author guid to show')
+parser_show_author_debug_info.set_defaults(func=do_show_author_debug_info)
+
 
 parser_merge_db_tome_update = subparsers.add_parser('merge_db_tome_update',
                                                     help='Triggers an update of the merge db info for a given tome. Should not be necessary to call at all.')

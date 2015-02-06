@@ -307,6 +307,25 @@ class MainDB:
 
         return result
 
+    def get_debug_info_for_author_by_guid(self, author_guid):
+        """ returns author documents for all databases (local, merge, all foreign) to improve network debugging
+        """
+        merge_doc = self.merge_db.get_author_document_by_guid(author_guid, ignore_fidelity_filter=True)
+        local_doc = self.local_db.get_author_document_by_guid(author_guid, ignore_fidelity_filter=True)
+
+        friends_docs = {}
+        for friend_id, foreign_db in self.foreign_dbs.iteritems():
+            friends_docs[friend_id] = foreign_db.get_author_document_by_guid(author_guid, ignore_fidelity_filter=True)
+
+        result = {
+            'merge_doc': merge_doc,
+            'local_doc': local_doc,
+            'friends': friends_docs
+        }
+
+        return result
+
+
     def get_author(self, author_id):
         """ returns a author from the merge table identified by id """
         return self.merge_db.get_author(author_id)
