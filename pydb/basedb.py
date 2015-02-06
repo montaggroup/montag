@@ -761,8 +761,11 @@ class BaseDB(sqlitedb.SqliteDB):
         author_id = author['id']
         if not keep_id:
             del author['id']
+
         del author['last_modification_date']
-        del author['name_key']
+
+        if 'name_key' in author:
+            del author['name_key']
 
         fusion_sources = self.get_author_fusion_sources(author_id)
         author['fusion_sources'] = document_export_filter(fusion_sources, ignore_fidelity_filter)

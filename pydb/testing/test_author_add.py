@@ -39,7 +39,26 @@ class TestAddAuthor(unittest.TestCase):
         authors = self.main_db.find_authors_with_same_name_key('ji hnsmith')
         self.assertEqual(len(authors), 0)
 
+    def test_after_adding_we_can_retrieve_a_merge_document(self):
+        id = self.main_db.add_author(name='john Smith')
+        item = self.main_db.get_author(id)
+        guid = item['guid']
+        author_doc = self.main_db.get_author_document_by_guid(guid)
+        self.assertEqual(author_doc['name'], 'john Smith')
 
+    def test_after_adding_we_can_retrieve_a_local_document(self):
+        id = self.main_db.add_author(name='john Smith')
+        item = self.main_db.get_author(id)
+        guid = item['guid']
+        author_doc = self.main_db.get_local_author_document_by_guid(guid)
+        self.assertEqual(author_doc['name'], 'john Smith')
+
+    def test_after_adding_we_can_retrieve_an_overlayed_document(self):
+        id = self.main_db.add_author(name='john Smith')
+        item = self.main_db.get_author(id)
+        guid = item['guid']
+        author_doc = self.main_db.get_author_document_with_local_overlay_by_guid(guid)
+        self.assertEqual(author_doc['name'], 'john Smith')
 
 if __name__ == '__main__':
     unittest.main()
