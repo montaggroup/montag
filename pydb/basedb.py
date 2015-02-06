@@ -761,7 +761,11 @@ class BaseDB(sqlitedb.SqliteDB):
         author_id = author['id']
         if not keep_id:
             del author['id']
+
         del author['last_modification_date']
+
+        if 'name_key' in author:
+            del author['name_key']
 
         fusion_sources = self.get_author_fusion_sources(author_id)
         author['fusion_sources'] = document_export_filter(fusion_sources, ignore_fidelity_filter)
@@ -810,7 +814,7 @@ def data_fields_equal(fields_a, fields_b):
     keys_a = set(fields_a.keys())
     keys_b = set(fields_b.keys())
 
-    ignore_keys = ['last_modification_date', 'id', 'tome_id', 'author_id', 'local_file_exists']
+    ignore_keys = ['last_modification_date', 'id', 'tome_id', 'author_id', 'local_file_exists', 'name_key']
 
     for key in ignore_keys:
         if key in keys_a:
