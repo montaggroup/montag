@@ -70,21 +70,23 @@ def set_cover_from_content():
     if only_display_cover_afterwards.lower() == 'false':
         only_display_cover_afterwards = False
 
-
     tome = pdb.get_tome(tome_id)
     form = _set_cover_from_content_form()
 
     title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
     response.title = u'Set Cover for {} - Montag'.format(title_text)
 
-
     if form.process(keepvalues=True).accepted:
         fidelity = read_form_field(form, 'fidelity')
         cover_contents = _extract_image_from_content(content_hash, content_extension)
+        if cover_contents is None:
+            session.flash('Cover could not be loaded - sorry!')
+            redirect(URL('default', 'view_tome', args=(tome['guid'])))
+            return
 
         file_extension = 'jpg'
         fd_cover, path_cover = tempfile.mkstemp('.' + file_extension)
-        cover_file = os.fdopen(fd_cover,'wb')
+        cover_file = os.fdopen(fd_cover, 'wb')
         cover_file.write(cover_contents.getvalue())
         cover_file.close()
 
@@ -172,6 +174,7 @@ def get_best_cover():
     
     return _stream_image(tome_file['hash'], tome_file['file_extension'])
 
+
 def _extract_image_from_content(file_hash, extension):
     """ requires a calibre installation
         returns the full path to the extracted file
@@ -185,15 +188,11 @@ def _extract_image_from_content(file_hash, extension):
         return pydb.ebook_metadata_tools.get_cover_image(source_file, extension)
 
 
-
-
-
 def _stream_image_from_content(file_hash, extension):
     cover_target = _extract_image_from_content(file_hash, extension)
-
-    response.headers['Content-Type'] = 'image/jpeg'
-
-    return response.stream(cover_target, chunk_size=20000)
+    if cover_target is not None:
+        response.headers['Content-Type'] = 'image/jpeg'
+        return response.stream(cover_target, chunk_size=20000)
 
 
 @auth.requires_login()
