@@ -2,6 +2,11 @@ import mobi
 import epub
 import pdf
 
+import os
+import tempfile
+import subprocess
+import cStringIO
+
 modules = (mobi, epub, pdf)
 
 
@@ -55,6 +60,33 @@ def extract_fulltext(source_stream):
     """ returns a fulltext representation of the file contents or None if none available
     """
     pass
+
+
+def get_cover_image(source_stream, extension):
+    """ returns a cStringIO stream with the contents of the cover file """
+    # write into a temp file as to prevent ebook_convert from accessing the file store directly
+    # and this way we can make sure that the file has the correct extension
+    input_file_fd, input_file_path = tempfile.mkstemp('.' + extension)
+    input_file_in_tmp = os.fdopen(input_file_fd, 'wb')
+    input_file_in_tmp.write(source_stream.read())
+    input_file_in_tmp.close()
+
+    fd_target, path_cover_target = tempfile.mkstemp('.jpg')
+    os.close(fd_target)
+
+    subprocess.call(['ebook-meta', input_file_path, '--get-cover', path_cover_target])
+    os.remove(input_file_path)
+
+    if os.path.getsize(path_cover_target) == 0:
+        os.remove(path_cover_target)
+        return None
+
+    with open(path_cover_target, 'rb') as coverfile:
+        result = cStringIO.StringIO(coverfile.read())
+
+    os.remove(path_cover_target)
+
+    return result
 
 
 if __name__ == '__main__':

@@ -3,10 +3,8 @@ if False:
     from web2py.applications.montag.models.ide_fake import *
 
 import tempfile
-import subprocess
-import cStringIO
 import os
-
+import pydb.ebook_metadata_tools
 
 from pydb import FileType
 
@@ -184,30 +182,10 @@ def _extract_image_from_content(file_hash, extension):
     if fp is None:
         raise KeyError('File not in file store')
     with open(fp, 'rb') as source_file:
-        contents = source_file.read()
+        return pydb.ebook_metadata_tools.get_cover_image(source_file, extension)
 
-        return _get_cover_image(contents, extension)
 
-def _get_cover_image(ebook_contents, extension):
-    """ returns a cStringIO buffer with the contents of the cover file """
-    # write into a temp file as to prevent ebook_convert from accessing the file store directly
-    # this way we are sure that the file has the correct extension
-    fd_orig, path_orig = tempfile.mkstemp('.' + extension)
-    orig_file=os.fdopen(fd_orig,'wb')
-    orig_file.write(ebook_contents)
-    orig_file.close()
-    
-    fd_target, path_cover_target = tempfile.mkstemp('.jpg')
-    os.close(fd_target)
-    
-    convert_result = subprocess.call(['ebook-meta',path_orig,'--get-cover', path_cover_target])
-    os.remove(path_orig)
-    
-    with open(path_cover_target, 'rb') as coverfile:
-        result = cStringIO.StringIO(coverfile.read())
-    os.remove(path_cover_target)
-    
-    return result
+
 
 
 def _stream_image_from_content(file_hash, extension):
