@@ -110,12 +110,11 @@ def logfile_path(service_name):
 
 def start(service_name, log_level=DEFAULT_LOG_LEVEL):
     startargs = executionenvironment.base_args_to_start_service(service_name)
-    env = os.environ
-    env['PYRO_LOGLEVEL'] = log_level
-    env['PYRO_LOGFILE'] = '{stderr}'
+    startargs.append('-l')
+    startargs.append(log_level)
     try:
         with open(logfile_path(service_name), 'wb', 1) as logfile:
-            p = psutil.Popen(startargs, env=env, stdout=logfile, stderr=logfile)
+            p = psutil.Popen(startargs, stdout=logfile, stderr=logfile)
             logfile.flush()
             return_code = p.wait(timeout=1)
             if return_code:
