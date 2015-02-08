@@ -6,18 +6,15 @@ logging.basicConfig(level=logging.INFO)
 from twisted.internet import reactor
 from pydb.com.server import Server
 import pydb.config as config
-from twisted.python import log
 import argparse
 
 import pydb.config
 import pydb.logconfig
 
-pydb.config.read_config()
-
-observer = log.PythonLoggingObserver()
-observer.start()
-
 if __name__ == "__main__":
+    pydb.config.read_config()
+    pydb.logconfig.catch_twisted_log_messages()
+
     parser = argparse.ArgumentParser(description='Runs the communication server')
     pydb.logconfig.add_log_level_to_parser(parser)
 

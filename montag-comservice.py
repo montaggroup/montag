@@ -8,15 +8,12 @@ import pydb.comservice
 
 import argparse
 import multiprocessing
-from twisted.python import log
 
 import pydb.config
 import pydb.logconfig
 
 pydb.config.read_config()
-
-observer = log.PythonLoggingObserver()
-observer.start()
+pydb.logconfig.catch_twisted_log_messages()
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()

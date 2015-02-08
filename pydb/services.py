@@ -10,7 +10,7 @@ log_path = tempfile.gettempdir()
 
 # end of configuration options
 
-DEFAULT_LOG_LEVEL = 'WARNING'  # see pyro log levels
+DEFAULT_LOG_LEVEL = 'INFO' 
 
 service_prefix = 'montag-'
 basenames = ["pydbserver", "comserver", "comservice", "indexserver", "fileserver", "web2py"]
