@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 import Pyro4
 import argparse
