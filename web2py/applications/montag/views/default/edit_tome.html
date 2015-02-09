@@ -40,7 +40,6 @@ jQuery(document).ready(function(){
 });
   
 $(window).keydown(function(e) {
-    console.log(e.target);
     var tagName = e.target.tagName.toLowerCase();    
     if(tagName != 'input' && tagName != 'textarea'){
         if(e.keyCode === 77) { //m

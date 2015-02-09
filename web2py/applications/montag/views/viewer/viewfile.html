@@ -25,7 +25,6 @@ left_sidebar_enabled=True
             li.appendChild(a);
             toc_ul.appendChild(li);
             a.onclick = function() {
-                console.log(chapter.href);
                 book.goto(chapter.href);
                 return false;
             }
