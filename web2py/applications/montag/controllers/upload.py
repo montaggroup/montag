@@ -170,7 +170,7 @@ def add_tome_from_file():
     if form.process(keepvalues=True, dbio=False).accepted:
         fidelity = read_form_field(form, 'fidelity')
         authors = read_form_field(form, 'authors')
-        author_ids = pdb.find_or_create_authors(read_form_field(form, authors), fidelity)
+        author_ids = pdb.find_or_create_authors(read_form_field(form, 'authors'), fidelity)
         tome_id = pdb.find_or_create_tome(read_form_field(form, 'title'), read_form_field(form, 'principal_language'), author_ids, read_form_field(form, 'subtitle'),
                                           read_form_field(form, 'tome_type'), fidelity, publication_year=read_form_field(form, 'publication_year'))
         tome = pdb.get_tome(tome_id)
@@ -180,7 +180,7 @@ def add_tome_from_file():
     elif form.errors:
         response.flash = 'form has errors'
 
-    return dict(form=form,author_ids=author_ids)
+    return dict(form=form, author_ids=author_ids)
 
 def _upload_cover_form():
     
