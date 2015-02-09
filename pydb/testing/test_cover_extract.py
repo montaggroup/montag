@@ -13,12 +13,6 @@ def extract_cover_from_file(file_path, extension):
 
 
 class TestCoverExtraction(unittest.TestCase):
-    def test_epub_with_cover_leads_to_stream_with_data(self):
-        result = extract_cover_from_file(epub_file_path, 'epub')
-        self.assertIsNotNone(result)
-        data = result.read()
-        self.assertTrue(len(data) > 1000)
-
     def test_epub_without_cover_leads_to_none(self):
         result = extract_cover_from_file(txt_file_path, 'txt')
         self.assertIsNone(result)
