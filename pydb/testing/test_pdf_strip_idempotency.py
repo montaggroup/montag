@@ -31,14 +31,12 @@ class TestPdfStripIdempotency(unittest.TestCase):
             test_data = stripped_data
 
 
-
 def dump_file(index, data):
         do_dumps = False
         if do_dumps:
             return
         with open('test_data/out_{}.pdf'.format(index), 'wb') as f:
             f.write(data)
-
 
 
 def strip_and_hash(test_data):

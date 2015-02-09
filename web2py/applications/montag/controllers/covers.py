@@ -3,10 +3,8 @@ if False:
     from web2py.applications.montag.models.ide_fake import *
 
 import tempfile
-import subprocess
-import cStringIO
 import os
-
+import pydb.ebook_metadata_tools
 
 from pydb import FileType
 
@@ -72,21 +70,23 @@ def set_cover_from_content():
     if only_display_cover_afterwards.lower() == 'false':
         only_display_cover_afterwards = False
 
-
     tome = pdb.get_tome(tome_id)
     form = _set_cover_from_content_form()
 
     title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
     response.title = u'Set Cover for {} - Montag'.format(title_text)
 
-
     if form.process(keepvalues=True).accepted:
         fidelity = read_form_field(form, 'fidelity')
         cover_contents = _extract_image_from_content(content_hash, content_extension)
+        if cover_contents is None:
+            session.flash('Cover could not be loaded - sorry!')
+            redirect(URL('default', 'view_tome', args=(tome['guid'])))
+            return
 
         file_extension = 'jpg'
         fd_cover, path_cover = tempfile.mkstemp('.' + file_extension)
-        cover_file = os.fdopen(fd_cover,'wb')
+        cover_file = os.fdopen(fd_cover, 'wb')
         cover_file.write(cover_contents.getvalue())
         cover_file.close()
 
@@ -174,6 +174,7 @@ def get_best_cover():
     
     return _stream_image(tome_file['hash'], tome_file['file_extension'])
 
+
 def _extract_image_from_content(file_hash, extension):
     """ requires a calibre installation
         returns the full path to the extracted file
@@ -184,38 +185,14 @@ def _extract_image_from_content(file_hash, extension):
     if fp is None:
         raise KeyError('File not in file store')
     with open(fp, 'rb') as source_file:
-        contents = source_file.read()
-
-        return _get_cover_image(contents, extension)
-
-def _get_cover_image(ebook_contents, extension):
-    """ returns a cStringIO buffer with the contents of the cover file """
-    # write into a temp file as to prevent ebook_convert from accessing the file store directly
-    # this way we are sure that the file has the correct extension
-    fd_orig, path_orig = tempfile.mkstemp('.' + extension)
-    orig_file=os.fdopen(fd_orig,'wb')
-    orig_file.write(ebook_contents)
-    orig_file.close()
-    
-    fd_target, path_cover_target = tempfile.mkstemp('.jpg')
-    os.close(fd_target)
-    
-    convert_result = subprocess.call(['ebook-meta',path_orig,'--get-cover', path_cover_target])
-    os.remove(path_orig)
-    
-    with open(path_cover_target, 'rb') as coverfile:
-        result = cStringIO.StringIO(coverfile.read())
-    os.remove(path_cover_target)
-    
-    return result
+        return pydb.ebook_metadata_tools.get_cover_image(source_file, extension)
 
 
 def _stream_image_from_content(file_hash, extension):
     cover_target = _extract_image_from_content(file_hash, extension)
-
-    response.headers['Content-Type'] = 'image/jpeg'
-
-    return response.stream(cover_target, chunk_size=20000)
+    if cover_target is not None:
+        response.headers['Content-Type'] = 'image/jpeg'
+        return response.stream(cover_target, chunk_size=20000)
 
 
 @auth.requires_login()
