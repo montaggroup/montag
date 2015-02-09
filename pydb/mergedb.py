@@ -723,7 +723,7 @@ class MergeDB(pydb.basedb.BaseDB):
                   from_clause="files INNER JOIN tomes ON tomes.id=files.tome_id",
                   where_clause="file_extension NOT IN "
                                "('epub', 'mobi', 'pdf', 'txt', 'pdb', 'jpg', 'html', 'lit', "
-                               "'djvu','epub','rtf', 'azw3', 'png', 'gif') "
+                               "'djvu','epub','rtf', 'azw3', 'png', 'gif', 'cbr') "
                                "AND files.fidelity >=?",
                   order_by_clause="files.hash",
                   params=[network_params.Min_Relevant_Fidelity])
