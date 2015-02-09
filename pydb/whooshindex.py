@@ -17,7 +17,6 @@ class WhooshIndex:
         if not os.path.exists(db_dir):
             os.mkdir(db_dir)
         self.index_dir = os.path.join(db_dir, "whoosh")
-        # logger.info("Whoosh index located in %s" % self.index_dir)
 
         if os.path.exists(self.index_dir):
             self.index = open_dir(self.index_dir)
@@ -72,9 +71,9 @@ class WhooshIndex:
                                    guid=tome['guid'],
                                    merge_db_id=tome['id'],
                                    type=tome['type'])
-        logger.info("Committing writer")
+        logger.debug("Committing writer")
         writer.commit(MERGE_CUSTOM)
-        logger.info("Commit done")
+        logger.debug("Commit done")
 
     def remove_tomes(self, tome_guids):
         if not tome_guids:
@@ -113,13 +112,17 @@ def MERGE_CUSTOM(writer, segments):
     sorted_segment_list = sorted(segments, key=lambda s: s.doc_count_all())
     total_docs = 0
 
+    log_stats = False
+
     merge_point_found = False
     for i, seg in enumerate(sorted_segment_list):
         count = seg.doc_count_all()
         if count > 0:
             total_docs += count
 
-        logger.debug("{}: {}/{}, fib {}".format(i, count, total_docs, fib(i+5)))
+        if log_stats:
+            logger.debug("{}: {}/{}, fib {}".format(i, count, total_docs, fib(i+5)))
+
         if merge_point_found:
             unchanged_segments.append(seg)
         else:
