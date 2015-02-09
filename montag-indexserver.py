@@ -11,7 +11,7 @@ import sys
 from pydb.executionenvironment import using_py2exe
 import pydb.indexserver
 import pydb.config
-
+import pydb.logconfig
 
 def get_main_dir():
     if using_py2exe():
@@ -30,8 +30,11 @@ if __name__ == "__main__":
                         default="index_server")
     parser.add_argument('--port', '-p', dest='pyro_port', help='Sets the Pyro4 port for the server', action='store',
                         default=4512, type=int)
+    pydb.logconfig.add_log_level_to_parser(parser)
 
     args = parser.parse_args()
+
+    pydb.logconfig.set_log_level(args.loglevel)
 
     logger = logging.getLogger('indexserver')
     logger.info('### logging started at %s local time. ###', time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime()))

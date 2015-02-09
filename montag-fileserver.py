@@ -12,7 +12,7 @@ from pydb.executionenvironment import get_main_dir
 import pydb.commdatastore
 import pydb.pyrosetup
 import pydb.config
-
+import pydb.logconfig
 
 if __name__ == "__main__":
 
@@ -26,7 +26,11 @@ if __name__ == "__main__":
                         help='Disable database sync - may lead to COMPLETE data loss on error (eg. power failure)',
                         action="store_true", default=False)
 
+    pydb.logconfig.add_log_level_to_parser(parser)
+
     args = parser.parse_args()
+
+    pydb.logconfig.set_log_level(args.loglevel)
     pydb.config.read_config()
 
     logger = logging.getLogger('fileserver')

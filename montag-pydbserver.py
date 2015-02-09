@@ -12,7 +12,7 @@ import atexit
 from pydb.executionenvironment import get_main_dir
 import pydb.commdatastore
 import pydb.config
-
+import pydb.logconfig
 
 def schema_path():
     return os.path.join(get_main_dir(), "db-schemas")
@@ -31,8 +31,11 @@ if __name__ == "__main__":
     parser.add_argument('--no-sync', dest='no_sync',
                         help='Disable database sync - may lead to COMPLETE data loss on error (eg. power failure)',
                         action="store_true", default=False)
+    pydb.logconfig.add_log_level_to_parser(parser)
 
     args = parser.parse_args()
+
+    pydb.logconfig.set_log_level(args.loglevel)
 
     logger = logging.getLogger('pydbserver')
     logger.info('### logging started at %s local time. ###', time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime()))
