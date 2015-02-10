@@ -148,6 +148,7 @@ def _add_tome_from_file_form(metadata):
     form = SQLFORM.factory(
         Field('title',requires=IS_NOT_EMPTY(), default=from_dict(metadata,'title').encode('utf-8') ),
         Field('subtitle'),
+        Field('edition'),
         Field('principal_language',default=from_dict(metadata,'principal_language','en').encode('utf-8')),
         Field('publication_year', default=str(from_dict(metadata,'publication_year','')).encode('utf-8')),
         Field('tome_type', default=TomeType.Fiction , widget=SQLFORM.widgets.radio.widget,
@@ -171,8 +172,15 @@ def add_tome_from_file():
         fidelity = read_form_field(form, 'fidelity')
         authors = read_form_field(form, 'authors')
         author_ids = pdb.find_or_create_authors(read_form_field(form, 'authors'), fidelity)
-        tome_id = pdb.find_or_create_tome(read_form_field(form, 'title'), read_form_field(form, 'principal_language'), author_ids, read_form_field(form, 'subtitle'),
-                                          read_form_field(form, 'tome_type'), fidelity, publication_year=read_form_field(form, 'publication_year'))
+        tome_id = pdb.find_or_create_tome(read_form_field(form, 'title'), 
+                                          read_form_field(form, 'principal_language'), 
+                                          author_ids, 
+                                          read_form_field(form, 'subtitle'),
+                                          read_form_field(form, 'tome_type'), 
+                                          fidelity, 
+                                          edition=read_form_field(form, 'edition'), 
+                                          publication_year=read_form_field(form, 'publication_year'))
+
         tome = pdb.get_tome(tome_id)
         pdb.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Content,fidelity)
         response.flash = 'Successfully created tome, please edit details now'

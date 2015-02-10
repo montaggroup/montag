@@ -912,8 +912,8 @@ class MainDB:
         author_ids = [self.find_or_create_author(author_name, fidelity) for author_name in author_names]
         return author_ids
 
-    def find_or_create_tome(self, title, language, author_ids, subtitle, tome_type, fidelity, publication_year=None,
-                            tags_values=None):
+    def find_or_create_tome(self, title, language, author_ids, subtitle, tome_type, fidelity, 
+                            edition=None, publication_year=None, tags_values=None):
         tome_candidates = self.find_tomes_by_title(title, language, author_ids, subtitle)
 
         if len(tome_candidates) == 1:  # one tome, use it
@@ -921,7 +921,7 @@ class MainDB:
 
         if len(tome_candidates) > 1:  # more than one tome candidate
 
-            if publication_year:
+            if publication_year is not None:
                 # find the one matching publication year and having empty edition
                 for tome_fields in tome_candidates:
                     if tome_fields['edition'] is None and tome_fields['publication_year'] == publication_year:
@@ -938,7 +938,7 @@ class MainDB:
                     return tome_fields['id']
 
         return self.add_tome(title, language, author_ids, subtitle=subtitle, fidelity=fidelity, tome_type=tome_type,
-                             publication_year=publication_year, tags_values=tags_values)
+                             edition=edition, publication_year=publication_year, tags_values=tags_values)
 
     def get_tome_fidelities(self, tome_id):
         """ returns a tuple (effective_fidelity, local_fidelity, min_foreign_fidelity, max_foreign_fidelity) of
