@@ -791,6 +791,11 @@ class MergeDB(pydb.basedb.BaseDB):
                   from_clause='tomes',
                   where_clause='title like "%  %" or subtitle like "%  %" AND fidelity >= ?',
                   params=[network_params.Min_Relevant_Fidelity])
+            
+        add_check('tomes_with_titles_ending_in_an_article_having_fidelity_smaller_70',
+                  from_clause='tomes',
+                  where_clause='(title like "%, the" OR title like "%, a" OR title like "%, an") AND fidelity >= ? AND fidelity < 70',
+                  params=[network_params.Min_Relevant_Fidelity])
 
         return problems
 
