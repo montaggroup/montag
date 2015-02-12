@@ -43,7 +43,7 @@ pass
       pass}}
       {{=int(file['fidelity']) }}/100
           {{ if show_edit_button: }}
-          <span class="edit"> {{ =A("edit", _href=URL( 'edit_tome_file_link',args=[tome['id'],file['hash']], ))}}  </span>
+          <span class="edit"> {{ =A("edit link", _href=URL( 'edit_tome_file_link',args=[tome['id'],file['hash']], ))}}  </span>
           {{pass}}
         </li>
     {{pass}}
@@ -172,8 +172,14 @@ jQuery(document).ready(function(){
     {{return request.is_local}}
 
 
-{{def show_author_info_block(author_info, allow_edit=False, additional_author_button_html=None):}}
-    <h1>{{=author_link(author_info) }} 
+{{def show_author_info_block(author_info, allow_edit=False, additional_author_button_html=None, first_on_page=False):
+    class_string = ''
+    if first_on_page:
+        class_string=' class='+XML("first_on_page")
+    pass
+}}
+
+    <h1 {{=class_string}}>{{=author_link(author_info) }} 
         {{ if allow_edit:
         =A("edit", _class='edit_author', _href=URL( 'edit_author',args=[author_info['guid']] )) 
         pass}}

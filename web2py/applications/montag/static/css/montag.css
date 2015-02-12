@@ -58,6 +58,10 @@ h1.room_above {
     padding-top: 20px;   
 }
 
+h1.first_on_page {
+    margin-top: 0px;
+}
+
 h2 {
     font-size: 1.5em;
     line-height: 25px;
