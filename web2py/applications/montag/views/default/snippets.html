@@ -43,7 +43,7 @@ pass
       pass}}
       {{=int(file['fidelity']) }}/100
           {{ if show_edit_button: }}
-          <span class="edit"> {{ =A("edit", _href=URL( 'edit_tome_file_link',args=[tome['id'],file['hash']], ))}}  </span>
+          <span class="edit"> {{ =A("edit link", _href=URL( 'edit_tome_file_link',args=[tome['id'],file['hash']], ))}}  </span>
           {{pass}}
         </li>
     {{pass}}
