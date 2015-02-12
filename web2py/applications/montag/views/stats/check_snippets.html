@@ -1,7 +1,7 @@
 {{ def print_check_results(dbname, problems): 
 errors = 0
 }}
-<h1> {{=nice_name(dbname)}} </h1>
+<h1 class="first_on_page"> {{=nice_name(dbname)}} </h1>
 {{ for category, items in problems.iteritems(): }}
 {{if items: }}
 
