@@ -1,6 +1,6 @@
 {{extend 'layout.html'}}
 {{ include 'default/snippets.html' }}
-{{show_author_info_block(author_info, allow_edit=True) }}
+{{show_author_info_block(author_info, allow_edit=True, first_on_page=True) }}
 
 {{if tome_info:}}
 {{hide_all_files()}}
