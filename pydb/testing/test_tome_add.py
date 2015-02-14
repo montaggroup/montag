@@ -118,6 +118,14 @@ class TestFindOrCreateTome(unittest.TestCase):
         self.assertEqual(tome_id_1, tome_id_2)
 
 
+    def in_the_presence_of_two_specific_tome_find_or_create_will_create_a_generic_one_pubyear_case(self):
+        tome_id_1 = self._add_tome(publication_year=1975)
+        tome_id_2 = self._add_tome(publication_year=1976)
+        tome_id_3 = self._add_tome(publication_year=None)
+
+        self.assertNotEqual(tome_id_1, tome_id_2)
+        self.assertNotEqual(tome_id_1, tome_id_3)
+        self.assertNotEqual(tome_id_2, tome_id_3)
 
 
 if __name__ == '__main__':
