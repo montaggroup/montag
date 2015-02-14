@@ -915,8 +915,8 @@ class MainDB:
     def find_or_create_tome(self, title, language, author_ids, subtitle, tome_type, fidelity, 
                             edition=None, publication_year=None, tags_values=None):
 
-        def filter_tomes(candidates, field_name, value_to_find):
-            if value_to_find is None:
+        def filter_tomes(candidates, field_name, value_to_find, strict=False):
+            if value_to_find is None and not strict:
                 return candidates
             value_to_find = unicode(value_to_find)
             return filter(lambda t: unicode(t[field_name]) == value_to_find, candidates)
@@ -927,6 +927,18 @@ class MainDB:
 
         if len(tome_candidates) == 1:  # one tome, use it
             return tome_candidates[0]['id']
+
+        if len(tome_candidates) > 1:  #  multiple candidates left, try to filter more strict
+                tome_candidates = filter_tomes(tome_candidates, 'edition', edition, strict=True)
+
+                if len(tome_candidates) == 1:  # one tome now left, use it
+                    return tome_candidates[0]['id']
+
+        if len(tome_candidates) > 1:  #  multiple candidates left, try to filter more strict
+                tome_candidates = filter_tomes(tome_candidates, 'publication_year', publication_year, strict=True)
+
+                if len(tome_candidates) == 1:  # one tome now left, use it
+                    return tome_candidates[0]['id']
 
         return self.add_tome(title, language, author_ids, subtitle=subtitle, fidelity=fidelity, tome_type=tome_type,
                              edition=edition, publication_year=publication_year, tags_values=tags_values)
