@@ -797,6 +797,11 @@ class MergeDB(pydb.basedb.BaseDB):
                   where_clause='(title like "%, the" OR title like "%, a" OR title like "%, an") AND fidelity >= ? AND fidelity < 70',
                   params=[network_params.Min_Relevant_Fidelity])
 
+        add_check('tomes_with_titles_containing_the_work_edition_having_fidelity_smaller_70',
+                  from_clause='tomes',
+                  where_clause='title like "% edition%" AND fidelity >= ? AND fidelity < 70',
+                  params=[network_params.Min_Relevant_Fidelity])
+
         return problems
 
 
