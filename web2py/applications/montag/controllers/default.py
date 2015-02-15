@@ -271,8 +271,11 @@ def view_tome_debug_info():
 def _author_edit_form(author, required_fidelity):
    form = SQLFORM.factory(
         Field('name',requires=IS_NOT_EMPTY(), default=db_str_to_form(author['name']), comment=XML(r'<input type="button" value="Guess name case" onclick="title_case_field(&quot;no_table_name&quot;)">')),
-        Field('date_of_birth', default=author['date_of_birth'], comment='ISO 8601, e.g. 1920-08-22'),
-        Field('date_of_death',default=author['date_of_death'], comment='ISO 8601, e.g. 2012-06-05'),
+                                   
+        Field('date_of_birth', default=author['date_of_birth'], 
+               comment=TOOLTIP('Please enter the date in ISO&nbsp;8601, e.g. 1920-08-22. If only the year is known, use that.')),
+         Field('date_of_death',default=author['date_of_death'], 
+               comment=TOOLTIP('Please enter the date in ISO&nbsp;8601, e.g. 1993-02-21. If only the year is known, use that.')),
         Field('fidelity', requires=FidelityValidator(), default=required_fidelity, comment='Current Value: {}'.format(author['fidelity'])),
         )
    return form
