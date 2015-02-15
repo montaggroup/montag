@@ -342,7 +342,7 @@ def tomesearch():
 
 
 def TOOLTIP(text):
-   tip = A(IMG(_src=URL('static', 'images/clker/blue_question_mark.png')), _class="tooltip_trigger", _title=text)
+   tip = A(IMG(_src=URL('static', 'images/clker/grey_question_mark.png')), _class="tooltip_trigger", _title=text)
    return tip
 
     
