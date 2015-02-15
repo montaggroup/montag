@@ -894,14 +894,11 @@ class MainDB:
         if len(author_candidates) == 1:  # we have only one candidate, use it
             return author_candidates[0]['id']
 
-        if len(author_candidates) == 0:  # no candidates, create it
-            author_id = self.add_author(author_name, fidelity=fidelity)
-            return author_id
-
-        # more than one author, find/create the generic one
-        for author in author_candidates:
-            if author['date_of_birth'] is None and author['date_of_death'] is None:
-                return author['id']
+        if len(author_candidates) > 1:
+            # more than one author, find/create the generic one
+            for author in author_candidates:
+                if author['date_of_birth'] is None and author['date_of_death'] is None:
+                    return author['id']
 
         # create it
         return self.add_author(author_name, fidelity=fidelity)
