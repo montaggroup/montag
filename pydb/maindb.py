@@ -421,7 +421,8 @@ class MainDB:
 
     def add_tome(self, title, principal_language, author_ids, guid=None, publication_year=None, edition=None,
                  subtitle=None, tome_type=TomeType.Unknown, fidelity=None, tags_values=None):
-        """ adds a new tome, generating a guid. returns a tome_id
+        """ adds a new tome, generating a guid. returns a merge db tome_id or none if tome had not enough fidelity
+            to be added to merge db
             is_fiction: None => unknown, True => fiction, False=>non_fiction
         """
         logging.debug("Called add_tome")
@@ -456,10 +457,9 @@ class MainDB:
                 self.merge_db.request_tome_tag_update(guid)
 
         tome = self.merge_db.get_tome_by_guid(guid)
-
-        self._update_search_index()
-
-        return tome['id']
+        if tome:
+            self._update_search_index()
+            return tome['id']
 
     def _apply_file_hash_translation(self, source_hash, target_hash):
         """ goes through all databases making sure that all instances of source_hash
@@ -939,6 +939,10 @@ class MainDB:
 
                 if len(tome_candidates) == 1:  # one tome now left, use it
                     return tome_candidates[0]['id']
+
+        if len(tome_candidates) > 1:  # multiple candidates left, choose one based on guid
+            tome_candidates.sort(key=lambda t: t['guid'])
+            return tome_candidates[0]['id']
 
         return self.add_tome(title, language, author_ids, subtitle=subtitle, fidelity=fidelity, tome_type=tome_type,
                              edition=edition, publication_year=publication_year, tags_values=tags_values)
