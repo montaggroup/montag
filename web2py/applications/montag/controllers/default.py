@@ -350,7 +350,7 @@ def _tome_edit_form(tome, required_tome_fidelity):
 
     form = SQLFORM.factory(
         Field('title',requires=IS_NOT_EMPTY(), default=tome['title'].encode('utf-8'),
-              comment=SPAN(
+              comment=DIV(
                            TOOLTIP('Please enter the title of the book like it is written on the cover.'),
                            XML(r'<input type="button" value="Guess title case" onclick="title_case_field(&quot;no_table_title&quot;)">'),
                            _class='nowrap'
