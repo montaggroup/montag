@@ -341,11 +341,6 @@ def tomesearch():
     return retval
 
 
-def TOOLTIP(text):
-   tip = A(IMG(_src=URL('static', 'images/clker/grey_question_mark.png')), _class="tooltip_trigger", _title=text)
-   return tip
-
-    
 def _tome_edit_form(tome, required_tome_fidelity):
 
     form = SQLFORM.factory(

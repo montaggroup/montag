@@ -7,6 +7,7 @@ import tempfile
 import pydb.pyrosetup
 from pydb import ebook_metadata_tools, FileType, TomeType
 
+DEFAULT_ADD_FIDELITY = 60.0
 
 @auth.requires_login()
 def upload_file_json():
@@ -20,7 +21,7 @@ def upload_file_json():
 
             (id, hash, size) = _insert_file(f.file, f.filename)
 
-            res = dict(files=[ {'name': str(f.filename), 'size': size}] )
+            res = dict(files=[{'name': str(f.filename), 'size': size}])
 
             return gluon.contrib.simplejson.dumps(res, separators=(',',':'))
 
@@ -140,21 +141,23 @@ def upload_file_to_tome():
 
 def _add_tome_from_file_form(metadata):
     def from_dict(the_dict, key, default_value=''):
-        if not key in the_dict:
+        if key not in the_dict:
             return default_value
         else:
             return the_dict[key]
 
     form = SQLFORM.factory(
-        Field('title',requires=IS_NOT_EMPTY(), default=from_dict(metadata,'title').encode('utf-8') ),
+        Field('title', requires=IS_NOT_EMPTY(), default=db_str_to_form(from_dict(metadata, 'title')),
+              comment=TOOLTIP('Please enter the title of the book like it is written on the cover.'),),
         Field('subtitle'),
         Field('edition'),
-        Field('principal_language',default=from_dict(metadata,'principal_language','en').encode('utf-8')),
-        Field('publication_year', default=str(from_dict(metadata,'publication_year','')).encode('utf-8')),
-        Field('tome_type', default=TomeType.Fiction , widget=SQLFORM.widgets.radio.widget,
-              requires=IS_IN_SET({TomeType.Fiction:'fiction',TomeType.NonFiction:'non-fiction'})),
-        Field('authors','text', requires=AuthorValidator(), default= [ {'name': n} for n in metadata['author_names']]),
-        Field('fidelity', requires=FidelityValidator(), default=60.0)
+        Field('principal_language', default=db_str_to_form(from_dict(metadata, 'principal_language', 'en')),
+              comment=TOOLTIP('Please use two letter ISO 639-1 codes (e.g. en for English).')),
+        Field('publication_year', default=db_str_to_form(from_dict(metadata,'publication_year', ''))),
+        Field('tome_type', default=TomeType.Fiction, widget=SQLFORM.widgets.radio.widget,
+              requires=IS_IN_SET({TomeType.Fiction: 'fiction', TomeType.NonFiction: 'non-fiction'})),
+        Field('authors','text', requires=AuthorValidator(), default=[{'name': n} for n in metadata['author_names']]),
+        Field('fidelity', requires=FidelityValidator(), default=DEFAULT_ADD_FIDELITY)
         )
     return form
 
