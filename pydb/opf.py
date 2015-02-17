@@ -75,19 +75,3 @@ class Metadata:
         return "Metadata: %s by %s Language: %s Tags: %s" % (
             self.title, "; ".join(self.authors), self.language, self.tags) + series_text
 
-if __name__ == "__main__":
-    mi = Metadata()
-
-    mi.title = "a title"
-    mi.authors = ["one author", "another author"]
-    mi.series = "a series!"
-    mi.series_index = 12
-    mi.title_sort = "title, a"
-    mi.tags = ["EXAMPLEs", "bad examples"]
-
-    print mi
-
-    opf_text = mi.to_opf(True)
-
-    print opf_text
-
