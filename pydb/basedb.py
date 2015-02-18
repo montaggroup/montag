@@ -86,8 +86,8 @@ class BaseDB(sqlitedb.SqliteDB):
             yield fields
 
     def tome_id_to_guid(self, tome_id):
-        for row in self.cur.execute("SELECT * FROM tomes WHERE id=?", [tome_id]):
-            return row['guid']
+        for row in self.cur.execute("SELECT guid FROM tomes WHERE id=?", [tome_id]):
+            return row[0]
 
     def get_all_tomes(self):
         """ returns generator function for all tome dicts """
@@ -96,32 +96,32 @@ class BaseDB(sqlitedb.SqliteDB):
             fields = {key: row[key] for key in row.keys()}
             yield fields
 
+    def do_authors_match(self, authors_filter, tome_id):
+        if not authors_filter:
+            return True
+
+        tome_author_ids = self.get_tome_author_ids(tome_id)
+        for required_author_id in authors_filter:
+            if required_author_id not in tome_author_ids:
+                return False
+        return True
+
     def find_tomes_by_title(self, title, principal_language, authors_filter=None, subtitle_filter_text=None):
-        """ finds tomes by title """
+        """ finds tomes by title
+            authors_filter: list of author ids - if given, the tome must have at least these authors
+        """
 
         result = []
         for row in self.cur.execute("SELECT * FROM tomes WHERE title LIKE ? and principal_language=?",
                                     [title, principal_language]):
-            fields = {key: row[key] for key in row.keys()}
-            result.append(fields)
+            tome = {key: row[key] for key in row.keys()}
+            result.append(tome)
 
         if subtitle_filter_text is not None:
-            pre_result = result
-            result = [tome for tome in pre_result if (tome['subtitle'] or '').lower() == subtitle_filter_text.lower()]
+            result = [tome for tome in result if (tome['subtitle'] or '').lower() == subtitle_filter_text.lower()]
 
-        if authors_filter and len(
-                authors_filter) > 0:  # if a authors filter is given, the tome must have at least the given authors
-            pre_result = result
-            result = []
-            for fields in pre_result:
-                all_target_authors_found = True
-                tome_author_ids = self.get_tome_author_ids(fields['id'])
-                for author_id in authors_filter:
-                    logger.debug("find_tomes_by_title: author_id for filtering: %s" % author_id)
-                    if author_id not in tome_author_ids:
-                        all_target_authors_found = False
-                if all_target_authors_found:
-                    result.append(fields)
+        if authors_filter is not None:
+            result = [tome for tome in result if self.do_authors_match(authors_filter, tome['id'])]
         return result
 
     def get_tomes_by_author(self, author_id):
