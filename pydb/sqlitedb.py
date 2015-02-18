@@ -59,6 +59,55 @@ class SqliteDB(object):
             result.append(fields)
         return result
 
+    def get_single_column(self, query, params=()):
+        result = []
+        for row in self.cur.execute(query, params):
+            result.append(row[0])
+        return result
+
+    def get_single_object(self, query, params=()):
+        row = self.cur.execute(query, params).fetchone()
+        if row is not None:
+            return {key: row[key] for key in row.keys()}
+
+    def get_list_of_objects(self, query, params=()):
+        result = []
+        for row in self.cur.execute(query, params):
+            fields = {key: row[key] for key in row.keys()}
+            result.append(fields)
+        return result
+
+    def get_single_value(self, query, params=()):
+        row = self.cur.execute(query, params).fetchone()
+        if row is not None:
+            return row[0]
+
+    def update_object(self, table_name, filter_dict, object_fields):
+        assignments = ["{} = ?".format(field_name) for field_name in object_fields.iterkeys()]
+        set_string = ', '.join(assignments)
+
+        filter_conditions = ["{} = ?".format(field_name) for field_name in filter_dict.iterkeys()]
+        filter_string = " AND ".join(filter_conditions)
+
+        parameters = object_fields.values() + filter_dict.values()
+
+        query = "UPDATE {} SET {} WHERE {}".format(table_name, set_string, filter_string)
+        logger.debug("Update query is {} {}".format(query, repr(parameters)))
+        self.con.execute(query, parameters)
+
+    def insert_object(self, table_name, object_fields):
+        field_string = ', '.join(object_fields.iterkeys())
+        question_marks = ', '.join('?' * len(object_fields))
+
+        value_list = object_fields.values()
+
+        query = "INSERT INTO {} ({}) VALUES ({}) ".format(table_name, field_string, question_marks)
+        logger.debug("Insert query is " + query + repr(value_list))
+        cur = self.con.cursor()
+        cur.execute(query, value_list)
+
+        return cur.lastrowid
+
 
 class Transaction():
     def __init__(self, db):

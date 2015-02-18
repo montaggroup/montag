@@ -41,10 +41,9 @@ class BaseDB(sqlitedb.SqliteDB):
         return stats
 
     def get_used_languages(self):
-        rows = self.cur.execute(
-            "SELECT DISTINCT(principal_language) FROM tomes WHERE fidelity >= ?", [network_params.Min_Relevant_Fidelity])
-        result = [row[0] for row in rows]
-        return result
+        return self.get_single_column("SELECT DISTINCT(principal_language) "
+                                      "FROM tomes WHERE fidelity >= ?",
+                                      [network_params.Min_Relevant_Fidelity])
 
     def get_tome_statistics(self):
         result = {}
@@ -65,17 +64,12 @@ class BaseDB(sqlitedb.SqliteDB):
     def get_tome(self, tome_id):
         """ returns a tome by id or None if not found"""
 
-        for row in self.cur.execute("SELECT * FROM tomes WHERE id=?", [tome_id]):
-            fields = {key: row[key] for key in row.keys()}
-            return fields
+        return self.get_single_object("SELECT * FROM tomes WHERE id=?", [tome_id])
 
     def get_tome_by_guid(self, guid):
         """ returns a tome by guid or None if not found
         """
-
-        for row in self.cur.execute("SELECT * FROM tomes WHERE guid=?", [guid]):
-            fields = {key: row[key] for key in row.keys()}
-            return fields
+        return self.get_single_object("SELECT * FROM tomes WHERE guid=?", [guid])
 
     def get_random_tomes(self, number_tomes):
         """ returns generator function for a specified number of tomes selected at random,
@@ -86,8 +80,7 @@ class BaseDB(sqlitedb.SqliteDB):
             yield fields
 
     def tome_id_to_guid(self, tome_id):
-        for row in self.cur.execute("SELECT guid FROM tomes WHERE id=?", [tome_id]):
-            return row[0]
+        return self.get_single_value("SELECT guid FROM tomes WHERE id=?", [tome_id])
 
     def get_all_tomes(self):
         """ returns generator function for all tome dicts """
@@ -111,11 +104,8 @@ class BaseDB(sqlitedb.SqliteDB):
             authors_filter: list of author ids - if given, the tome must have at least these authors
         """
 
-        result = []
-        for row in self.cur.execute("SELECT * FROM tomes WHERE title LIKE ? and principal_language=?",
-                                    [title, principal_language]):
-            tome = {key: row[key] for key in row.keys()}
-            result.append(tome)
+        result = self.get_list_of_objects("SELECT * FROM tomes WHERE title LIKE ? and principal_language=?",
+                                          [title, principal_language])
 
         if subtitle_filter_text is not None:
             result = [tome for tome in result if (tome['subtitle'] or '').lower() == subtitle_filter_text.lower()]
@@ -126,48 +116,30 @@ class BaseDB(sqlitedb.SqliteDB):
 
     def get_tomes_by_author(self, author_id):
         """ returns a list of tome dicts for all tomes by a certain author """
-        result = []
-        for row in self.cur.execute(
-                "SELECT tomes.*, tomes_authors.fidelity AS author_link_fidelity FROM tomes "
-                "INNER JOIN tomes_authors ON tomes_authors.tome_id=tomes.id "
-                "WHERE tomes_authors.author_id=?",
-                [author_id]):
-            fields = {key: row[key] for key in row.keys()}
-            result.append(fields)
-        return result
+        return self.get_list_of_objects("SELECT tomes.*, tomes_authors.fidelity AS author_link_fidelity FROM tomes "
+                                        "INNER JOIN tomes_authors ON tomes_authors.tome_id=tomes.id "
+                                        "WHERE tomes_authors.author_id=?",
+                                        [author_id])
 
     def get_all_tome_ids(self):
-        result = []
-        for row in self.cur.execute("SELECT id FROM tomes"):
-            result.append(row[0])
-        return result
+        return self.get_single_column("SELECT id FROM tomes")
 
     def get_all_tome_guids(self):
-        result = []
-        for row in self.cur.execute("SELECT guid FROM tomes"):
-            result.append(row[0])
-        return result
+        return self.get_single_column("SELECT guid FROM tomes")
 
     def get_item_linked_to_tome_by_tome_id(self, table_name, tome_id):
         if not re.match("^[a-z_]+$", table_name):
             raise ValueError("Invalid table table {}".format(table_name))
-        for row in self.cur.execute("SELECT * FROM " + table_name + " WHERE tome_id=?", [tome_id]):
-            fields = {key: row[key] for key in row.keys()}
-            return fields
+
+        return self.get_single_object("SELECT * FROM " + table_name + " WHERE tome_id=?", [tome_id])
 
     def get_author_by_guid(self, guid):
         """ returns a author by guid or None if not found"""
-
-        for row in self.cur.execute("SELECT * FROM authors WHERE guid=?", [guid]):
-            fields = {key: row[key] for key in row.keys()}
-            return fields
+        return self.get_single_object("SELECT * FROM authors WHERE guid=?", [guid])
 
     def get_author(self, author_id):
         """ returns a author by id or None if not found"""
-
-        for row in self.cur.execute("SELECT * FROM authors WHERE id=?", [author_id]):
-            fields = {key: row[key] for key in row.keys()}
-            return fields
+        return self.get_single_object("SELECT * FROM authors WHERE id=?", [author_id])
 
     def find_authors(self, author_name):
         """ finds a author by name """
@@ -186,66 +158,44 @@ class BaseDB(sqlitedb.SqliteDB):
 
     def get_tome_author_ids(self, tome_id):
         """ returns a list of author ids for all authors linked to a tome, in order of priority """
-        result = []
-        for row in self.cur.execute("SELECT author_id FROM tomes_authors WHERE tome_id=? ORDER BY author_order ASC",
-                                    [tome_id]):
-            result.append(row[0])
-        return result
+        return self.get_single_column("SELECT author_id FROM tomes_authors WHERE tome_id=? ORDER BY author_order ASC",
+                                      [tome_id])
 
     # this function is not according to the get_xxx_schema - it also gets data from the authors table
     def get_tome_authors(self, tome_id):
         """ returns a of author dicts for all authors linked to a tome, in order of priority """
-        result = []
-        for row in self.cur.execute("SELECT authors.*, tomes_authors.author_order AS author_order, "
-                                    "tomes_authors.fidelity AS link_fidelity, "
-                                    "tomes_authors.last_modification_date AS link_last_modification_date "
-                                    "FROM authors "
-                                    "INNER JOIN tomes_authors ON authors.id=tomes_authors.author_id "
-                                    "WHERE tome_id=? ORDER BY author_order ASC", [tome_id]):
-            fields = {key: row[key] for key in row.keys()}
-            result.append(fields)
-        return result
+        return self.get_list_of_objects("SELECT authors.*, tomes_authors.author_order AS author_order, "
+                                        "tomes_authors.fidelity AS link_fidelity, "
+                                        "tomes_authors.last_modification_date AS link_last_modification_date "
+                                        "FROM authors "
+                                        "INNER JOIN tomes_authors ON authors.id=tomes_authors.author_id "
+                                        "WHERE tome_id=? ORDER BY author_order ASC", [tome_id])
+
 
     def get_tome_authors_with_guid_by_tome_guid(self, tome_guid):
         """ returns a list of tome author link info with author guid for all
         authors linked to a tome, in order of priority """
-        result = []
-        for row in self.cur.execute("SELECT authors.guid AS author_guid, tomes_authors.* "
-                                    "FROM tomes_authors "
-                                    "INNER JOIN authors ON authors.id=tomes_authors.author_id "
-                                    "INNER JOIN tomes ON tomes.id=tomes_authors.tome_id "
-                                    "WHERE tomes.guid=? ORDER BY author_order ASC", [tome_guid]):
-            fields = {key: row[key] for key in row.keys()}
-            result.append(fields)
-        return result
+        return self.get_list_of_objects("SELECT authors.guid AS author_guid, tomes_authors.* "
+                                        "FROM tomes_authors "
+                                        "INNER JOIN authors ON authors.id=tomes_authors.author_id "
+                                        "INNER JOIN tomes ON tomes.id=tomes_authors.tome_id "
+                                        "WHERE tomes.guid=? ORDER BY author_order ASC", [tome_guid])
+
 
     def get_all_authors(self):
         """ returns all author dicts """
-        result = []
-        for row in self.cur.execute("SELECT * FROM authors "):
-            fields = {key: row[key] for key in row.keys()}
-            result.append(fields)
-        return result
+        return self.get_list_of_objects("SELECT * FROM authors")
 
     def get_all_author_ids(self):
-        result = []
-        for row in self.cur.execute("SELECT id FROM authors"):
-            result.append(row[0])
-        return result
+        return self.get_single_column("SELECT id FROM authors")
 
     def get_all_author_guids(self):
-        result = []
-        for row in self.cur.execute("SELECT guid FROM authors"):
-            result.append(row[0])
-        return result
+        return self.get_single_column("SELECT guid FROM authors")
 
     def get_tome_author_entry(self, tome_id, author_id):
         """ returns the item for the tome <-> author connection, None if no link """
 
-        for row in self.con.execute("SELECT * FROM tomes_authors WHERE tome_id=? AND author_id=?",
-                                    [tome_id, author_id]):
-            fields = {key: row[key] for key in row.keys()}
-            return fields
+        return self.get_single_object("SELECT * FROM tomes_authors WHERE tome_id=? AND author_id=?")
 
     def get_tome_author_entry_by_guid(self, tome_guid, author_guid):
         """ returns the item for the tome <-> author connection, None if no link """
@@ -262,92 +212,65 @@ class BaseDB(sqlitedb.SqliteDB):
 
     def get_tome_file(self, tome_id, file_hash):
         """ returns a tome file link entry or None if not found"""
-        for row in self.con.execute("SELECT * FROM files WHERE tome_id=? AND hash=?", [tome_id, file_hash]):
-            fields = {key: row[key] for key in row.keys()}
-            return fields
+        return self.get_single_object("SELECT * FROM files WHERE tome_id=? AND hash=?", [tome_id, file_hash])
 
     def get_tome_files(self, tome_id, file_type=pydb.FileType.Content):
         """ returns a dictionary of file_fields for all files linked to the given tome """
 
-        files = []
-        for row in self.con.execute("SELECT * FROM files "
-                                    "WHERE tome_id=? AND file_type=? ORDER BY fidelity DESC, hash DESC",
-                                    [tome_id, file_type]):
-            fields = {key: row[key] for key in row.keys()}
-            files.append(fields)
-
-        return files
+        return self.get_list_of_objects("SELECT * FROM files "
+                                        "WHERE tome_id=? AND file_type=? ORDER BY fidelity DESC, hash DESC",
+                                        [tome_id, file_type])
 
     def get_tome_files_by_hash(self, file_hash):
         """ returns a list tome file links having the given file_hash """
 
-        files = []
-        for row in self.con.execute("SELECT * FROM files "
-                                    "WHERE hash=?", [file_hash]):
-            fields = {key: row[key] for key in row.keys()}
-            files.append(fields)
-
-        return files
+        return self.get_list_of_objects("SELECT * FROM files "
+                                        "WHERE hash=?", [file_hash])
 
     def get_tome_tags(self, tome_id):
         """ returns a dictionary of tag_fields for all tags linked to the given tome """
 
-        tags = []
-        for row in self.con.execute("SELECT * FROM tome_tags "
-                                    "WHERE tome_id=? ORDER BY fidelity DESC, tag_value DESC", [tome_id]):
-            fields = {key: row[key] for key in row.keys()}
-            tags.append(fields)
-
-        return tags
+        return self.get_list_of_objects("SELECT * FROM tome_tags "
+                                        "WHERE tome_id=? ORDER BY fidelity DESC, tag_value DESC", [tome_id])
 
     def get_tome_synopses(self, tome_id):
         """ returns a list containing dictionaries of synopsis_fields for all synopses linked to the given tome """
 
-        items = []
-        for row in self.con.execute("SELECT * FROM synopses "
-                                    "WHERE tome_id=? ORDER BY fidelity DESC", [tome_id]):
-            fields = {key: row[key] for key in row.keys()}
-            items.append(fields)
-
-        return items
+        return self.get_list_of_objects("SELECT * FROM synopses "
+                                        "WHERE tome_id=? ORDER BY fidelity DESC", [tome_id])
 
     def get_author_fusion_sources(self, author_id):
         """ returns a list containing dictionaries of fusion info linked to the given author """
 
-        items = []
-        for row in self.con.execute("SELECT * FROM author_fusion_sources "
-                                    "WHERE author_id=? ORDER BY fidelity DESC, source_guid DESC", [author_id]):
-            fields = {key: row[key] for key in row.keys()}
-            items.append(fields)
-
-        return items
+        return self.get_list_of_objects("SELECT * FROM author_fusion_sources "
+                                        "WHERE author_id=? ORDER BY fidelity DESC, source_guid DESC", [author_id])
 
     def is_author_a_fusion_source(self, author_guid):
         """ return true if the given author_guid is an source for an active fusion
         """
-        row = self.con.execute("SELECT COUNT(*) FROM author_fusion_sources "
-                               "WHERE source_guid=? and fidelity >= ?",
-                               [author_guid, network_params.Min_Relevant_Fidelity]).fetchone()
-        return row[0] > 0
+        number_entries = self.count_rows("author_fusion_sources",
+                                         "source_guid=? and fidelity >= ?",
+                                         [author_guid, network_params.Min_Relevant_Fidelity])
+        return number_entries > 0
 
     def get_author_fusion_target_guid(self, source_guid):
         """ returns the target guid if the given source_guid is an source for an active fusion
         """
-        for row in self.con.execute("SELECT author_id FROM author_fusion_sources "
-                                    "WHERE source_guid=? and fidelity >= ?",
-                                    [source_guid, network_params.Min_Relevant_Fidelity]):
-            target_author_id = row[0]
-            target_author = self.get_author(target_author_id)
-            return target_author['guid']
+        target_author_id = self.get_author_fusion_target_id(source_guid)
+        if target_author_id is None:
+            return None
+
+        target_author = self.get_author(target_author_id)
+        return target_author['guid']
 
     def get_author_fusion_target_id(self, source_guid):
         """ returns the target id if the given source_guid is an source for an active fusion
         """
-        for row in self.con.execute("SELECT author_id FROM author_fusion_sources "
-                                    "WHERE source_guid=? and fidelity >= ?",
-                                    [source_guid, network_params.Min_Relevant_Fidelity]):
-            target_author_id = row[0]
-            return target_author_id
+        target_author_id = self.get_single_value("SELECT author_id FROM author_fusion_sources "
+                                                 "WHERE source_guid=? and fidelity >= ?",
+                                                 [source_guid, network_params.Min_Relevant_Fidelity])
+
+        return target_author_id
 
     def replace_author_fusion_targets(self, old_author_id, new_author_id):
         self.con.execute("UPDATE author_fusion_sources SET author_id=? WHERE author_id=?",
@@ -356,11 +279,9 @@ class BaseDB(sqlitedb.SqliteDB):
     def get_all_relevant_author_fusion_source_guids(self, author_id):
         """ returns a list of guids containing all source guids (recursively) of the given author
         """
-        direct_children_guids = []
-        for row in self.con.execute("SELECT source_guid FROM author_fusion_sources "
-                                    "WHERE author_id=? AND fidelity >= ? ORDER BY source_guid DESC",
-                                    [author_id, network_params.Min_Relevant_Fidelity]):
-            direct_children_guids.append(row[0])
+        direct_children_guids = self.get_single_column("SELECT source_guid FROM author_fusion_sources "
+                                                       "WHERE author_id=? AND fidelity >= ? ORDER BY source_guid DESC",
+                                                       [author_id, network_params.Min_Relevant_Fidelity])
 
         result = []
         for child_guid in direct_children_guids:
@@ -387,57 +308,47 @@ class BaseDB(sqlitedb.SqliteDB):
     def get_author_fusion_sources_by_author_guid(self, author_guid):
         """ returns a list of author fusion entries associated to the author identified by author_guid """
 
-        result = []
-        for row in self.con.execute("SELECT author_fusion_sources.* FROM author_fusion_sources "
-                                    "INNER JOIN authors ON author_fusion_sources.author_id = authors.id "
-                                    "WHERE authors.guid=? ORDER BY fidelity DESC, source_guid DESC", [author_guid]):
-            fields = {key: row[key] for key in row.keys()}
-            result.append(fields)
-
-        return result
+        return self.get_list_of_objects("SELECT author_fusion_sources.* FROM author_fusion_sources "
+                                        "INNER JOIN authors ON author_fusion_sources.author_id = authors.id "
+                                        "WHERE authors.guid=? "
+                                        "ORDER BY fidelity DESC, source_guid DESC", [author_guid])
 
     def get_tome_fusion_sources(self, tome_id):
         """ returns a list containing dictionaries of fusion info linked to the given tome """
-
-        items = []
-        for row in self.con.execute("SELECT * FROM tome_fusion_sources "
-                                    "WHERE tome_id=? ORDER BY fidelity DESC, source_guid DESC", [tome_id]):
-            fields = {key: row[key] for key in row.keys()}
-            items.append(fields)
-
-        return items
+        return self.get_list_of_objects("SELECT * FROM tome_fusion_sources "
+                                        "WHERE tome_id=? ORDER BY fidelity DESC, source_guid DESC", [tome_id])
 
     def is_tome_a_fusion_source(self, tome_guid):
         """ return true if the given tome_guid is an source for an active tome fusion
         """
-        row = self.con.execute("SELECT COUNT(*) FROM tome_fusion_sources "
-                               "WHERE source_guid=? and fidelity >= ?",
-                               [tome_guid, network_params.Min_Relevant_Fidelity]).fetchone()
-        return row[0] > 0
+        count = self.count_rows("tome_fusion_sources ",
+                                "source_guid=? and fidelity >= ?",
+                                [tome_guid, network_params.Min_Relevant_Fidelity])
+        return count > 0
 
     def get_tome_fusion_target_guid(self, source_tome_guid):
         """ returns the target guid if the given tome_guid is an source for an active fusion
         """
-        for row in self.con.execute("SELECT tome_id FROM tome_fusion_sources "
-                                    "WHERE source_guid=? and fidelity >= ?",
-                                    [source_tome_guid, network_params.Min_Relevant_Fidelity]):
-            target_tome_id = row[0]
-            logger.debug("Found target tome with id {}".format(target_tome_id))
-            target_tome = self.get_tome(target_tome_id)
-            if target_tome is None:
-                raise RuntimeError(
-                    "Target tome ({}) for fusion of {} specified, but not in database - consistency error!"
-                    .format(target_tome_id, source_tome_guid))
-            return target_tome['guid']
+        target_tome_id = self.get_single_value("SELECT tome_id FROM tome_fusion_sources "
+                                               "WHERE source_guid=? and fidelity >= ?",
+                                               [source_tome_guid, network_params.Min_Relevant_Fidelity])
+        if target_tome_id is None:
+            return None
+
+        logger.debug("Found target tome with id {}".format(target_tome_id))
+        target_tome = self.get_tome(target_tome_id)
+        if target_tome is None:
+            raise RuntimeError(
+                "Target tome ({}) for fusion of {} specified, but not in database - consistency error!"
+                .format(target_tome_id, source_tome_guid))
+        return target_tome['guid']
 
     def get_tome_fusion_target_id(self, source_tome_guid):
         """ returns the target id if the given tome_guid is an source for an active fusion
         """
-        for row in self.con.execute("SELECT tome_id FROM tome_fusion_sources "
-                                    "WHERE source_guid=? and fidelity >= ?",
-                                    [source_tome_guid, network_params.Min_Relevant_Fidelity]):
-            target_tome_id = row[0]
-            return target_tome_id
+        return self.get_single_value("SELECT tome_id FROM tome_fusion_sources "
+                                     "WHERE source_guid=? and fidelity >= ?",
+                                     [source_tome_guid, network_params.Min_Relevant_Fidelity])
 
     def replace_tome_fusion_targets(self, old_tome_id, new_tome_id):
         logger.debug("Replacing tome fusion source {} => {} ".format(old_tome_id, new_tome_id))
@@ -457,11 +368,9 @@ class BaseDB(sqlitedb.SqliteDB):
     def get_all_relevant_tome_fusion_source_guids(self, tome_id):
         """ returns a list of guids containing all source guids (recursively) of the given tome
         """
-        direct_children_guids = []
-        for row in self.con.execute("SELECT source_guid FROM tome_fusion_sources "
-                                    "WHERE tome_id=? AND fidelity >= ? ORDER BY source_guid DESC",
-                                    [tome_id, network_params.Min_Relevant_Fidelity]):
-            direct_children_guids.append(row[0])
+        direct_children_guids = self.get_single_column("SELECT source_guid FROM tome_fusion_sources "
+                                                       "WHERE tome_id=? AND fidelity >= ? ORDER BY source_guid DESC",
+                                                       [tome_id, network_params.Min_Relevant_Fidelity])
 
         result = []
         for child_guid in direct_children_guids:
@@ -487,74 +396,30 @@ class BaseDB(sqlitedb.SqliteDB):
     def get_tome_fusion_sources_by_tome_guid(self, tome_guid):
         """ returns a list of tome fusion entries associated to the tome identified by tome_guid """
 
-        result = []
-        for row in self.con.execute("SELECT tome_fusion_sources.* FROM tome_fusion_sources "
-                                    "INNER JOIN tomes ON tome_fusion_sources.tome_id = tomes.id "
-                                    "WHERE tomes.guid=? ORDER BY fidelity DESC, source_guid DESC", [tome_guid]):
-            fields = {key: row[key] for key in row.keys()}
-            result.append(fields)
-
-        return result
+        return self.get_list_of_objects("SELECT tome_fusion_sources.* FROM tome_fusion_sources "
+                                        "INNER JOIN tomes ON tome_fusion_sources.tome_id = tomes.id "
+                                        "WHERE tomes.guid=? ORDER BY fidelity DESC, source_guid DESC", [tome_guid])
 
     def get_tome_synopses_by_tome_guid(self, tome_guid):
         """ returns a list of tome files associated to the tome identified by tome_guid """
 
-        result = []
-        for row in self.con.execute("SELECT synopses.* FROM synopses "
-                                    "INNER JOIN tomes ON synopses.tome_id = tomes.id "
-                                    "WHERE tomes.guid=? ORDER BY fidelity DESC", [tome_guid]):
-            fields = {key: row[key] for key in row.keys()}
-            result.append(fields)
+        return self.get_list_of_objects("SELECT synopses.* FROM synopses "
+                                        "INNER JOIN tomes ON synopses.tome_id = tomes.id "
+                                        "WHERE tomes.guid=? ORDER BY fidelity DESC", [tome_guid])
 
-        return result
 
     def get_tome_files_by_tome_guid(self, tome_guid):
         """ returns a list of tome files associated to the tome identified by tome_guid """
-
-        result = []
-        for row in self.con.execute(
-                "SELECT files.* FROM files INNER JOIN tomes ON files.tome_id=tomes.id WHERE tomes.guid=?",
-                [tome_guid]):
-            fields = {key: row[key] for key in row.keys()}
-            result.append(fields)
-
-        return result
+        return self.get_list_of_objects("SELECT files.* FROM files "
+                                        "INNER JOIN tomes ON files.tome_id=tomes.id WHERE tomes.guid=?",
+                                        [tome_guid])
 
     def get_tome_tags_by_tome_guid(self, tome_guid):
         """ returns a list of tome files associated to the tome identified by tome_guid """
 
-        result = []
-        for row in self.con.execute(
-                "SELECT tome_tags.* FROM tome_tags INNER JOIN tomes ON tome_tags.tome_id=tomes.id WHERE tomes.guid=?",
-                [tome_guid]):
-            fields = {key: row[key] for key in row.keys()}
-            result.append(fields)
-
-        return result
-
-    def update_object(self, table_name, filter_dict, object_fields):
-        set_string = ', '.join(["%s = ?" % field_name for field_name in object_fields.keys()])
-        filter_string = " and ".join(["%s = ?" % field_name for field_name in filter_dict.keys()])
-
-        value_list = object_fields.values() + filter_dict.values()
-
-        query = "UPDATE %s SET %s WHERE %s" % (table_name, set_string, filter_string)
-        logger.debug("Update query is " + query + repr(value_list))
-        self.con.execute(query, value_list)
-
-    def insert_object(self, table_name, object_fields):
-
-        field_string = ', '.join(object_fields.keys())
-        question_marks = ', '.join('?' * len(object_fields))
-
-        value_list = object_fields.values()
-
-        query = "INSERT INTO %s (%s) VALUES (%s) " % (table_name, field_string, question_marks)
-        logger.debug("Insert query is " + query + repr(value_list))
-        cur = self.con.cursor()
-        cur.execute(query, value_list)
-
-        return cur.lastrowid
+        return self.get_list_of_objects("SELECT tome_tags.* FROM tome_tags "
+                                        "INNER JOIN tomes ON tome_tags.tome_id=tomes.id WHERE tomes.guid=?",
+                                        [tome_guid])
 
     def _delete_tome_referrers(self, tome_id):
         self.con.execute("DELETE FROM tomes_authors WHERE tome_id=?", [tome_id])
@@ -596,8 +461,8 @@ class BaseDB(sqlitedb.SqliteDB):
         for author_link_info in doc['authors']:
             author_guid = author_link_info['guid']
             author = self.get_author_by_guid(author_guid)
-            if not author:
-                raise KeyError("No author with guid %s for tome %s found, skipping tome import " % (author_guid, guid))
+            if author is None:
+                raise KeyError("No author with guid {} for tome {} found, skipping tome import ".format(author_guid, guid))
             author_links.append((author_link_info, author['id']))
 
         old_tome = self.get_tome_by_guid(guid)
@@ -610,8 +475,8 @@ class BaseDB(sqlitedb.SqliteDB):
             'principal_language': doc['principal_language'],
             'publication_year': doc['publication_year'],
             'fidelity': doc['fidelity'],
-            'last_modification_date': time.time(),
-            'type': doc['type']
+            'type': doc['type'],
+            'last_modification_date': time.time()
         }
 
         if old_tome:
@@ -674,7 +539,7 @@ class BaseDB(sqlitedb.SqliteDB):
         """ applies a new author document to the database """
         guid = doc['guid']
 
-        logger.debug("Applying update for author %s" % guid)
+        logger.debug("Applying update for author {}".format(guid))
 
         old_author = self.get_author_by_guid(guid)
 
@@ -703,9 +568,7 @@ class BaseDB(sqlitedb.SqliteDB):
         """
         @returns a set of tome ids where translation was applied
         """
-        result = set()
-        for row in self.con.execute("SELECT tome_id FROM files WHERE hash=?", [source_hash]):
-            result.add(row['tome_id'])
+        result = self.get_single_column("SELECT tome_id FROM files WHERE hash=?", [source_hash])
 
         if result:
             # there might already be source and target hash linked to a file, so ignore errors and delete links to
@@ -713,7 +576,7 @@ class BaseDB(sqlitedb.SqliteDB):
             self.con.execute("UPDATE OR IGNORE files SET hash=? WHERE hash=?", [target_hash, source_hash])
             self.con.execute("DELETE FROM files WHERE hash=?", [source_hash])
 
-        return result
+        return set(result)
 
     def get_tome_document_by_guid(self, guid, ignore_fidelity_filter=False, include_author_detail=False, keep_id=False):
         """ returns a tome and all his dependencies as one dictionary without ids and modification dates"""
@@ -805,22 +668,20 @@ class BaseDB(sqlitedb.SqliteDB):
 
         return problems
 
+
 def data_fields_equal(fields_a, fields_b):
     """ returns true if the data in fields_a equals data in fields_b
         note: special comparison rules apply (e.g. ignoring of modification dates)
     """
-    logger.debug("Comparing %s to %s" % (repr(fields_a), repr(fields_b)))
+    logger.debug("Comparing {} to {}".format(repr(fields_a), repr(fields_b)))
 
     keys_a = set(fields_a.keys())
     keys_b = set(fields_b.keys())
 
-    ignore_keys = ['last_modification_date', 'id', 'tome_id', 'author_id', 'local_file_exists', 'name_key']
+    ignore_keys = {'last_modification_date', 'id', 'tome_id', 'author_id', 'local_file_exists', 'name_key'}
 
-    for key in ignore_keys:
-        if key in keys_a:
-            keys_a.remove(key)
-        if key in keys_b:
-            keys_b.remove(key)
+    keys_a -= ignore_keys
+    keys_b -= ignore_keys
 
     if keys_a != keys_b:
         logger.debug("Keys differ")
