@@ -2,13 +2,21 @@
 
 {{ =form }}
 
+<div id="loader" style="display: none"><img src="{{=URL(r=request,c='static',f='/images/loader.gif') }}"></div>
 
 <script type="text/javascript">
 Dropzone.options.dropzoneForm = {
-  init: function() {
-    this.on("success", function(file, reply) { window.location=reply; });
-  },
-  previewsContainer: false   
+    init: function() {
+        this.on("success", function(file, reply) {
+            window.location=reply;
+            $("#loader").hide();
+        });
+    
+        this.on("processing", function() {
+            $("#loader").show();
+        });
+    },
+    previewsContainer: false
 };
 
 </script>
