@@ -340,17 +340,28 @@ def tomesearch():
         
     return retval
 
+
+def TOOLTIP(text):
+   tip = A(IMG(_src=URL('static', 'images/clker/grey_question_mark.png')), _class="tooltip_trigger", _title=text)
+   return tip
+
     
 def _tome_edit_form(tome, required_tome_fidelity):
-    
+
     form = SQLFORM.factory(
-        Field('title',requires=IS_NOT_EMPTY(), default=tome['title'].encode('utf-8'), comment=XML(r'<input type="button" value="Guess title case" onclick="title_case_field(&quot;no_table_title&quot;)">')),
+        Field('title',requires=IS_NOT_EMPTY(), default=tome['title'].encode('utf-8'),
+              comment=DIV(
+                           TOOLTIP('Please enter the title of the book like it is written on the cover.'),
+                           XML(r'<input type="button" value="Guess title case" onclick="title_case_field(&quot;no_table_title&quot;)">'),
+                           _class='nowrap'
+              )),
         Field('subtitle', default=db_str_to_form(tome['subtitle']), comment=XML(r'<input type="button" value="Guess subtitle case" onclick="title_case_field(&quot;no_table_subtitle&quot;)">')),
-        Field('edition',default=db_str_to_form(tome['edition'])),
-        Field('principal_language',default=db_str_to_form(tome['principal_language'])),
+        Field('edition', default=db_str_to_form(tome['edition'])),
+        Field('principal_language', default=db_str_to_form(tome['principal_language']),
+              comment=TOOLTIP('Please use two letter ISO 639-1 codes (e.g. en for English).')),
         Field('publication_year', default=str(tome['publication_year']).encode('utf-8')),
         Field('tags','text', default=tome['tags'], requires=TagValidator()),
-        Field('type', default=tome['type'] , widget=SQLFORM.widgets.radio.widget, requires=IS_IN_SET({TomeType.Fiction:'fiction',TomeType.NonFiction:'non-fiction'})),
+        Field('type', default=tome['type'], widget=SQLFORM.widgets.radio.widget, requires=IS_IN_SET({TomeType.Fiction:'fiction',TomeType.NonFiction:'non-fiction'})),
         Field('fidelity', requires=FidelityValidator(), default=required_tome_fidelity, comment='Current Value: {}'.format(tome['fidelity'])),
         name="edit_tome"
         )

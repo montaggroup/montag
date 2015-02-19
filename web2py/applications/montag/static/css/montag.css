@@ -255,3 +255,47 @@ table.upload_file .dz-message {
 table.upload_file .btn {
     margin-top: 15px;
 }
+
+div.nowrap
+{
+  white-space: nowrap;
+
+}
+
+.tooltip_trigger
+{
+  margin-right: 10px;
+}
+
+textarea {
+    width: 300px;
+}
+
+
+.tooltip_trigger img
+{
+  height: 28px;
+  vertical-align: top;
+}
+
+.tooltipsy
+{
+    padding: 10px;
+    max-width: 200px;
+    color: #303030;
+    background-color: #f5f5b5;
+    border: 1px solid #deca7e;
+}
+
+td.w2p_fc
+{
+    padding-top: 2px;
+}
+
+td.w2p_fc input
+{
+    padding-top: 3px;
+    padding-bottom: 3px;
+    height: 30px;
+}
+
