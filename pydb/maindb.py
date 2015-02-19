@@ -421,7 +421,8 @@ class MainDB:
 
     def add_tome(self, title, principal_language, author_ids, guid=None, publication_year=None, edition=None,
                  subtitle=None, tome_type=TomeType.Unknown, fidelity=None, tags_values=None):
-        """ adds a new tome, generating a guid. returns a tome_id
+        """ adds a new tome, generating a guid. returns a merge db tome_id or none if tome had not enough fidelity
+            to be added to merge db
             is_fiction: None => unknown, True => fiction, False=>non_fiction
         """
         logging.debug("Called add_tome")
@@ -456,10 +457,9 @@ class MainDB:
                 self.merge_db.request_tome_tag_update(guid)
 
         tome = self.merge_db.get_tome_by_guid(guid)
-
-        self._update_search_index()
-
-        return tome['id']
+        if tome:
+            self._update_search_index()
+            return tome['id']
 
     def _apply_file_hash_translation(self, source_hash, target_hash):
         """ goes through all databases making sure that all instances of source_hash
@@ -894,14 +894,11 @@ class MainDB:
         if len(author_candidates) == 1:  # we have only one candidate, use it
             return author_candidates[0]['id']
 
-        if len(author_candidates) == 0:  # no candidates, create it
-            author_id = self.add_author(author_name, fidelity=fidelity)
-            return author_id
-
-        # more than one author, find/create the generic one
-        for author in author_candidates:
-            if author['date_of_birth'] is None and author['date_of_death'] is None:
-                return author['id']
+        if len(author_candidates) > 1:
+            # more than one author, find/create the generic one
+            for author in author_candidates:
+                if author['date_of_birth'] is None and author['date_of_death'] is None:
+                    return author['id']
 
         # create it
         return self.add_author(author_name, fidelity=fidelity)
@@ -915,8 +912,8 @@ class MainDB:
     def find_or_create_tome(self, title, language, author_ids, subtitle, tome_type, fidelity, 
                             edition=None, publication_year=None, tags_values=None):
 
-        def filter_tomes(candidates, field_name, value_to_find):
-            if value_to_find is None:
+        def filter_tomes(candidates, field_name, value_to_find, strict=False):
+            if value_to_find is None and not strict:
                 return candidates
             value_to_find = unicode(value_to_find)
             return filter(lambda t: unicode(t[field_name]) == value_to_find, candidates)
@@ -926,6 +923,22 @@ class MainDB:
         tome_candidates = filter_tomes(tome_candidates, 'publication_year', publication_year)
 
         if len(tome_candidates) == 1:  # one tome, use it
+            return tome_candidates[0]['id']
+
+        if len(tome_candidates) > 1:  #  multiple candidates left, try to filter more strict
+                tome_candidates = filter_tomes(tome_candidates, 'edition', edition, strict=True)
+
+                if len(tome_candidates) == 1:  # one tome now left, use it
+                    return tome_candidates[0]['id']
+
+        if len(tome_candidates) > 1:  #  multiple candidates left, try to filter more strict
+                tome_candidates = filter_tomes(tome_candidates, 'publication_year', publication_year, strict=True)
+
+                if len(tome_candidates) == 1:  # one tome now left, use it
+                    return tome_candidates[0]['id']
+
+        if len(tome_candidates) > 1:  # multiple candidates left, choose one based on guid
+            tome_candidates.sort(key=lambda t: t['guid'])
             return tome_candidates[0]['id']
 
         return self.add_tome(title, language, author_ids, subtitle=subtitle, fidelity=fidelity, tome_type=tome_type,
