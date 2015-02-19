@@ -675,7 +675,7 @@ class MergeDB(pydb.basedb.BaseDB):
         return result
 
     def has_local_file(self, file_hash):
-        rows = self.con.execute("SELECT COUNT(hash) from local_files WHERE hash=?", [file_hash])
+        rows = self.con.execute("SELECT COUNT(hash) FROM local_files WHERE hash=?", [file_hash])
         row = rows.fetchone()
         return row[0] > 0
 
@@ -747,24 +747,24 @@ class MergeDB(pydb.basedb.BaseDB):
 
         add_check('authors_with_multiple_spaces_in_name',
                   from_clause='authors',
-                  where_clause='name like "%  %" AND fidelity >= ?',
+                  where_clause='name LIKE "%  %" AND fidelity >= ?',
                   params=[network_params.Min_Relevant_Fidelity])
 
         add_check('files_linked_to_multiple_tomes',
                   from_clause="files f1 INNER JOIN tomes ON tomes.id=f1.tome_id",
-                  where_clause="(SELECT count(*) from files f2 where f1.hash=f2.hash AND f2.fidelity >= ?) > 1 "
+                  where_clause="(SELECT count(*) FROM files f2 WHERE f1.hash=f2.hash AND f2.fidelity >= ?) > 1 "
                                "AND f1.fidelity >=?",
                   order_by_clause="f1.hash",
                   params=[network_params.Min_Relevant_Fidelity, network_params.Min_Relevant_Fidelity])
 
         add_check('authors_completely_uppercase_with_fidelity_smaller_70',
                   from_clause='authors',
-                  where_clause='name=upper(name) AND name!=lower(name) AND fidelity < 70 AND fidelity >= ?',
+                  where_clause='name=UPPER(name) AND name!=lower(name) AND fidelity < 70 AND fidelity >= ?',
                   params=[network_params.Min_Relevant_Fidelity])
 
         add_check('authors_having_whitespace_at_the_start_or_end',
                   from_clause='authors',
-                  where_clause='name != trim(name)',
+                  where_clause='name != TRIM(name)',
                   params=[])
 
         add_check('authors_completely_lowercase_with_fidelity_smaller_70',
@@ -789,12 +789,17 @@ class MergeDB(pydb.basedb.BaseDB):
 
         add_check('tomes_with_multiple_spaces_in_title_or_subtitle',
                   from_clause='tomes',
-                  where_clause='title like "%  %" or subtitle like "%  %" AND fidelity >= ?',
+                  where_clause='title LIKE "%  %" or subtitle LIKE "%  %" AND fidelity >= ?',
                   params=[network_params.Min_Relevant_Fidelity])
             
         add_check('tomes_with_titles_ending_in_an_article_having_fidelity_smaller_70',
                   from_clause='tomes',
-                  where_clause='(title like "%, the" OR title like "%, a" OR title like "%, an") AND fidelity >= ? AND fidelity < 70',
+                  where_clause='(title LIKE "%, the" OR title LIKE "%, a" OR title LIKE "%, an") AND fidelity >= ? AND fidelity < 70',
+                  params=[network_params.Min_Relevant_Fidelity])
+
+        add_check('tomes_with_titles_containing_the_work_edition_having_fidelity_smaller_70',
+                  from_clause='tomes',
+                  where_clause='title LIKE "% edition%" AND fidelity >= ? AND fidelity < 70',
                   params=[network_params.Min_Relevant_Fidelity])
 
         return problems
