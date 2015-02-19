@@ -27,14 +27,17 @@ pdb = pydb.pyrosetup.pydbserver()
 
 cfg_tags_minimum_display_fidelity = 20.0
 
+
 def db_str_to_form(a_string):
-    if not a_string:
+    if a_string is None:
         return ""
     return unicode(a_string).encode('utf-8')
+
 
 def has_cover(tome_id):
     tome_file = pdb.get_best_relevant_cover_available(tome_id)
     return tome_file is not None
+
 
 def trim_joblist(joblist, target_size):
     result = []
