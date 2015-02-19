@@ -6,17 +6,17 @@
 
 <script type="text/javascript">
 Dropzone.options.dropzoneForm = {
-  init: function() {
-    this.on("success", function(file, reply) {
-        window.location=reply;
-        $("#loader").hide()
-    });
+    init: function() {
+        this.on("success", function(file, reply) {
+            window.location=reply;
+            $("#loader").hide();
+        });
     
-    this.on("processing", function() {
-        $("#loader").show();
-    });
-  },
-  previewsContainer: false   
+        this.on("processing", function() {
+            $("#loader").show();
+        });
+    },
+    previewsContainer: false
 };
 
 </script>
