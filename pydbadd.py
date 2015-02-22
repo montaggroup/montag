@@ -49,8 +49,11 @@ def add_file(filepath, fidelity, tome_type, delete_source):
     title, subtitle, edition = title_split(metadata.title)
     # print 'tome cands: ',tome_candidates
     print "Metadata tags: {}".format(metadata.tags)
-    tome_id = db.find_or_create_tome(title, metadata.language, author_ids, subtitle, tome_type=tome_type,
-                                     fidelity=fidelity, tags_values=metadata.tags, publication_year=metadata.publication_year)
+    tome_id = db.find_or_create_tome(title, metadata.language, author_ids,
+                                     subtitle, tome_type=tome_type,
+                                     fidelity=fidelity, edition=edition,
+                                     publication_year=metadata.publication_year,
+                                     tags_values=metadata.tags)
 
 
     # \todo the file might already be linked to another tome, that ain't generic or completely different - we should handle that  
