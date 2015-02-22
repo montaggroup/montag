@@ -29,6 +29,7 @@ class Metadata:
         self.title_sort = ""
         self.language = "en"
         self.tags = []
+        self.publication_year = None
 
         logger.info("opf inititalized")
 
@@ -56,6 +57,10 @@ class Metadata:
                         result.authors.append(text)
                     elif meta.tag.endswith('subject'):
                         result.tags.append(text)
+                    elif meta.tag.endswith('date'):
+                        year_match = re.match("([0-9]{4}).*", text)
+                        if year_match:
+                            result.publication_year = int(year_match.group(1))
                     elif meta.tag.endswith('meta'):
                         attrib = meta.attrib['name']
                         if attrib == 'calibre:title_sort':
