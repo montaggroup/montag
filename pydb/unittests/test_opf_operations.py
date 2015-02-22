@@ -1,5 +1,5 @@
 import unittest
-import pydb.opf
+from pydb import opf
 import os
 import tempfile
 
@@ -21,6 +21,7 @@ class TestOpfOperations(unittest.TestCase):
                        <meta content="title for test, a" name="calibre:title_sort"/>
                        <dc:subject>tag1</dc:subject>
                        <dc:subject>tag team</dc:subject>
+                       <dc:date opf:event="original-publication">2012-09-10</dc:date>
                    </metadata>
                    <guide/>
                </package>"""
@@ -34,15 +35,17 @@ class TestOpfOperations(unittest.TestCase):
         self.assertEquals(metadata.series_index, "451")
         self.assertEquals(metadata.title_sort, "title for test, a")
         self.assertEquals(metadata.tags, ["tag1", "tag team"])
+        self.assertEquals(metadata.publication_year, 2012)
 
     def test_reading_metadata_from_file(self):
-        fd,filename = tempfile.mkstemp()
+        fd, filename = tempfile.mkstemp()
         os.write(fd, self.reference_opf_string)
         os.close(fd)
 
-        metadata = pydb.opf.Metadata.from_file(filename)
+        metadata = opf.Metadata.from_file(filename)
 
         self.assertTrue(metadata)
         self._assert_is_metadata_correct(metadata)
+
 
 

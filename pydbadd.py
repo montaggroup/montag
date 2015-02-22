@@ -37,7 +37,6 @@ if db.ping() != "pong":
 
 def read_metadata(filepath):
     base, extension = os.path.splitext(filepath)
-    extension = extension[1:]  # remove period
     metadata_path = base + '.opf'
     if not os.path.exists(metadata_path):
         dir, file = os.path.split(filepath)
@@ -45,7 +44,7 @@ def read_metadata(filepath):
         if not os.path.exists(metadata_path):
             raise Exception('No metadata file found')
 
-    return pydb.opf.Metadata.from_file(metadata_path)  # , filename=False)
+    return pydb.opf.Metadata.from_file(metadata_path)
 
 
 def title_split(title):
@@ -69,7 +68,7 @@ def add_file(filepath, fidelity, tome_type, delete_source):
     # print 'tome cands: ',tome_candidates
     print "Metadata tags: {}".format(metadata.tags)
     tome_id = db.find_or_create_tome(title, metadata.language, author_ids, subtitle, tome_type=tome_type,
-                                     fidelity=fidelity, tags_values=metadata.tags)
+                                     fidelity=fidelity, tags_values=metadata.tags, publication_year=metadata.publication_year)
 
 
     # \todo the file might already be linked to another tome, that ain't generic or completely different - we should handle that  
