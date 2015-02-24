@@ -11,7 +11,6 @@ import Pyro4
 import pydb.config
 
 
-
 def do_list_services(args):
     services_status = services.get_current_services_status()
     for name in services_status.keys():
@@ -43,8 +42,8 @@ def _wait_for_db_ping_ok():
     while not db_ok and tries < 500:
         try:
             if db.ping() == 'pong':
-               db_ok = True
-               break
+                db_ok = True
+                break
         except Pyro4.errors.CommunicationError:
             pass
 
