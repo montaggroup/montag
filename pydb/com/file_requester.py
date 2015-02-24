@@ -1,7 +1,6 @@
 from collections import deque
 import logging
 import os
-from twisted.internet import reactor
 import traceback
 
 MaxParallelFileRequests = 5
@@ -42,7 +41,7 @@ class FileRequester(object):
 
         self.hashes_to_request_set = set()
         self.hashes_to_request = deque([])
-        self.requested_hashes = deque([])
+        self.requested_hashes_from_friend = deque([])
 
         self.current_transfer = None
 
@@ -82,35 +81,20 @@ class FileRequester(object):
         self._launch_file_requests()
 
     def _launch_file_requests(self):
-        while len(self.requested_hashes) < MaxParallelFileRequests:
-            if not self.hashes_to_request:
-                if not self.requested_hashes:
-                    logger.debug("No more files to request, waiting for last insert to complete")
-                    self.file_inserter.wait_for_insert_to_complete()
-                    self._completion_callback()
+        while len(self.requested_hashes_from_friend) < MaxParallelFileRequests:
+            file_hash = determine_next_hash_to_request(self.hashes_to_request, self.comservice)
+            if file_hash is None:  # no more files to request
+                if not self.requested_hashes_from_friend:  # we are not waiting for any files, complete
+                    self._complete_mission()
                 return
 
-            file_hash = self.hashes_to_request.popleft()
-
-            lock_result = self.comservice.lock_file_for_fetching(file_hash)
-            if lock_result == "locked":
-                logger.info("Fetching file with hash {}".format(file_hash))
-                self.requested_hashes.append(file_hash)
-                self._session.request_file(file_hash)
-            elif lock_result == "busy":
-                logger.info("File {} currently locked, putting it to the end of the queue".format(file_hash))
-                self.hashes_to_request.append(file_hash)
-                query_delay = 1.0 / len(self.hashes_to_request)
-                reactor.callLater(query_delay, self._launch_file_requests)
-                return
-            elif lock_result == "completed":
-                logger.info("File transfer for hash {} already completed".format(file_hash))
-            else:
-                raise ValueError("Unknown file hash lock result: '{}'".format(lock_result))
+            logger.info("Fetching file with hash {}".format(file_hash))
+            self.requested_hashes_from_friend.append(file_hash)
+            self._session.request_file(file_hash)
 
     def _negative_file_reply_received(self, file_hash):
         logger.info("Negative reply for hash %s" % file_hash)
-        expected_hash = self.requested_hashes.popleft()
+        expected_hash = self.requested_hashes_from_friend.popleft()
         if file_hash != expected_hash:
             raise ValueError("Request order error, requested hash {} but got {}".format(expected_hash, file_hash))
 
@@ -120,23 +104,6 @@ class FileRequester(object):
         if self.current_transfer is not None:
             raise ValueError("Answer order error, was expecting more parts for hash {}, but got not content".format(
                              self.current_transfer.file_hash))
-
-    def _finish_multipart_transfer(self):
-        self.current_transfer.close()
-        self.number_files_downloaded += 1
-        logger.info("Adding file via {}".format(self.current_transfer.file_name))
-        self.file_inserter.insert_file_in_background(self.current_transfer.file_name,
-                                                     self.current_transfer.file_extension,
-                                                     self.current_transfer.file_hash)
-        self.current_transfer = None
-
-    def _start_multipart_transfer(self, extension, file_hash):
-        planned_hash = self.requested_hashes.popleft()
-        if file_hash != planned_hash:
-            raise ValueError("Request order error, requested hash {} but got {}".
-                             format(planned_hash, file_hash))
-
-        self.current_transfer = FileInTransfer(file_hash, extension)
 
     def _positive_file_reply_received(self, file_hash, extension, content, more_parts_follow):
         logger.info("New file content, hash: {}, (Extension {}, more parts: {})".format(
@@ -153,6 +120,23 @@ class FileRequester(object):
 
         if not more_parts_follow:
             self._finish_multipart_transfer()
+
+    def _finish_multipart_transfer(self):
+        self.current_transfer.close()
+        self.number_files_downloaded += 1
+        logger.info("Adding file via {}".format(self.current_transfer.file_name))
+        self.file_inserter.insert_file_in_background(self.current_transfer.file_name,
+                                                     self.current_transfer.file_extension,
+                                                     self.current_transfer.file_hash)
+        self.current_transfer = None
+
+    def _start_multipart_transfer(self, extension, file_hash):
+        planned_hash = self.requested_hashes_from_friend.popleft()
+        if file_hash != planned_hash:
+            raise ValueError("Request order error, requested hash {} but got {}".
+                             format(planned_hash, file_hash))
+
+        self.current_transfer = FileInTransfer(file_hash, extension)
 
     def update_progress(self):
         if self.file_progress_callback is None:
@@ -178,13 +162,18 @@ class FileRequester(object):
             logger.info("Requesting next file")
             self._launch_file_requests()
 
+    def _complete_mission(self):
+        logger.debug("No more files to request, waiting for last insert to complete")
+        self.file_inserter.wait_for_insert_to_complete()
+        self._completion_callback()
+
     def _abort_mission(self):
         logger.debug("Abort called, waiting for last insert to complete...")
         self.file_inserter.wait_for_insert_to_complete()
 
         if self.current_transfer is not None:
             self.comservice.release_file_after_fetching(self.current_transfer.file_hash, success=False)
-        for file_hash in self.requested_hashes:
+        for file_hash in self.requested_hashes_from_friend:
             self.comservice.release_file_after_fetching(file_hash, success=False)
 
         self._failure_callback()
@@ -196,3 +185,27 @@ class FileRequester(object):
     def session_lost(self, reason):
         logger.error("The session was lost uncleanly: {}".format(reason))
         self._abort_mission()
+
+
+def determine_next_hash_to_request(hashes_to_request, comservice):
+    checked_hashes = set()
+    while True:
+        if not hashes_to_request:
+            return None
+
+        file_hash = hashes_to_request.popleft()
+        if file_hash in checked_hashes:
+            logger.warning("All remaining files are busy, will recommend shutdown")
+            return None
+        checked_hashes.add(file_hash)
+
+        lock_result = comservice.lock_file_for_fetching(file_hash)
+        if lock_result == "locked":
+            return file_hash
+        elif lock_result == "busy":
+            logger.info("File {} currently locked, putting it to the end of the queue".format(file_hash))
+            hashes_to_request.append(file_hash)
+        elif lock_result == "completed":
+            logger.info("File transfer for hash {} already completed, skipping".format(file_hash))
+        else:
+            raise ValueError("Unknown file hash lock result: '{}'".format(lock_result))
