@@ -49,7 +49,7 @@ class FileRequester(object):
         self.number_files_downloaded = 0
         self.number_negative_file_replies = 0
 
-        self.file_progress_callback = None
+        self._file_progress_callback = None
         self._completion_callback = None
         self._failure_callback = None
 
@@ -69,7 +69,7 @@ class FileRequester(object):
         """ sets a function that is called when progress in file downloading is made.
         The callback will receive two arguments: (items_to_do, items_done)
             If a value is unknown, -1 will be used """
-        self.file_progress_callback = cb
+        self._file_progress_callback = cb
 
     def activate(self, session, friend_id, completion_callback, failure_callback):
         self._session = session
@@ -139,9 +139,9 @@ class FileRequester(object):
         self.current_transfer = FileInTransfer(file_hash, extension)
 
     def update_progress(self):
-        if self.file_progress_callback is None:
+        if self._file_progress_callback is None:
             return
-        self.file_progress_callback(self.number_files_requested_total,
+        self._file_progress_callback(self.number_files_requested_total,
                                     self.number_files_downloaded + self.number_negative_file_replies)
 
     def command_deliver_file_received(self, file_hash, extension, content, more_parts_follow):
