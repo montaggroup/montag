@@ -9,7 +9,8 @@ class TestFileRequester(unittest.TestCase):
         self.comservice = mock.MagicMock()
         self.file_inserter = mock.MagicMock()
         pydb.com.file_requester.FileRequester.MaxParallelFileRequests = 5
-        self.requester = pydb.com.file_requester.FileRequester(self.db, self.comservice, self.file_inserter)
+        download_queue = pydb.com.file_requester.DownloadQueue()
+        self.requester = pydb.com.file_requester.FileRequester(self.db, self.comservice, self.file_inserter, download_queue)
         self.friend_id = 1
         self.session = mock.MagicMock()
         self.callback = mock.MagicMock()
@@ -72,7 +73,9 @@ class TestFileRequesterLocking(unittest.TestCase):
 
         self.file_inserter = mock.MagicMock()
         pydb.com.file_requester.FileRequester.MaxParallelFileRequests = 5
-        self.requester = pydb.com.file_requester.FileRequester(self.db, self.comservice, self.file_inserter)
+        download_queue = pydb.com.file_requester.DownloadQueue()
+
+        self.requester = pydb.com.file_requester.FileRequester(self.db, self.comservice, self.file_inserter, download_queue)
         self.friend_id = 1
         self.session = mock.MagicMock()
         self.callback = mock.MagicMock()
