@@ -2,50 +2,25 @@ from collections import deque
 import logging
 import os
 import traceback
+from tempfile import mkstemp
+
 
 MaxParallelFileRequests = 5
 
 logger = logging.getLogger("com.file_requester")
-from tempfile import mkstemp
-
-
-class FileInTransfer(object):
-    def __init__(self, file_hash, file_extension):
-        self.file_hash = file_hash
-        self.file_extension = file_extension
-
-        # remove non-ascii characters from extension to enable the use of ascii-only-filename filesystems
-        if self.file_extension is not None:
-            self.file_extension = self.file_extension.encode('ascii', errors='ignore')
-
-        (handle, self.file_name) = mkstemp(suffix='.' + self.file_extension)
-
-        logger.info(u"Creating file: {}".format(self.file_name))
-        self.file_object = os.fdopen(handle, "wb")
-
-    def write(self, data):
-        logger.debug("Writing {} bytes into file".format(len(data)))
-        self.file_object.write(data)
-
-    def close(self):
-        if self.file_object is not None:
-            self.file_object.close()
-            self.file_object = None
 
 
 class FileRequester(object):
-    def __init__(self, main_db, comservice, file_inserter):
+    def __init__(self, main_db, comservice, file_inserter, download_queue):
         self.main_db = main_db
         self.file_inserter = file_inserter
         self.comservice = comservice
+        self.download_queue = download_queue
 
-        self.hashes_to_request_set = set()
-        self.hashes_to_request = deque([])
-        self.requested_hashes_from_friend = deque([])
+        self.requested_hashes = deque([])
 
         self.current_transfer = None
 
-        self.number_files_requested_total = 0
         self.number_files_downloaded = 0
         self.number_negative_file_replies = 0
 
@@ -57,13 +32,10 @@ class FileRequester(object):
         self._friend_id = None
 
     def queue_download_file(self, file_hash):
-        if file_hash not in self.hashes_to_request_set:
-            self.hashes_to_request.append(file_hash)
-            self.hashes_to_request_set.add(file_hash)
-            self.number_files_requested_total += 1
+        self.download_queue.add(file_hash)
 
     def queue_length(self):
-        return self.number_files_requested_total
+        return len(self.download_queue)
 
     def set_file_progress_callback(self, cb):
         """ sets a function that is called when progress in file downloading is made.
@@ -81,20 +53,20 @@ class FileRequester(object):
         self._launch_file_requests()
 
     def _launch_file_requests(self):
-        while len(self.requested_hashes_from_friend) < MaxParallelFileRequests:
-            file_hash = determine_next_hash_to_request(self.hashes_to_request, self.comservice)
+        while len(self.requested_hashes) < MaxParallelFileRequests:
+            file_hash = self.download_queue.determine_next_hash_to_request(self.comservice)
             if file_hash is None:  # no more files to request
-                if not self.requested_hashes_from_friend:  # we are not waiting for any files, complete
+                if not self.requested_hashes:  # we are not waiting for any files, complete
                     self._complete_mission()
                 return
 
             logger.info("Fetching file with hash {}".format(file_hash))
-            self.requested_hashes_from_friend.append(file_hash)
+            self.requested_hashes.append(file_hash)
             self._session.request_file(file_hash)
 
     def _negative_file_reply_received(self, file_hash):
-        logger.info("Negative reply for hash %s" % file_hash)
-        expected_hash = self.requested_hashes_from_friend.popleft()
+        logger.info("Negative reply for hash {}".format(file_hash))
+        expected_hash = self.requested_hashes.popleft()
         if file_hash != expected_hash:
             raise ValueError("Request order error, requested hash {} but got {}".format(expected_hash, file_hash))
 
@@ -131,18 +103,18 @@ class FileRequester(object):
         self.current_transfer = None
 
     def _start_multipart_transfer(self, extension, file_hash):
-        planned_hash = self.requested_hashes_from_friend.popleft()
+        planned_hash = self.requested_hashes.popleft()
         if file_hash != planned_hash:
             raise ValueError("Request order error, requested hash {} but got {}".
                              format(planned_hash, file_hash))
 
         self.current_transfer = FileInTransfer(file_hash, extension)
 
-    def update_progress(self):
+    def _update_progress(self):
         if self._file_progress_callback is None:
             return
-        self._file_progress_callback(self.number_files_requested_total,
-                                    self.number_files_downloaded + self.number_negative_file_replies)
+        self._file_progress_callback(self.download_queue.number_files_added_total,
+                                     self.number_files_downloaded + self.number_negative_file_replies)
 
     def command_deliver_file_received(self, file_hash, extension, content, more_parts_follow):
         try:
@@ -156,7 +128,7 @@ class FileRequester(object):
             self._abort_mission()
             return
 
-        self.update_progress()
+        self._update_progress()
 
         if not more_parts_follow or not content:
             logger.info("Requesting next file")
@@ -173,7 +145,7 @@ class FileRequester(object):
 
         if self.current_transfer is not None:
             self.comservice.release_file_after_fetching(self.current_transfer.file_hash, success=False)
-        for file_hash in self.requested_hashes_from_friend:
+        for file_hash in self.requested_hashes:
             self.comservice.release_file_after_fetching(file_hash, success=False)
 
         self._failure_callback()
@@ -185,6 +157,51 @@ class FileRequester(object):
     def session_lost(self, reason):
         logger.error("The session was lost uncleanly: {}".format(reason))
         self._abort_mission()
+
+
+class FileInTransfer(object):
+    def __init__(self, file_hash, file_extension):
+        self.file_hash = file_hash
+        self.file_extension = file_extension
+
+        # remove non-ascii characters from extension to enable the use of ascii-only-filename filesystems
+        if self.file_extension is not None:
+            self.file_extension = self.file_extension.encode('ascii', errors='ignore')
+
+        (handle, self.file_name) = mkstemp(suffix='.' + self.file_extension)
+
+        logger.info(u"Creating file: {}".format(self.file_name))
+        self.file_object = os.fdopen(handle, "wb")
+
+    def write(self, data):
+        logger.debug("Writing {} bytes into file".format(len(data)))
+        self.file_object.write(data)
+
+    def close(self):
+        if self.file_object is not None:
+            self.file_object.close()
+            self.file_object = None
+
+
+class DownloadQueue(object):
+
+    def __init__(self):
+        self.hashes_to_request_set = set()
+        self.hashes_to_request = deque([])
+        self.number_files_added_total = 0
+
+    def add(self, file_hash):
+        if file_hash not in self.hashes_to_request_set:
+            self.hashes_to_request.append(file_hash)
+            self.hashes_to_request_set.add(file_hash)
+            self.number_files_added_total += 1
+
+    def determine_next_hash_to_request(self, comservice):
+        """ will return a file hash that has already been locked """
+        return determine_next_hash_to_request(self.hashes_to_request, comservice)
+
+    def __len__(self):
+        return len(self.hashes_to_request)
 
 
 def determine_next_hash_to_request(hashes_to_request, comservice):
