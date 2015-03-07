@@ -85,17 +85,7 @@ class IndexThread(threading.Thread):
             all_updated = False
         tome_guids_to_update_in_index = tome_guids_with_modified_authors | set([x[0] for x in modified_tome_guids])
 
-        tomes_with_authors_and_tags = []
-        deleted_tome_guids = []
-        for tome_guid in tome_guids_to_update_in_index:
-            tome = self.merge_db.get_tome_by_guid(tome_guid)
-            if tome:
-                tome_id = tome['id']
-                tome['authors'] = list(relevant_links(relevant_items(self.merge_db.get_tome_authors(tome_id))))
-                tome['tags'] = list(relevant_items(self.merge_db.get_tome_tags(tome_id)))
-                tomes_with_authors_and_tags.append(tome)
-            else:
-                deleted_tome_guids.append(tome_guid)
+        deleted_tome_guids, tomes_with_authors_and_tags = _fetch_tomes(self.merge_db, tome_guids_to_update_in_index)
 
         return tomes_with_authors_and_tags, deleted_tome_guids, all_updated
 
@@ -118,6 +108,21 @@ class IndexThread(threading.Thread):
 
         self.update_count += len(enriched_tomes)
         logger.debug("{} items processed in total".format(self.update_count))
+
+
+def _fetch_tomes(merge_db, tome_guids_to_update_in_index):
+    tomes_with_authors_and_tags = []
+    deleted_tome_guids = []
+    for tome_guid in tome_guids_to_update_in_index:
+        tome = merge_db.get_tome_by_guid(tome_guid)
+        if tome:
+            tome_id = tome['id']
+            tome['authors'] = list(relevant_links(relevant_items(merge_db.get_tome_authors(tome_id))))
+            tome['tags'] = list(relevant_items(merge_db.get_tome_tags(tome_id)))
+            tomes_with_authors_and_tags.append(tome)
+        else:
+            deleted_tome_guids.append(tome_guid)
+    return deleted_tome_guids, tomes_with_authors_and_tags
 
 
 class ProgressFile():
