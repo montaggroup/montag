@@ -22,7 +22,6 @@ class test_fetch_tomes(unittest.TestCase):
             'fidelity': 90
         }]
 
-
         deleted_tome_guids, tomes_with_authors_and_tags = pydb.indexthread._fetch_tomes(self.merge_db, ['guid1'])
 
         self.assertFalse(deleted_tome_guids)
@@ -33,7 +32,6 @@ class test_fetch_tomes(unittest.TestCase):
         self.assertEqual(len(authors), 1)
         author = authors[0]
         self.assertEqual(author['name'], 'high link')
-
 
 
 class MockMergeDB():
@@ -60,6 +58,5 @@ class MockMergeDB():
         if tome_id in self.tome_tags:
             return self.tome_tags[tome_id]
         return []
-
 
 
