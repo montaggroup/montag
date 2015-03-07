@@ -110,18 +110,21 @@ class IndexThread(threading.Thread):
         logger.debug("{} items processed in total".format(self.update_count))
 
 
-def _fetch_tomes(merge_db, tome_guids_to_update_in_index):
+def _fetch_tomes(merge_db, tome_guids):
     tomes_with_authors_and_tags = []
     deleted_tome_guids = []
-    for tome_guid in tome_guids_to_update_in_index:
+
+    for tome_guid in tome_guids:
         tome = merge_db.get_tome_by_guid(tome_guid)
-        if tome:
-            tome_id = tome['id']
-            tome['authors'] = list(relevant_links(relevant_items(merge_db.get_tome_authors(tome_id))))
-            tome['tags'] = list(relevant_items(merge_db.get_tome_tags(tome_id)))
-            tomes_with_authors_and_tags.append(tome)
-        else:
+        if tome is None:
             deleted_tome_guids.append(tome_guid)
+            continue
+
+        tome_id = tome['id']
+        tome['authors'] = list(relevant_links(relevant_items(merge_db.get_tome_authors(tome_id))))
+        tome['tags'] = list(relevant_items(merge_db.get_tome_tags(tome_id)))
+        tomes_with_authors_and_tags.append(tome)
+
     return deleted_tome_guids, tomes_with_authors_and_tags
 
 
