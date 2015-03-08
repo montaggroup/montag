@@ -48,7 +48,8 @@ class BaseDB(sqlitedb.SqliteDB):
     def get_tome_statistics(self):
         result = {}
         rows = self.cur.execute(
-            "SELECT type, principal_language, count(*) FROM tomes WHERE fidelity >= ? GROUP BY type, principal_language",
+            "SELECT type, principal_language, count(*) FROM tomes WHERE fidelity >= ? "
+            "GROUP BY type, principal_language",
             [network_params.Min_Relevant_Fidelity])
         for row in rows:
             tome_type, lang, count = row
@@ -63,7 +64,6 @@ class BaseDB(sqlitedb.SqliteDB):
 
     def get_tome(self, tome_id):
         """ returns a tome by id or None if not found"""
-
         return self.get_single_object("SELECT * FROM tomes WHERE id=?", [tome_id])
 
     def get_tome_by_guid(self, guid):
@@ -171,7 +171,6 @@ class BaseDB(sqlitedb.SqliteDB):
                                         "INNER JOIN tomes_authors ON authors.id=tomes_authors.author_id "
                                         "WHERE tome_id=? ORDER BY author_order ASC", [tome_id])
 
-
     def get_tome_authors_with_guid_by_tome_guid(self, tome_guid):
         """ returns a list of tome author link info with author guid for all
         authors linked to a tome, in order of priority """
@@ -181,6 +180,10 @@ class BaseDB(sqlitedb.SqliteDB):
                                         "INNER JOIN tomes ON tomes.id=tomes_authors.tome_id "
                                         "WHERE tomes.guid=? ORDER BY author_order ASC", [tome_guid])
 
+    def add_tome_author_link(self, local_db_tome_id, local_db_author_id, author_order, fidelity):
+        self.cur.execute("INSERT OR IGNORE INTO tomes_authors "
+                         "(tome_id, author_id, author_order, fidelity, last_modification_date) VALUES(?,?,?,?,?)",
+                         (local_db_tome_id, local_db_author_id, author_order, fidelity, time.time()))
 
     def get_all_authors(self):
         """ returns all author dicts """
@@ -194,8 +197,8 @@ class BaseDB(sqlitedb.SqliteDB):
 
     def get_tome_author_entry(self, tome_id, author_id):
         """ returns the item for the tome <-> author connection, None if no link """
-
-        return self.get_single_object("SELECT * FROM tomes_authors WHERE tome_id=? AND author_id=?")
+        return self.get_single_object("SELECT * FROM tomes_authors WHERE tome_id=? AND author_id=?",
+                                      [tome_id, author_id])
 
     def get_tome_author_entry_by_guid(self, tome_guid, author_guid):
         """ returns the item for the tome <-> author connection, None if no link """
@@ -407,7 +410,6 @@ class BaseDB(sqlitedb.SqliteDB):
                                         "INNER JOIN tomes ON synopses.tome_id = tomes.id "
                                         "WHERE tomes.guid=? ORDER BY fidelity DESC", [tome_guid])
 
-
     def get_tome_files_by_tome_guid(self, tome_guid):
         """ returns a list of tome files associated to the tome identified by tome_guid """
         return self.get_list_of_objects("SELECT files.* FROM files "
@@ -462,7 +464,8 @@ class BaseDB(sqlitedb.SqliteDB):
             author_guid = author_link_info['guid']
             author = self.get_author_by_guid(author_guid)
             if author is None:
-                raise KeyError("No author with guid {} for tome {} found, skipping tome import ".format(author_guid, guid))
+                raise KeyError("No author with guid {} for tome {} found, skipping tome import ".format(author_guid,
+                                                                                                        guid))
             author_links.append((author_link_info, author['id']))
 
         old_tome = self.get_tome_by_guid(guid)
