@@ -43,14 +43,14 @@ class SqliteDB(object):
         self.in_transaction = False
 
     def count_rows(self, from_clause, where_clause="1", params=()):
-        for row in self.cur.execute("SELECT COUNT(*) AS count FROM " + from_clause + " WHERE " + where_clause, params):
+        for row in self.cur.execute(u"SELECT COUNT(*) AS count FROM " + from_clause + " WHERE " + where_clause, params):
             fields = {key: row[key] for key in row.keys()}
             return fields['count']
 
     def get_rows(self, from_clause, where_clause="1", order_by_clause=None, params=()):
         result = []
 
-        query = "SELECT * FROM " + from_clause + " WHERE " + where_clause
+        query = u"SELECT * FROM " + from_clause + " WHERE " + where_clause
         if order_by_clause is not None:
             query += " ORDER BY " + order_by_clause
 
@@ -91,7 +91,7 @@ class SqliteDB(object):
 
         parameters = object_fields.values() + filter_dict.values()
 
-        query = "UPDATE {} SET {} WHERE {}".format(table_name, set_string, filter_string)
+        query = u"UPDATE {} SET {} WHERE {}".format(table_name, set_string, filter_string)
         logger.debug("Update query is {} {}".format(query, repr(parameters)))
         self.cur.execute(query, parameters)
 
@@ -101,7 +101,7 @@ class SqliteDB(object):
 
         value_list = object_fields.values()
 
-        query = "INSERT INTO {} ({}) VALUES ({}) ".format(table_name, field_string, question_marks)
+        query = u"INSERT INTO {} ({}) VALUES ({}) ".format(table_name, field_string, question_marks)
         logger.debug("Insert query is " + query + repr(value_list))
         self.cur.execute(query, value_list)
 
