@@ -72,9 +72,7 @@ class FriendsDB(sqlitedb.SqliteDB):
                          [1 if locked else 0, buffer(salt), iteration_count, buffer(encrypted_canary)])
 
     def get_locking_info(self):
-        for row in self.cur.execute("SELECT * FROM format_info"):
-            fields = {key: row[key] for key in row.keys()}
-            return fields
+        return self.get_single_object("SELECT * FROM format_info")
 
 
 def expand_comm_data(friend):

@@ -65,12 +65,8 @@ class LocalDB(pydb.basedb.BaseDB):
         self.cur.execute("DELETE FROM files WHERE tome_id=? AND hash=?", [tome_id, file_hash])
 
     def get_file_links_to_missing_files(self):
-        result = []
-        for row in self.cur.execute("SELECT * FROM files LEFT JOIN local_files ON files.hash = local_files.hash "
-                                    "WHERE local_files.hash IS NULL"):
-            fields = {key: row[key] for key in row.keys()}
-            result.append(fields)
-        return result
+        return self.get_list_of_objects("SELECT * FROM files LEFT JOIN local_files ON files.hash = local_files.hash "
+                                        "WHERE local_files.hash IS NULL")
 
     def get_all_local_files(self):
         for row in self.cur.execute("SELECT * FROM local_files"):
@@ -79,11 +75,7 @@ class LocalDB(pydb.basedb.BaseDB):
 
     def get_local_file_by_hash(self, file_hash):
         """ returns the local file object identified by hash or None if not found """
-        for row in self.cur.execute("SELECT * FROM local_files WHERE hash=?", [file_hash]):
-            fields = {key: row[key] for key in row.keys()}
-            return fields
-
-        return None
+        return self.get_single_object("SELECT * FROM local_files WHERE hash=?", [file_hash])
 
     def does_local_file_exist(self, file_hash):
         result = self.cur.execute("SELECT hash FROM local_files WHERE hash=?", [file_hash]).fetchone()
@@ -144,14 +136,12 @@ class LocalDB(pydb.basedb.BaseDB):
         """ returns a list of all hashes that translate to target_hash (including target_hash) """
 
         result = [target_hash]
-        for row in self.cur.execute("SELECT source_hash FROM file_hash_aliases WHERE target_hash=?", [target_hash]):
-            result.append(row['source_hash'])
+        result += self.get_single_column("SELECT source_hash FROM file_hash_aliases WHERE target_hash=?", [target_hash])
         return result
 
     def get_statistics(self):
         stats = self.get_base_statistics()
-        local_file_row = self.cur.execute("SELECT count (*) FROM local_files").fetchone()
-        stats['local_files'] = local_file_row[0]
+        stats['local_files'] = self.get_single_value("SELECT count (*) FROM local_files")
         return stats
 
 

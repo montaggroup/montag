@@ -50,10 +50,9 @@ class MergeDB(pydb.basedb.BaseDB):
             # print "Deleting from "+table
 
     def _replace_tome(self, guid, new_tome_fields):
-
         old_tome = self.get_tome_by_guid(guid)
 
-        logger.debug("new_tome_fields = %s" % repr(new_tome_fields))
+        logger.debug("new_tome_fields = {}".format(repr(new_tome_fields)))
         if new_tome_fields is None:
             logger.info("Merge db delete request for tome %s" % guid)
             if old_tome:
@@ -92,11 +91,10 @@ class MergeDB(pydb.basedb.BaseDB):
                 logger.info("Tomes with guid %s do not differ (mergedb/merge result)" % guid)
 
     def _replace_author(self, guid, new_author_fields):
-
         old_author = self.get_author_by_guid(guid)
 
         if new_author_fields is None:
-            logger.info("Merge db delete request for author %s" % guid)
+            logger.info("Merge db delete request for author {}".format(guid))
             if old_author:
                 logger.info("Following db delete request for author %s" % guid)
                 self.cur.execute("DELETE FROM authors WHERE guid=?", [guid])
@@ -336,7 +334,7 @@ class MergeDB(pydb.basedb.BaseDB):
             if not data_fields_equal(old_item_data, new_item_data):
                 need_update = True
             else:
-                logger.info("%s information does not differ" % item_name)
+                logger.info("{} information does not differ".format(item_name))
 
         if need_update:
             insert_item_fct(self.cur, author_id, new_item_data)
@@ -564,19 +562,16 @@ class MergeDB(pydb.basedb.BaseDB):
         """ finds a author by name key """
         key = pydb.names.calc_author_name_key(author_name)
 
-        result = []
-        for row in self.cur.execute("SELECT * FROM authors WHERE name_key=? ORDER BY name", [key]):
-            fields = {key: row[key] for key in row.keys()}
-            result.append(fields)
+        return self.get_list_of_objects("SELECT * FROM authors WHERE name_key=? ORDER BY name", [key])
 
-        return result
 
     def document_modification_date_by_guid(self, doc_type, guid):
         table_name = doc_type + "_document_changes"
-        for row in self.cur.execute("SELECT last_modification_date FROM " + table_name + " WHERE document_guid=?",
-                                    [guid]):
-            return row["last_modification_date"]
-        return 0
+        result = self.get_single_value("SELECT last_modification_date FROM " + table_name + " WHERE document_guid=?",
+                                       [guid])
+        if result is None:
+            return 0
+        return result
 
     def update_document_modification_date_by_guid(self, doc_type, guid):
         table_name = doc_type + "_document_changes"
@@ -660,11 +655,7 @@ class MergeDB(pydb.basedb.BaseDB):
         self.update_local_file_exists(file_hash)
 
     def get_local_file(self, file_hash):
-        rows = self.cur.execute("SELECT * FROM local_files WHERE hash=?", [file_hash])
-
-        for row in rows:
-            fields = {key: row[key] for key in row.keys()}
-            return fields
+        return self.get_single_object("SELECT * FROM local_files WHERE hash=?", [file_hash])
 
     def get_all_local_file_hashes(self):
         result = []
