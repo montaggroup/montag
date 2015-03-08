@@ -28,7 +28,7 @@ class BaseDB(sqlitedb.SqliteDB):
             logger.info("Before rollback due to %s" % repr(e))
             self.rollback()
         if not enable_db_sync:
-            self.con.execute("PRAGMA synchronous = OFF ")
+            self.cur.execute("PRAGMA synchronous = OFF ")
 
     def get_base_statistics(self):
         authors = self.count_rows('authors', 'fidelity >=?', [network_params.Min_Relevant_Fidelity])
@@ -273,7 +273,7 @@ class BaseDB(sqlitedb.SqliteDB):
         return target_author_id
 
     def replace_author_fusion_targets(self, old_author_id, new_author_id):
-        self.con.execute("UPDATE author_fusion_sources SET author_id=? WHERE author_id=?",
+        self.cur.execute("UPDATE author_fusion_sources SET author_id=? WHERE author_id=?",
                          [new_author_id, old_author_id])
 
     def get_all_relevant_author_fusion_source_guids(self, author_id):
@@ -352,7 +352,7 @@ class BaseDB(sqlitedb.SqliteDB):
 
     def replace_tome_fusion_targets(self, old_tome_id, new_tome_id):
         logger.debug("Replacing tome fusion source {} => {} ".format(old_tome_id, new_tome_id))
-        self.con.execute("UPDATE tome_fusion_sources SET tome_id=? WHERE tome_id=?", [new_tome_id, old_tome_id])
+        self.cur.execute("UPDATE tome_fusion_sources SET tome_id=? WHERE tome_id=?", [new_tome_id, old_tome_id])
 
     def get_final_author_fusion_target_guid(self, source_author_guid):
         target_guid = self.get_author_fusion_target_guid(source_author_guid)
@@ -422,17 +422,17 @@ class BaseDB(sqlitedb.SqliteDB):
                                         [tome_guid])
 
     def _delete_tome_referrers(self, tome_id):
-        self.con.execute("DELETE FROM tomes_authors WHERE tome_id=?", [tome_id])
-        self.con.execute("DELETE FROM files WHERE tome_id=?", [tome_id])
-        self.con.execute("DELETE FROM tome_tags WHERE tome_id=?", [tome_id])
-        self.con.execute("DELETE FROM synopses WHERE tome_id=?", [tome_id])
-        self.con.execute("DELETE FROM tome_fusion_sources WHERE tome_id=?", [tome_id])
+        self.cur.execute("DELETE FROM tomes_authors WHERE tome_id=?", [tome_id])
+        self.cur.execute("DELETE FROM files WHERE tome_id=?", [tome_id])
+        self.cur.execute("DELETE FROM tome_tags WHERE tome_id=?", [tome_id])
+        self.cur.execute("DELETE FROM synopses WHERE tome_id=?", [tome_id])
+        self.cur.execute("DELETE FROM tome_fusion_sources WHERE tome_id=?", [tome_id])
 
     def delete_tome(self, tome_id):
         """ removes a tome from the database, including all items referencing it
         """
         self._delete_tome_referrers(tome_id)
-        self.con.execute("DELETE FROM tomes WHERE id=?", [tome_id])
+        self.cur.execute("DELETE FROM tomes WHERE id=?", [tome_id])
 
     def delete_tome_by_guid(self, guid):
         """ removes a tome from the database, including all items referencing it
@@ -491,7 +491,7 @@ class BaseDB(sqlitedb.SqliteDB):
         for author_link_info, author_id in author_links:
             l = author_link_info
 
-            self.con.execute(
+            self.cur.execute(
                 "INSERT INTO tomes_authors ( tome_id, author_id, author_order, fidelity, last_modification_date ) "
                 "VALUES(?,?,?,?,?)",
                 [tome_id, author_id, l['order'], l['fidelity'], time.time()])
@@ -500,7 +500,7 @@ class BaseDB(sqlitedb.SqliteDB):
             f = file_info
             sha256_hash_of_zero_bytes = 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
             if f['hash'].lower() != sha256_hash_of_zero_bytes:
-                databases.insert_tome_file(self.con, tome_id, f)
+                databases.insert_tome_file(self.cur, tome_id, f)
 
         processed_tags = set()
         for tag_info in doc['tags']:
@@ -508,25 +508,25 @@ class BaseDB(sqlitedb.SqliteDB):
 
             if not t['tag_value'] in processed_tags:
                 processed_tags.add(t['tag_value'])
-                databases.insert_tome_tag(self.con, tome_id, t)
+                databases.insert_tome_tag(self.cur, tome_id, t)
 
         for s in doc['synopses']:
-            databases.insert_synopsis(self.con, tome_id, s)
+            databases.insert_synopsis(self.cur, tome_id, s)
 
         for s in doc['fusion_sources']:
-            databases.insert_tome_fusion(self.con, tome_id, s)
+            databases.insert_tome_fusion(self.cur, tome_id, s)
 
     def _delete_author_referrers(self, author_id, include_tome_links=False):
-        self.con.execute("DELETE FROM author_fusion_sources WHERE author_id=?", [author_id])
+        self.cur.execute("DELETE FROM author_fusion_sources WHERE author_id=?", [author_id])
 
         if include_tome_links:
-            self.con.execute("DELETE FROM tomes_authors WHERE author_id=?", [author_id])
+            self.cur.execute("DELETE FROM tomes_authors WHERE author_id=?", [author_id])
 
     def delete_author(self, author_id):
         """ removes a author from the database, including all items referencing it
         """
         self._delete_author_referrers(author_id, include_tome_links=True)
-        self.con.execute("DELETE FROM authors WHERE id=?", [author_id])
+        self.cur.execute("DELETE FROM authors WHERE id=?", [author_id])
 
     def delete_author_by_guid(self, guid):
         """ removes an author from the database, including all items referencing it
@@ -562,7 +562,7 @@ class BaseDB(sqlitedb.SqliteDB):
 
         if 'fusion_sources' in doc:
             for s in doc['fusion_sources']:
-                databases.insert_author_fusion(self.con, author_id, s)
+                databases.insert_author_fusion(self.cur, author_id, s)
 
     def apply_file_hash_translation(self, source_hash, target_hash):
         """
@@ -573,8 +573,8 @@ class BaseDB(sqlitedb.SqliteDB):
         if result:
             # there might already be source and target hash linked to a file, so ignore errors and delete links to
             # source hash afterwards
-            self.con.execute("UPDATE OR IGNORE files SET hash=? WHERE hash=?", [target_hash, source_hash])
-            self.con.execute("DELETE FROM files WHERE hash=?", [source_hash])
+            self.cur.execute("UPDATE OR IGNORE files SET hash=? WHERE hash=?", [target_hash, source_hash])
+            self.cur.execute("DELETE FROM files WHERE hash=?", [source_hash])
 
         return set(result)
 

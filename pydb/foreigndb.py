@@ -13,9 +13,9 @@ class ForeignDB(pydb.basedb.BaseDB):
 
     def set_last_query_dates(self, query_date_authors, query_date_tomes):
 
-        self.con.execute("UPDATE update_info SET last_query_date_authors=?, last_query_date_tomes=? "
+        self.cur.execute("UPDATE update_info SET last_query_date_authors=?, last_query_date_tomes=? "
                          "WHERE id=0", [query_date_authors, query_date_tomes])
 
     def get_last_query_dates(self):
-        row = self.con.execute("SELECT last_query_date_authors, last_query_date_tomes FROM update_info").fetchone()
+        row = self.cur.execute("SELECT last_query_date_authors, last_query_date_tomes FROM update_info").fetchone()
         return row['last_query_date_authors'], row['last_query_date_tomes']

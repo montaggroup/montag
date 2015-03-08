@@ -534,8 +534,7 @@ class MainDB:
         local_db_tome_id = self._merge_db_tome_id_to_local_db_tome_id(tome_id)
         local_db_author_id = self._merge_db_author_id_to_local_db_author_id(author_id)
 
-        cur = self.local_db.con.cursor()
-        cur.execute("INSERT OR IGNORE INTO tomes_authors "
+        self.cur.execute("INSERT OR IGNORE INTO tomes_authors "
                     "(tome_id, author_id, author_order, fidelity, last_modification_date) VALUES(?,?,?,?,?)",
                     (local_db_tome_id, local_db_author_id, author_order, fidelity, time.time()))
 

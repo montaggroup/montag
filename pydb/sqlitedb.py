@@ -10,40 +10,40 @@ logger = logging.getLogger('sqlitedb')
 
 class SqliteDB(object):
     def __init__(self, db_file_path, schema_dir):
-        self.con = sqlite.connect(db_file_path, timeout=SqliteWriteLockTimeOutSeconds)
-        self.con.isolation_level = None
-        self.con.row_factory = sqlite.Row
+        con = sqlite.connect(db_file_path, timeout=SqliteWriteLockTimeOutSeconds)
+        con.isolation_level = None
+        con.row_factory = sqlite.Row
         self.schema_dir = schema_dir
-        self.cur = self.con.cursor()
+        self.cur = con.cursor()
 
         self.in_transaction = False
 
     def _set_schema_version(self, schema_version):
-        self.con.execute("PRAGMA user_version=" + str(int(schema_version)))
+        self.cur.execute("PRAGMA user_version=" + str(int(schema_version)))
 
     def _get_schema_version(self):
-        for row in self.con.execute("PRAGMA user_version"):
+        for row in self.cur.execute("PRAGMA user_version"):
             return row[0]
 
     def _execute_sql_file(self, file_name):
         with open(os.path.join(self.schema_dir, file_name), 'r') as f:
             script = f.read()
-            self.con.executescript(script)
+            self.cur.executescript(script)
 
     def begin(self):
-        self.con.execute("BEGIN")
+        self.cur.execute("BEGIN")
         self.in_transaction = True
 
     def commit(self):
-        self.con.execute("COMMIT")
+        self.cur.execute("COMMIT")
         self.in_transaction = False
 
     def rollback(self):
-        self.con.execute("ROLLBACK")
+        self.cur.execute("ROLLBACK")
         self.in_transaction = False
 
     def count_rows(self, from_clause, where_clause="1", params=()):
-        for row in self.con.execute("SELECT COUNT(*) AS count FROM " + from_clause + " WHERE " + where_clause, params):
+        for row in self.cur.execute("SELECT COUNT(*) AS count FROM " + from_clause + " WHERE " + where_clause, params):
             fields = {key: row[key] for key in row.keys()}
             return fields['count']
 
@@ -54,7 +54,7 @@ class SqliteDB(object):
         if order_by_clause is not None:
             query += " ORDER BY " + order_by_clause
 
-        for row in self.con.execute(query, params):
+        for row in self.cur.execute(query, params):
             fields = {key: row[key] for key in row.keys()}
             result.append(fields)
         return result
@@ -93,7 +93,7 @@ class SqliteDB(object):
 
         query = "UPDATE {} SET {} WHERE {}".format(table_name, set_string, filter_string)
         logger.debug("Update query is {} {}".format(query, repr(parameters)))
-        self.con.execute(query, parameters)
+        self.cur.execute(query, parameters)
 
     def insert_object(self, table_name, object_fields):
         field_string = ', '.join(object_fields.iterkeys())
@@ -103,10 +103,9 @@ class SqliteDB(object):
 
         query = "INSERT INTO {} ({}) VALUES ({}) ".format(table_name, field_string, question_marks)
         logger.debug("Insert query is " + query + repr(value_list))
-        cur = self.con.cursor()
-        cur.execute(query, value_list)
+        self.cur.execute(query, value_list)
 
-        return cur.lastrowid
+        return self.cur.lastrowid
 
 
 class Transaction():
