@@ -40,6 +40,7 @@ date_empty_sample = """<?xml version="1.0" encoding="utf-8" standalone="no"?>
 </package>
 """
 
+
 class test_epub_get_metadata(unittest.TestCase):
     def test_empty_of_does_not_lead_to_error(self):
         epub.get_metadata_from_opf_string("")
@@ -52,7 +53,6 @@ class test_epub_get_metadata(unittest.TestCase):
     def test_date_is_extracted_correctly(self):
         result = epub.get_metadata_from_opf_string(good_sample)
         self.assertEqual(int(result['publication_year']), 1999)
-
 
     def test_date_without_year_does_not_lead_to_error(self):
         result = epub.get_metadata_from_opf_string(date_broken_sample)

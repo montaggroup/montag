@@ -6,7 +6,7 @@ import tempfile
 
 class TestOpfOperations(unittest.TestCase):
     def setUp(self):
-        self.reference_opf_string=\
+        self.reference_opf_string = \
             """<?xml version='1.0' encoding='utf-8'?>
                <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id">
                    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">

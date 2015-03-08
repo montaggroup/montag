@@ -139,7 +139,6 @@ class MainDB:
         """ finds a author by name key or pseudonym name key"""
         return self.merge_db.find_authors_with_same_name_key(author_name)
 
-
     def get_tome_file(self, tome_id, file_hash):
         """ returns a tome file link entry or None if not found"""
         return self.merge_db.get_tome_file(tome_id, file_hash)
@@ -324,7 +323,6 @@ class MainDB:
         }
 
         return result
-
 
     def get_author(self, author_id):
         """ returns a author from the merge table identified by id """

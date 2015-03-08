@@ -10,7 +10,8 @@ class TestFileRequester(unittest.TestCase):
         self.file_inserter = mock.MagicMock()
         pydb.com.file_requester.FileRequester.MaxParallelFileRequests = 5
         download_queue = pydb.com.file_requester.DownloadQueue()
-        self.requester = pydb.com.file_requester.FileRequester(self.db, self.comservice, self.file_inserter, download_queue)
+        self.requester = pydb.com.file_requester.FileRequester(self.db, self.comservice, self.file_inserter,
+                                                               download_queue)
         self.friend_id = 1
         self.session = mock.MagicMock()
         self.callback = mock.MagicMock()
@@ -75,22 +76,20 @@ class TestFileRequesterLocking(unittest.TestCase):
         pydb.com.file_requester.FileRequester.MaxParallelFileRequests = 5
         download_queue = pydb.com.file_requester.DownloadQueue()
 
-        self.requester = pydb.com.file_requester.FileRequester(self.db, self.comservice, self.file_inserter, download_queue)
+        self.requester = pydb.com.file_requester.FileRequester(self.db, self.comservice, self.file_inserter,
+                                                               download_queue)
         self.friend_id = 1
         self.session = mock.MagicMock()
         self.callback = mock.MagicMock()
         self.failure_callback = mock.MagicMock()
-
 
         def mock_insert_file_in_background(completed_file_name, extension, file_hash):
             self.comservice.release_file_after_fetching(file_hash, success=True)
 
         self.file_inserter.insert_file_in_background.side_effect = mock_insert_file_in_background
 
-
     def test_empty(self):
         pass
-
 
     def test_when_downloads_complete_all_locks_are_released(self):
         hashes = ('hash1', 'hash2', 'hash3', 'hash4', 'hash5', 'hash6', 'hash7')
@@ -123,7 +122,6 @@ class TestFileRequesterLocking(unittest.TestCase):
             self.comservice.release_file_after_fetching.assert_any_call(hash, success=True)
         for hash in hashes[3:]:
             self.comservice.release_file_after_fetching.assert_any_call(hash, success=False)
-
 
     def test_when_downloads_fail_all_locks_are_released(self):
         hashes = ('hash1', 'hash2', 'hash3', 'hash4', 'hash5', 'hash6', 'hash7')
