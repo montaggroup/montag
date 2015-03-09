@@ -34,6 +34,5 @@ class test_comservice_locking(unittest.TestCase):
         self.assertEqual(result, 'locked')
 
 
-
 if __name__ == '__main__':
     unittest.main()

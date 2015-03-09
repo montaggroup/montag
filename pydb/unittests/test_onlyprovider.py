@@ -25,7 +25,8 @@ class TestOnlyProvider(unittest.TestCase):
         self.strategy.associated(session, self.friend_id, self.completion_callback, None)
 
         self.assertFalse(self.completion_callback.called)
-        self.provider.activate.assert_called_once_with(session, self.strategy.provider_completed, self.strategy.any_requester_failed)
+        self.provider.activate.assert_called_once_with(session, self.strategy.provider_completed,
+                                                       self.strategy.any_requester_failed)
 
     def test_provider_complete_triggers_completion_callback(self):
         session = mock.MagicMock()

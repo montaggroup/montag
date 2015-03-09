@@ -32,7 +32,5 @@ class TestCalcAuthorNameKey(unittest.TestCase):
     def test_other_punctuation_does_not_matter(self):
         self.assertEqual(calc_author_name_key(u'j_:-smith'), calc_author_name_key(u'j smith'))
 
-
-
 if __name__ == '__main__':
     unittest.main()

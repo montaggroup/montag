@@ -18,7 +18,7 @@ class FriendsDB(sqlitedb.SqliteDB):
             logger.debug("Done loading schemas")
         except sqlite.IntegrityError, e:  # error if already exists, \todo why is that so?
             logger.info("Before rollback due to %s" % repr(e))
-            self.con.rollback()
+            self.rollback()
             pass
 
         self._update_schema_if_necessary()
@@ -32,75 +32,47 @@ class FriendsDB(sqlitedb.SqliteDB):
             self._update_schema_if_necessary()
 
     def add_friend(self, name):
-        cur = self.con.cursor()
-        cur.execute("INSERT INTO friends (name) VALUES(?)", [name])
-
-        logger.info("Last row id is %s", str(cur.lastrowid))
-        return cur.lastrowid
+        return self.insert_object('friends', {'name': name})
 
     def remove_friend(self, friend_id):
-        self.con.execute("DELETE FROM friends WHERE ID=?", [friend_id])
+        self.cur.execute("DELETE FROM friends WHERE ID=?", [friend_id])
 
     def get_friends(self):
         """ returns a list of friend dictionary """
-        result = []
-        for row in self.con.execute("SELECT * FROM friends"):
-            fields = {key: row[key] for key in row.keys()}
-            if 'comm_data' in fields:
-                del fields['comm_data']
-            result.append(fields)
-
-        return result
+        return self.get_list_of_objects("SELECT * FROM friends")
 
     def get_friend_by_name(self, name):
-        """ returns the dictionary of the friend given by name """
-        for row in self.con.execute("SELECT * FROM friends WHERE name=?", [name]):
-            fields = {key: row[key] for key in row.keys()}
-            if 'comm_data' in fields:
-                del fields['comm_data']
-            return fields
-        return None
+        return self.get_single_object("SELECT * FROM friends WHERE name=?", [name])
 
     def get_friend(self, friend_id):
         """ returns the dictionary of the friend """
-        for row in self.con.execute("SELECT * FROM friends WHERE id=?", [friend_id]):
-            fields = {key: row[key] for key in row.keys()}
-            if 'comm_data' in fields:
-                del fields['comm_data']
-            return fields
-        return None
+        return self.get_single_object("SELECT * FROM friends WHERE id=?", [friend_id])
 
     def set_comm_data_string(self, friend_id, comm_data_string):
         # print "UPDATE friends SET comm_data=? WHERE id=?", [comm_data_string, friend_id]
-        self.con.execute("UPDATE friends SET comm_data=? WHERE id=?", [comm_data_string, friend_id])
+        self.cur.execute("UPDATE friends SET comm_data=? WHERE id=?", [comm_data_string, friend_id])
 
     def get_comm_data_string(self, friend_id):
-        for row in self.con.execute("SELECT comm_data FROM friends WHERE id=?", [friend_id]):
-            return row['comm_data']
+        return self.get_single_value("SELECT comm_data FROM friends WHERE id=?", [friend_id])
 
     def set_name(self, friend_id, name):
-        self.con.execute("UPDATE friends SET name=? WHERE id=?", [name, friend_id])
+        self.cur.execute("UPDATE friends SET name=? WHERE id=?", [name, friend_id])
 
     def set_can_connect_to(self, friend_id, can_connect_to):
-        self.con.execute("UPDATE friends SET can_connect_to=? WHERE id=?", [can_connect_to, friend_id])
+        self.cur.execute("UPDATE friends SET can_connect_to=? WHERE id=?", [can_connect_to, friend_id])
 
     def is_locking_active(self):
-        for row in self.con.execute("SELECT is_locked FROM format_info"):
-            if row['is_locked'] == 1:
-                return True
-            return False
-        return False
+        is_locked = self.get_single_value("SELECT is_locked FROM format_info")
+        return is_locked == 1
 
     def set_locking_active(self, locked, salt, iteration_count, encrypted_canary):
-        self.con.execute(u"INSERT OR REPLACE INTO format_info "
+        self.cur.execute(u"INSERT OR REPLACE INTO format_info "
                          u"(is_locked, salt, iteration_count, encrypted_canary, id) "
                          u"VALUES(?, ?, ?, ?, 1)",
                          [1 if locked else 0, buffer(salt), iteration_count, buffer(encrypted_canary)])
 
     def get_locking_info(self):
-        for row in self.con.execute("SELECT * FROM format_info"):
-            fields = {key: row[key] for key in row.keys()}
-            return fields
+        return self.get_single_object("SELECT * FROM format_info")
 
 
 def expand_comm_data(friend):

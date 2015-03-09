@@ -3,13 +3,15 @@ import hashlib
 import pydb.ebook_metadata_tools.pdf as pdf
 import cStringIO
 
+
 class TestPdfStripIdempotency(unittest.TestCase):
 
     def test_multi_strip(self):
         with open('test_data/pg1661.pdf', 'rb') as f:
             original_data = f.read()
 
-        print "Original hash         : {}, size {}".format(hashlib.sha256(original_data).hexdigest(), len(original_data))
+        print "Original hash         : {}, size {}".format(hashlib.sha256(original_data).hexdigest(),
+                                                           len(original_data))
 
         # hash once for reference
         test_data, reference_hash = strip_and_hash(original_data)
@@ -20,8 +22,7 @@ class TestPdfStripIdempotency(unittest.TestCase):
         print "Hash after stripping  : {}, size {}".format(reference_hash, len(test_data))
         dump_file(0, test_data)
 
-
-        for i in range(1, 10):
+        for i in range(10):
             stripped_data, file_hash = strip_and_hash(test_data)
             print "hash after iteration {}: {}, size {}".format(i, file_hash, len(stripped_data))
             dump_file(i, stripped_data)
@@ -47,7 +48,6 @@ def strip_and_hash(test_data):
     result_data = out_stream.getvalue()
     file_hash = hashlib.sha256(result_data).hexdigest()
     return result_data, file_hash
-
 
 
 if __name__ == '__main__':

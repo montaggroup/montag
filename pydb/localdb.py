@@ -20,19 +20,18 @@ class LocalDB(pydb.basedb.BaseDB):
             is_fiction: None => unknown, True => fiction, False=>non_fiction
         """
         logger.debug("Before insert")
-        cur = self.con.cursor()
-        cur.execute(
+        self.cur.execute(
             "INSERT INTO tomes "
             "(guid, title, subtitle, edition, principal_language, publication_year, "
             "fidelity, last_modification_date, type) "
             "VALUES (?,?,?,?,?,?,?,?,?)",
             [guid, title, subtitle, edition, principal_language, publication_year, fidelity, time.time(), tome_type])
 
-        logger.info("Last row id is %s", str(cur.lastrowid))
-        tome_id = cur.lastrowid
+        logger.info("Last row id is %s", str(self.cur.lastrowid))
+        tome_id = self.cur.lastrowid
 
         for index, author_id in enumerate(remove_duplicates_in_list(author_ids)):
-            self.con.execute(
+            self.cur.execute(
                 "INSERT INTO tomes_authors (tome_id, author_id, author_order, fidelity,last_modification_date) "
                 "VALUES(?,?,?,?,?)",
                 [tome_id, author_id, index, fidelity, time.time()])
@@ -41,76 +40,63 @@ class LocalDB(pydb.basedb.BaseDB):
 
     def add_author(self, guid, name, fidelity, date_of_birth, date_of_death):
         """ adds a new author, generating a guid, returns the id of the author """
-        cur = self.con.cursor()
-        cur.execute(
+        self.cur.execute(
             "INSERT INTO authors (guid, name, date_of_birth, date_of_death, fidelity, last_modification_date) "
             "VALUES (?,?,?,?,?,?)",
             [guid, name, date_of_birth, date_of_death, fidelity, time.time()])
-        return cur.lastrowid
+        return self.cur.lastrowid
 
     def add_synopsis_to_tome(self, guid, content, tome_id, fidelity):
         """ adds a new synopsis, does link it to tome """
-        cur = self.con.cursor()
-        cur.execute(
+        self.cur.execute(
             "INSERT INTO synopses (guid, content, tome_id, fidelity, last_modification_date) VALUES (?,?,?,?,?)",
             [guid, content, tome_id, fidelity, time.time()])
-        return cur.lastrowid
+        return self.cur.lastrowid
 
     def add_tome_file_link(self, fidelity, file_extension, file_type, local_db_tome_id, local_file_hash,
                            local_file_size):
         pydb.assert_hash(local_file_hash)
-        cur = self.con.cursor()
-        cur.execute(
+        self.cur.execute(
             "INSERT OR IGNORE INTO files "
             "(tome_id,file_type, hash, size, file_extension, fidelity, last_modification_date) VALUES(?,?,?,?,?,?,?)",
             (local_db_tome_id, file_type, local_file_hash, local_file_size, file_extension, fidelity, time.time()))
 
     def remove_file_link(self, tome_id, file_hash):
-        self.con.execute("DELETE FROM files WHERE tome_id=? AND hash=?", [tome_id, file_hash])
+        self.cur.execute("DELETE FROM files WHERE tome_id=? AND hash=?", [tome_id, file_hash])
 
     def get_file_links_to_missing_files(self):
-        result = []
-        for row in self.con.execute("SELECT * FROM files LEFT JOIN local_files ON files.hash = local_files.hash "
-                                    "WHERE local_files.hash IS NULL"):
-            fields = {key: row[key] for key in row.keys()}
-            result.append(fields)
-        return result
+        return self.get_list_of_objects("SELECT * FROM files LEFT JOIN local_files ON files.hash = local_files.hash "
+                                        "WHERE local_files.hash IS NULL")
 
     def get_all_local_files(self):
-        for row in self.con.execute("SELECT * FROM local_files"):
+        for row in self.cur.execute("SELECT * FROM local_files"):
             fields = {key: row[key] for key in row.keys()}
             yield fields
 
     def get_local_file_by_hash(self, file_hash):
         """ returns the local file object identified by hash or None if not found """
-        for row in self.con.execute("SELECT * FROM local_files WHERE hash=?", [file_hash]):
-            fields = {key: row[key] for key in row.keys()}
-            return fields
-
-        return None
+        return self.get_single_object("SELECT * FROM local_files WHERE hash=?", [file_hash])
 
     def does_local_file_exist(self, file_hash):
-        result = self.con.execute("SELECT hash FROM local_files WHERE hash=?", [file_hash]).fetchone()
+        result = self.cur.execute("SELECT hash FROM local_files WHERE hash=?", [file_hash]).fetchone()
         return bool(result)
 
     def add_local_file(self, file_hash, extension):
-        cur = self.con.cursor()
-        cur.execute("INSERT OR IGNORE INTO local_files (last_modification_date, hash, file_extension) VALUES (?,?,?)",
+        self.cur.execute("INSERT OR IGNORE INTO local_files (last_modification_date, hash, file_extension) VALUES (?,?,?)",
                     (time.time(), file_hash, extension))
-        last_row_id = cur.lastrowid
-        if not last_row_id: # insert was ignored
+        last_row_id = self.cur.lastrowid
+        if not last_row_id:  # insert was ignored
             local_file = self.get_local_file_by_hash(file_hash)
             return local_file['id']
             
         return last_row_id
 
     def add_tags_to_tome(self, tome_id, tags_values, fidelity):
-        cur = self.con.cursor()
         for tag_value in tags_values:
             if tag_value == "" or tag_value is None:
                 raise ValueError("Invalid tag value: '%s'" % tag_value)
 
-            cur.execute("INSERT OR IGNORE INTO tome_tags (tome_id, tag_value, fidelity, last_modification_date) "
+            self.cur.execute("INSERT OR IGNORE INTO tome_tags (tome_id, tag_value, fidelity, last_modification_date) "
                         "VALUES(?,?,?,?)",
                         (tome_id, tag_value, fidelity, time.time()))
 
@@ -132,7 +118,7 @@ class LocalDB(pydb.basedb.BaseDB):
         returns the same hash if no translation available
         """
 
-        rows = self.con.execute("SELECT target_hash FROM file_hash_aliases WHERE source_hash=?", [source_hash])
+        rows = self.cur.execute("SELECT target_hash FROM file_hash_aliases WHERE source_hash=?", [source_hash])
         for row in rows:
             return row['target_hash']
 
@@ -142,22 +128,20 @@ class LocalDB(pydb.basedb.BaseDB):
         """ adds a source => target hash translation
         """
 
-        self.con.execute("INSERT OR REPLACE INTO file_hash_aliases (source_hash, target_hash) VALUES(?,?)",
+        self.cur.execute("INSERT OR REPLACE INTO file_hash_aliases (source_hash, target_hash) VALUES(?,?)",
                          [source_hash, target_hash])
-        self.con.execute("UPDATE file_hash_aliases SET target_hash=? WHERE target_hash=?", [target_hash, source_hash])
+        self.cur.execute("UPDATE file_hash_aliases SET target_hash=? WHERE target_hash=?", [target_hash, source_hash])
 
     def get_all_file_hash_translation_sources(self, target_hash):
         """ returns a list of all hashes that translate to target_hash (including target_hash) """
 
         result = [target_hash]
-        for row in self.con.execute("SELECT source_hash FROM file_hash_aliases WHERE target_hash=?", [target_hash]):
-            result.append(row['source_hash'])
+        result += self.get_single_column("SELECT source_hash FROM file_hash_aliases WHERE target_hash=?", [target_hash])
         return result
 
     def get_statistics(self):
         stats = self.get_base_statistics()
-        local_file_row = self.cur.execute("SELECT count (*) FROM local_files").fetchone()
-        stats['local_files'] = local_file_row[0]
+        stats['local_files'] = self.get_single_value("SELECT count (*) FROM local_files")
         return stats
 
 

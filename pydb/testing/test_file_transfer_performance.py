@@ -20,6 +20,7 @@ logger = logging.getLogger("test_file_transfer_performance")
 
 FILE_DELIVERY_REPETITIONS = 10
 
+
 class TestFileTransferPerformance(unittest.TestCase):
     def setUp(self):
         script_path = os.path.dirname(__file__)
@@ -27,6 +28,7 @@ class TestFileTransferPerformance(unittest.TestCase):
         self.file_stream = StringIO(self.test_file_contents)
 
         self.received_file_contents = ""
+
         def file_received(file_hash, extension, content, more_parts_follow):
             self.received_file_contents += content
 
@@ -59,14 +61,14 @@ class TestFileTransferPerformance(unittest.TestCase):
         duration = stop_time - start_time
         if duration == 0:
             duration = 0.001
-        payload_bandwidth_kbps = len(self.test_file_contents)  * FILE_DELIVERY_REPETITIONS / duration / 1024
+        payload_bandwidth_kbps = len(self.test_file_contents) * FILE_DELIVERY_REPETITIONS / duration / 1024
         stop_wire_byte_count = self.server_transport.bytes_sent()
 
         bytes_sent_by_server = (stop_wire_byte_count-start_wire_byte_count) / FILE_DELIVERY_REPETITIONS
         overhead_bytes = bytes_sent_by_server-len(self.test_file_contents)
 
         print("Loopback results {:>60}: {:8} kbps, {:7.1f} ms, encoding overhead: {:7} bytes"
-                    .format(secure_channel_name, int(payload_bandwidth_kbps), round(duration * 1000, 1),  overhead_bytes))
+              .format(secure_channel_name, int(payload_bandwidth_kbps), round(duration * 1000, 1),  overhead_bytes))
 
     def test_01_json_session_with_aeshmac_secure_channel(self):
         client_session = pydb.com.jsonsession.JsonSession(self.client_control)
@@ -86,7 +88,6 @@ class TestFileTransferPerformance(unittest.TestCase):
         self._setup_loopback_transport(client_secure_channel, server_secure_channel)
 
         self._run_benchmark('JsonSession with AesHmacSecureChannel', client_secure_channel, server_session)
-
 
     def test_02_json_session_with_insecure_channel(self):
         client_session = pydb.com.jsonsession.JsonSession(self.client_control)
@@ -175,13 +176,13 @@ class TestFileTransferPerformance(unittest.TestCase):
             ])
         server_secure_channel.set_compression_level(0)
 
-
         client_session.set_lower_layer(client_secure_channel)
         server_session.set_lower_layer(server_secure_channel)
 
         self._setup_loopback_transport(client_secure_channel, server_secure_channel)
 
-        self._run_benchmark('JsonAndBinarySession with AesHmacSecureChannel compress 0', client_secure_channel, server_session)
+        self._run_benchmark('JsonAndBinarySession with AesHmacSecureChannel compress 0', client_secure_channel,
+                            server_session)
 
     def test_07_json_session_with_aeshmac_secure_channel_without_compression(self):
         client_session = pydb.com.jsonsession.JsonSession(self.client_control)
@@ -219,14 +220,13 @@ class TestFileTransferPerformance(unittest.TestCase):
             ])
         server_secure_channel.set_compression_level(None)
 
-
         client_session.set_lower_layer(client_secure_channel)
         server_session.set_lower_layer(server_secure_channel)
 
         self._setup_loopback_transport(client_secure_channel, server_secure_channel)
 
-        self._run_benchmark('JsonAndBinarySession with AesHmacSecureChannel compress off', client_secure_channel, server_session)
+        self._run_benchmark('JsonAndBinarySession with AesHmacSecureChannel compress off', client_secure_channel,
+                            server_session)
         
 if __name__ == "__main__":
     unittest.main()
-    
