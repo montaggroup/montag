@@ -16,9 +16,10 @@ service_prefix = 'montag-'
 basenames = ["pydbserver", "comserver", "comservice", "indexserver", "fileserver", "web2py"]
 
 extension = executionenvironment.script_extension()
-names = [ service_prefix + name + "." + extension for name in basenames ]
+names = [service_prefix + name + "." + extension for name in basenames]
 
 PSUTIL2 = psutil.version_info >= (2, 0)
+
 
 def pidlist():
     if PSUTIL2:
@@ -47,9 +48,8 @@ def as_dict_for_monkey_patching_old_psutils(self, attrs=[], ad_value=None):
     AccessDenied exception is raised when retrieving that particular
     process information.
     """
-    excluded_names = set(['send_signal', 'suspend', 'resume', 'terminate',
-                          'kill', 'wait', 'is_running', 'as_dict', 'parent',
-                          'get_children', 'nice', 'get_rlimit'])
+    excluded_names = {'send_signal', 'suspend', 'resume', 'terminate', 'kill', 'wait', 'is_running', 'as_dict',
+                      'parent', 'get_children', 'nice', 'get_rlimit'}
     retdict = dict()
     for name in set(attrs or dir(self)):
         if name.startswith('_'):

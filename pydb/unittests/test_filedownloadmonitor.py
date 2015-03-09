@@ -40,7 +40,6 @@ class test_calculate_delete_all(unittest.TestCase):
         self.monitor.set_completed_and_unlock('aaa')
         self.assertRaises(KeyError, self.monitor.set_completed_and_unlock, 'aaa')
 
-
     def test_try_lock_on_completed(self):
         self.monitor.try_lock('aaa')
         self.monitor.set_completed_and_unlock('aaa')

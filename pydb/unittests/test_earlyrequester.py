@@ -65,7 +65,8 @@ class test_early_requester(unittest.TestCase):
         self.strategy.file_requester_completed()
 
         self.assertFalse(self.completion_callback.called)
-        self.provider.activate.assert_called_once_with(session, self.strategy.provider_completed, self.strategy.any_requester_failed)
+        self.provider.activate.assert_called_once_with(session, self.strategy.provider_completed,
+                                                       self.strategy.any_requester_failed)
 
     def test_file_requester_complete_triggers_stop_providing_message(self):
         session = mock.MagicMock()

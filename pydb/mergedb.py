@@ -61,22 +61,21 @@ class MergeDB(basedb.BaseDB):
 
     def delete_all(self):
         for table in (databases.data_tables + databases.local_tables):
-            self.con.execute("DELETE FROM %s" % table)
+            self.cur.execute("DELETE FROM %s" % table)
             # print "Deleting from "+table
 
     def _unipolar_opinion_sources(self):
         return self.merge_sources | {self.local_db}
 
     def _replace_tome(self, guid, new_tome_fields):
-
         old_tome = self.get_tome_by_guid(guid)
 
-        logger.debug("new_tome_fields = %s" % repr(new_tome_fields))
+        logger.debug("new_tome_fields = {}".format(repr(new_tome_fields)))
         if new_tome_fields is None:
             logger.info("Merge db delete request for tome %s" % guid)
             if old_tome:
                 logger.debug("Deleting tome with guid %s from merge db" % guid)
-                self.con.execute("DELETE FROM tomes WHERE guid=?", [guid])
+                self.cur.execute("DELETE FROM tomes WHERE guid=?", [guid])
                 self.update_document_modification_date_by_guid('tome', guid)
 
                 # remove authors/tags/.. of this tome
@@ -110,14 +109,13 @@ class MergeDB(basedb.BaseDB):
                 logger.info("Tomes with guid %s do not differ (mergedb/merge result)" % guid)
 
     def _replace_author(self, guid, new_author_fields):
-
         old_author = self.get_author_by_guid(guid)
 
         if new_author_fields is None:
-            logger.info("Merge db delete request for author %s" % guid)
+            logger.info("Merge db delete request for author {}".format(guid))
             if old_author:
                 logger.info("Following db delete request for author %s" % guid)
-                self.con.execute("DELETE FROM authors WHERE guid=?", [guid])
+                self.cur.execute("DELETE FROM authors WHERE guid=?", [guid])
                 self.update_document_modification_date_by_guid('author', guid)
 
                 # remove tomes/pseudonyms of this author 
@@ -222,7 +220,7 @@ class MergeDB(basedb.BaseDB):
                                     old_item_data):
         tome = self.get_tome(tome_id)
         if new_item_data is None:
-            self.con.execute("DELETE FROM " + table_name + " WHERE tome_id=? AND " + item_key + "=?",
+            self.cur.execute("DELETE FROM " + table_name + " WHERE tome_id=? AND " + item_key + "=?",
                              [tome_id, old_item_data[item_key]])
             logger.info("Updating mod date of tome %s due to %s delete: %s" % (tome_id, item_name, item_key))
             self.update_document_modification_date_by_guid('tome', tome['guid'])
@@ -238,7 +236,7 @@ class MergeDB(basedb.BaseDB):
                 logger.info("%s information does not differ" % item_name)
 
         if need_update:
-            insert_item_fct(self.con, tome_id, new_item_data)
+            insert_item_fct(self.cur, tome_id, new_item_data)
             self.update_document_modification_date_by_guid('tome', tome['guid'])
 
     def update_local_file_exists(self, file_hash):
@@ -246,7 +244,7 @@ class MergeDB(basedb.BaseDB):
         if self.has_local_file(file_hash):
             local_file_exists = 1
 
-        self.con.execute("UPDATE files SET local_file_exists=? WHERE hash=?", [local_file_exists, file_hash])
+        self.cur.execute("UPDATE files SET local_file_exists=? WHERE hash=?", [local_file_exists, file_hash])
 
     def _replace_tome_file(self, tome_id, old_item_data, new_item_data):
         """ either old_tome_file or new_tome_file (or both) have to be given 
@@ -344,7 +342,7 @@ class MergeDB(basedb.BaseDB):
                                       old_item_data):
         author = self.get_author(author_id)
         if new_item_data is None:
-            self.con.execute("DELETE FROM " + table_name + " WHERE author_id=? AND " + item_key + "=?",
+            self.cur.execute("DELETE FROM " + table_name + " WHERE author_id=? AND " + item_key + "=?",
                              [author_id, old_item_data[item_key]])
             logger.info("Updating mod date of tome %s due to %s delete: %s" % (author_id, item_name, item_key))
             self.update_document_modification_date_by_guid('author', author['guid'])
@@ -357,10 +355,10 @@ class MergeDB(basedb.BaseDB):
             if not data_fields_equal(old_item_data, new_item_data):
                 need_update = True
             else:
-                logger.info("%s information does not differ" % item_name)
+                logger.info("{} information does not differ".format(item_name))
 
         if need_update:
-            insert_item_fct(self.con, author_id, new_item_data)
+            insert_item_fct(self.cur, author_id, new_item_data)
             self.update_document_modification_date_by_guid('author', author['guid'])
 
     def _replace_author_fusion_source(self, author_id, old_item_data, new_item_data):
@@ -588,19 +586,16 @@ class MergeDB(basedb.BaseDB):
         """ finds a author by name key """
         key = pydb.names.calc_author_name_key(author_name)
 
-        result = []
-        for row in self.cur.execute("SELECT * FROM authors WHERE name_key=? ORDER BY name", [key]):
-            fields = {key: row[key] for key in row.keys()}
-            result.append(fields)
+        return self.get_list_of_objects("SELECT * FROM authors WHERE name_key=? ORDER BY name", [key])
 
-        return result
 
     def document_modification_date_by_guid(self, doc_type, guid):
         table_name = doc_type + "_document_changes"
-        for row in self.cur.execute("SELECT last_modification_date FROM " + table_name + " WHERE document_guid=?",
-                                    [guid]):
-            return row["last_modification_date"]
-        return 0
+        result = self.get_single_value("SELECT last_modification_date FROM " + table_name + " WHERE document_guid=?",
+                                       [guid])
+        if result is None:
+            return 0
+        return result
 
     def update_document_modification_date_by_guid(self, doc_type, guid):
         table_name = doc_type + "_document_changes"
@@ -609,7 +604,7 @@ class MergeDB(basedb.BaseDB):
         if modification_date > current_mod_date:
             logger.debug(
                 "Updating mod date for %s %s from %d to %d" % (doc_type, guid, current_mod_date, modification_date))
-            self.con.execute(
+            self.cur.execute(
                 "INSERT OR REPLACE INTO " + table_name + " (document_guid, last_modification_date) VALUES (?,?)",
                 [guid, modification_date])
 
@@ -620,14 +615,14 @@ class MergeDB(basedb.BaseDB):
         max_mod_date = -1
 
         if max_modification_date:
-            rows = self.con.execute(
+            rows = self.cur.execute(
                 "SELECT document_guid, last_modification_date FROM " +
                 table_name + " "
                 "WHERE last_modification_date > ? "
                 "AND last_modification_date <= ? ORDER BY last_modification_date ASC LIMIT ?",
                 [min_modification_date, max_modification_date, max_count])
         else:
-            rows = self.con.execute(
+            rows = self.cur.execute(
                 "SELECT document_guid, last_modification_date FROM " +
                 table_name + " "
                 "WHERE last_modification_date > ? ORDER BY last_modification_date ASC LIMIT ?",
@@ -646,7 +641,7 @@ class MergeDB(basedb.BaseDB):
         """
         table_name = doc_type + "_document_changes"
 
-        row = self.con.execute("SELECT count(document_guid) FROM " + table_name + " "
+        row = self.cur.execute("SELECT count(document_guid) FROM " + table_name + " "
                                                                                   "WHERE last_modification_date > ? ",
                                [min_modification_date]).fetchone()
         return row[0]
@@ -656,7 +651,7 @@ class MergeDB(basedb.BaseDB):
         """
         table_name = doc_type + "_document_changes"
 
-        row = self.con.execute("SELECT count(document_guid) FROM " + table_name).fetchone()
+        row = self.cur.execute("SELECT count(document_guid) FROM " + table_name).fetchone()
         return row[0]
 
     def get_newest_modified_document_guids(self, doc_type, max_count, offset=0):
@@ -664,7 +659,7 @@ class MergeDB(basedb.BaseDB):
         table_name = doc_type + "_document_changes"
         result = []
 
-        rows = self.con.execute(
+        rows = self.cur.execute(
             "SELECT document_guid FROM " + table_name + " "
                                                         "ORDER BY last_modification_date DESC LIMIT ? OFFSET ?",
             [max_count, offset])
@@ -676,35 +671,31 @@ class MergeDB(basedb.BaseDB):
         return result
         
     def insert_local_file(self, local_file):
-        databases.insert_local_file(self.con, local_file)
+        databases.insert_local_file(self.cur, local_file)
         self.update_local_file_exists(local_file['hash'])
 
     def remove_local_file(self, file_hash):
-        self.con.execute("DELETE FROM local_files WHERE hash=?", [file_hash])
+        self.cur.execute("DELETE FROM local_files WHERE hash=?", [file_hash])
         self.update_local_file_exists(file_hash)
 
     def get_local_file(self, file_hash):
-        rows = self.con.execute("SELECT * FROM local_files WHERE hash=?", [file_hash])
-
-        for row in rows:
-            fields = {key: row[key] for key in row.keys()}
-            return fields
+        return self.get_single_object("SELECT * FROM local_files WHERE hash=?", [file_hash])
 
     def get_all_local_file_hashes(self):
         result = []
-        rows = self.con.execute("SELECT hash FROM local_files")
+        rows = self.cur.execute("SELECT hash FROM local_files")
 
         for row in rows:
             result.append(row[0])
         return result
 
     def has_local_file(self, file_hash):
-        rows = self.con.execute("SELECT COUNT(hash) FROM local_files WHERE hash=?", [file_hash])
+        rows = self.cur.execute("SELECT COUNT(hash) FROM local_files WHERE hash=?", [file_hash])
         row = rows.fetchone()
         return row[0] > 0
 
     def update_tomes_without_authors(self):
-        rows = self.con.execute("SELECT tomes.guid AS guid FROM tomes_authors "
+        rows = self.cur.execute("SELECT tomes.guid AS guid FROM tomes_authors "
                                 "LEFT JOIN authors ON tomes_authors.author_id = authors.id "
                                 "INNER JOIN tomes ON tomes_authors.tome_id=tomes.id "
                                 "WHERE authors.id IS null")

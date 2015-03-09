@@ -141,7 +141,6 @@ class MainDB:
         """ finds a author by name key or pseudonym name key"""
         return self.merge_db.find_authors_with_same_name_key(author_name)
 
-
     def get_tome_file(self, tome_id, file_hash):
         """ returns a tome file link entry or None if not found"""
         return self.merge_db.get_tome_file(tome_id, file_hash)
@@ -301,7 +300,6 @@ class MainDB:
         }
 
         return result
-
 
     def get_author(self, author_id):
         """ returns a author from the merge table identified by id """
@@ -498,10 +496,7 @@ class MainDB:
         local_db_tome_id = self._merge_db_tome_id_to_local_db_tome_id(tome_id)
         local_db_author_id = self._merge_db_author_id_to_local_db_author_id(author_id)
 
-        cur = self.local_db.con.cursor()
-        cur.execute("INSERT OR IGNORE INTO tomes_authors "
-                    "(tome_id, author_id, author_order, fidelity, last_modification_date) VALUES(?,?,?,?,?)",
-                    (local_db_tome_id, local_db_author_id, author_order, fidelity, time.time()))
+        self.local_db.add_tome_author_link(local_db_tome_id, local_db_author_id, author_order, fidelity)
 
         merge_db_tome = self.merge_db.get_tome(tome_id)
         tome_guid = merge_db_tome['guid']

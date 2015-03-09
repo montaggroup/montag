@@ -81,7 +81,7 @@ class FileServer:
         if strip_file:
             try:
                 new_hash, new_path = self._execute_strip_file(source_path, extension, file_hash,
-                                                             only_allowed_hash, move_file)
+                                                              only_allowed_hash, move_file)
                 if new_hash is not None:
                     move_file = True  # remove the temp file later
                     source_path = new_path
@@ -131,14 +131,13 @@ class FileServer:
 
         if new_hash == file_hash:
             logger.info("File with hash {} ({}) was stripped, but did not change checksum".
-                           format(file_hash, file_extension_without_dot))
+                        format(file_hash, file_extension_without_dot))
             os.unlink(new_path)
             return
 
         self.file_store.add_file(new_path, new_hash, file_extension_without_dot, True)
         self.db.add_local_file_exists(new_hash, file_extension_without_dot)
         os.unlink(path)
-
 
     def _execute_strip_file(self, source_path, extension, file_hash, only_allowed_hash, move_file):
         new_filename, file_hash_after_stripping = \
