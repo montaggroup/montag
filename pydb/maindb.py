@@ -181,7 +181,10 @@ class MainDB:
             a tome document may be empty (only guid, no title key) if the fidelity is below the relevance threshold
         """
         result = self.merge_db.get_tome_document_by_guid(tome_guid, ignore_fidelity_filter,
-                                                       include_author_detail=include_author_detail, keep_id=keep_id)
+                                                         include_author_detail=include_author_detail,
+                                                         keep_id=keep_id)
+        if result is None:
+            return result
 
         if include_local_file_info:
             for file_info in result['files']:
