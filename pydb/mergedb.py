@@ -18,11 +18,11 @@ class MergeDB(basedb.BaseDB):
         super(MergeDB, self).__init__(db_file_path, schema_dir, init_sql_file="db-schema-merge.sql",
                                       enable_db_sync=enable_db_sync)
 
+        self.recalculation_needed = False
         self.local_db = local_db
         self.merge_sources = set()
         self._update_schema_if_necessary()
         logger.info("Merge DB initialized")
-        self.recalculation_needed = False
 
     def _update_schema_if_necessary(self):
         if self._get_schema_version() == 0:

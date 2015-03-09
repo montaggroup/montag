@@ -64,7 +64,7 @@ class MainDB:
         self.build_foreign_db = build_foreign_db
 
     def _add_foreign_db(self, friend_id):
-        logger.info("Loading foreign db for friend %d" % friend_id)
+        logger.info("Loading foreign db for friend {}".format(friend_id))
 
         db = self.build_foreign_db(friend_id)
         self.foreign_dbs[friend_id] = db
