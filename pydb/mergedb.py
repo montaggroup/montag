@@ -22,6 +22,7 @@ class MergeDB(basedb.BaseDB):
         self.merge_sources = set()
         self._update_schema_if_necessary()
         logger.info("Merge DB initialized")
+        self.recalculation_needed = False
 
     def _update_schema_if_necessary(self):
         if self._get_schema_version() == 0:
@@ -39,9 +40,14 @@ class MergeDB(basedb.BaseDB):
         if self._get_schema_version() == 2:
             logger.info("Migrating MergeDB to V2, please wait")
             self._execute_sql_file('db-schema-update-merge_db_3.sql')
-            _recalculate_merge_db_entries_for_all_tomes_with_local_db_entries(self, self.local_db)
+            self.recalculation_needed = 'local'
             logger.info("Migration complete")
             self._update_schema_if_necessary()
+
+    def recalculate_if_neccessary(self):
+        if self.recalculation_needed == 'local':
+            logger.info("Recalculating entries for which we have local ones")
+            _recalculate_merge_db_entries_for_all_tomes_with_local_db_entries(self, self.local_db)
 
     def _update_all_author_name_keys(self):
         with sqlitedb.Transaction(self):

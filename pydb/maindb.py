@@ -46,6 +46,8 @@ def build(db_dir, schema_path, enable_db_sync=True):
     db = MainDB(local_db, friends_db, merge_db, build_foreign_db, index_server)
     db.load_foreign_dbs()
 
+    merge_db.recalculate_if_neccessary()
+
     logger.info("DBs initialized")
     return db
 
