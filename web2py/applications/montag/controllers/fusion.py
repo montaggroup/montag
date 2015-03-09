@@ -58,7 +58,7 @@ def _fetch_tomes_by_author(author_id):
     tomelist = []
     for tome in tomes:
         if tome['author_link_fidelity'] >= pydb.network_params.Min_Relevant_Fidelity:
-            tome = pdb.get_tome_document_with_local_overlay_by_guid(tome['guid'], include_local_file_info = True, include_author_detail=True)
+            tome = pdb.get_tome_document_by_guid(tome['guid'], include_local_file_info = True, include_author_detail=True)
             tomelist.append(tome)
     return tomelist
 
@@ -111,7 +111,7 @@ def _select_tome_merge_partner_form(first_tome):
 @auth.requires_login()
 def select_tome_merge_partner():
     first_tome_guid = request.args[0]
-    first_tome = pdb.get_tome_document_with_local_overlay_by_guid(first_tome_guid, include_local_file_info=False, include_author_detail=True)
+    first_tome = pdb.get_tome_document_by_guid(first_tome_guid, include_local_file_info=False, include_author_detail=True)
     if first_tome is None:
         session.flash = "Tome not found"
         redirect(URL('default', 'tomesearch'))
@@ -147,10 +147,10 @@ def select_tome_merge_partner():
 @auth.requires_login()
 def confirm_merge_tomes():
     first_tome_guid = request.args[0]
-    first_tome = pdb.get_tome_document_with_local_overlay_by_guid(first_tome_guid, include_local_file_info=True, include_author_detail=True)
+    first_tome = pdb.get_tome_document_by_guid(first_tome_guid, include_local_file_info=True, include_author_detail=True)
 
     second_tome_guid = request.args[1]
-    second_tome = pdb.get_tome_document_with_local_overlay_by_guid(second_tome_guid, include_local_file_info=True, include_author_detail=True)
+    second_tome = pdb.get_tome_document_by_guid(second_tome_guid, include_local_file_info=True, include_author_detail=True)
     
     if second_tome is None:
         session.flash = "Tome not found"

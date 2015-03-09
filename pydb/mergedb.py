@@ -869,7 +869,7 @@ def item_with_best_opinion_bipolar(bipolar_group):
     effective_fidelity = max_fidelity + min_fidelity
     result_item['fidelity'] = effective_fidelity
 
-    # now overlay
+    # now overlay local
     if bipolar_group.local_opinions:
         if len(bipolar_group.local_opinions) > 0:
             logger.error("Local group has more than 1 entry: {}".format(bipolar_group))

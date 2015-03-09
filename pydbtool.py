@@ -237,7 +237,7 @@ def do_edit_tome(args, db):
     if args.load_local:
         doc = db().get_local_tome_document_by_guid(args.guid, args.ignore_fidelity_filter)
     else:
-        doc = db().get_tome_document_with_local_overlay_by_guid(args.guid, args.ignore_fidelity_filter)
+        doc = db().get_tome_document_by_guid(args.guid, args.ignore_fidelity_filter)
 
     edited_doc = let_user_edit_document(doc, detect_unchanged=not args.load_local)
     if not edited_doc is None:

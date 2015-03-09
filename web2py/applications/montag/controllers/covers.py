@@ -16,7 +16,7 @@ def edit_covers():
     tome = pdb.get_tome(tome_id)
     tome_guid = tome['guid']
 
-    tome = pdb.get_tome_document_with_local_overlay_by_guid(tome_guid, include_local_file_info=True,
+    tome = pdb.get_tome_document_by_guid(tome_guid, include_local_file_info=True,
                                                            include_author_detail=True)
 
     title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
