@@ -161,7 +161,7 @@ def timeline():
     response.title = "Timeline - Montag"
     tomelist = []
     for tome_index, tome_guid in enumerate(changed_tome_guids):
-        tome = pdb.get_tome_document_by_guid(tome_guid, include_local_file_info=True,
+        tome = pdb.get_tome_document_by_guid(tome_guid, keep_id=True, include_local_file_info=True,
                                              include_author_detail=True)
         if 'title' in tome:
             tome['index'] = tome_index+1
@@ -185,7 +185,7 @@ def random_tomes():
     tomelist = []
     for tome_index, tome_info in enumerate(tomes):
         tome = pdb.get_tome_document_by_guid(tome_info['guid'], include_local_file_info=True,
-                                             include_author_detail=True)
+                                             include_author_detail=True, keep_id=True)
         tome['index'] = tome_index+1
         tomelist.append(tome)
 
@@ -218,7 +218,8 @@ def view_author():
     tomelist = []
     for tome in tomes:
         if tome['author_link_fidelity'] >= pydb.network_params.Min_Relevant_Fidelity:
-            tome = pdb.get_tome_document_by_guid(tome['guid'], include_local_file_info=True, include_author_detail=True)
+            tome = pdb.get_tome_document_by_guid(tome['guid'], keep_id=True,
+                                                 include_local_file_info=True, include_author_detail=True)
             tomelist.append(tome)
 
     return {
@@ -231,7 +232,8 @@ def view_author():
 def view_tome():
     tome_guid = request.args[0]
     
-    tome = pdb.get_tome_document_by_guid(tome_guid, include_local_file_info=True, include_author_detail=True)
+    tome = pdb.get_tome_document_by_guid(tome_guid, keep_id=True,
+                                         include_local_file_info=True, include_author_detail=True)
     if not 'title' in tome:
         tome_guid = pdb.get_tome_fusion_target_guid(tome_guid)
         if tome_guid:
@@ -249,7 +251,8 @@ def view_tome():
 def view_tome_debug_info():
     tome_guid = request.args[0]
     
-    tome = pdb.get_tome_document_by_guid(tome_guid, include_local_file_info=True, include_author_detail=True)
+    tome = pdb.get_tome_document_by_guid(tome_guid, keep_id=True,
+                                         include_local_file_info=True, include_author_detail=True)
     debug_info = pdb.get_debug_info_for_tome_by_guid(tome_guid)
     
     friends = debug_info['friends']
@@ -379,7 +382,8 @@ def _tome_synopses_form(synopsis):
 @auth.requires_login()
 def add_synopsis_to_tome():
     tome_guid = request.args[0]
-    tome = pdb.get_tome_document_by_guid(tome_guid, include_local_file_info=True, include_author_detail=True)
+    tome = pdb.get_tome_document_by_guid(tome_guid, keep_id=True,
+                                         include_local_file_info=True, include_author_detail=True)
     
     new_syn = {
                'guid' : pdb.generate_guid(),
@@ -394,7 +398,8 @@ def add_synopsis_to_tome():
 @auth.requires_login()
 def edit_tome():
     tome_guid = request.args[0]
-    tome_doc = pdb.get_tome_document_by_guid(tome_guid, include_local_file_info=True, include_author_detail=True)
+    tome_doc = pdb.get_tome_document_by_guid(tome_guid, keep_id=True,
+                                             include_local_file_info=True, include_author_detail=True)
     if tome_doc is None:
         session.flash = "No such tome"
         redirect(URL('tomesearch'))
@@ -489,9 +494,9 @@ def edit_tome_file_link():
     field_names=['file_extension','fidelity']
 
     if form.process(keepvalues=True).accepted:
-        doc=pdb.get_tome_document_by_guid(tome['guid'])
-        other_files=filter( lambda x: x['hash'] != file_hash, doc['files'])
-        tome_file_doc=filter( lambda x: x['hash'] == file_hash, doc['files'])[0]
+        doc = pdb.get_tome_document_by_guid(tome['guid'])
+        other_files = filter( lambda x: x['hash'] != file_hash, doc['files'])
+        tome_file_doc = filter( lambda x: x['hash'] == file_hash, doc['files'])[0]
 
         for f in field_names:
             tome_file_doc[f] = read_form_field(form, f)
