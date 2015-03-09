@@ -19,3 +19,12 @@ def is_relevant(entry):
 
 def relevant_items(iterable):
     return (i for i in iterable if is_relevant(i))
+
+
+def link_is_relevant(entry):
+    return entry['link_fidelity'] >= Min_Relevant_Fidelity
+
+
+def relevant_links(iterable):
+    return (i for i in iterable if link_is_relevant(i))
+
