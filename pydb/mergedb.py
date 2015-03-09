@@ -38,7 +38,7 @@ class MergeDB(basedb.BaseDB):
             logger.info("Migration complete")
             self._update_schema_if_necessary()
         if self._get_schema_version() == 2:
-            logger.info("Migrating MergeDB to V2, please wait")
+            logger.info("Migrating MergeDB to V3, please wait")
             self._execute_sql_file('db-schema-update-merge_db_3.sql')
             self.recalculation_needed = 'local'
             logger.info("Migration complete")
