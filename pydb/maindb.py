@@ -32,7 +32,7 @@ def build(db_dir, schema_path, enable_db_sync=True):
         os.makedirs(foreign_db_dir)
 
     local_db = LocalDB(db_path(db_dir, "local"), schema_path, enable_db_sync)
-    merge_db = MergeDB(db_path(db_dir, "merge"), schema_path, enable_db_sync=False)
+    merge_db = MergeDB(db_path(db_dir, "merge"), schema_path, local_db=local_db, enable_db_sync=False)
     merge_db.add_source(local_db)
     friends_db = FriendsDB(db_path(db_dir, "friends"), schema_path)
 
@@ -196,34 +196,6 @@ class MainDB:
         return self.local_db.get_tome_document_by_guid(tome_guid, ignore_fidelity_filter,
                                                        include_author_detail=include_author_detail)
 
-    def get_tome_document_with_local_overlay_by_guid(self, tome_guid,
-                                                     include_local_file_info=False,
-                                                     include_author_detail=False):
-        """ returns the full tome document (including files, tags..) for a given tome identified by id
-            a tome document may be empty (only guid, no title key) if the fidelity is below the relevance threshold.
-            After getting the full tome document, entries which have a local entry will be replaced if their fidelity
-            is of larger magnitude.
-            The result will also contain the tome id
-        """
-
-        """ note: we need to ignore the fidelity filters here, as the local tome (that might have a
-        sigificant fidelity value) will otherwise not be included in the result """
-        merge_tome = self.get_tome_document_by_guid(tome_guid, ignore_fidelity_filter=True,
-                                                    include_author_detail=include_author_detail, keep_id=True)
-        if 'title' not in merge_tome:
-            return merge_tome                                                    
-                                                    
-        local_tome = self.get_local_tome_document_by_guid(tome_guid, ignore_fidelity_filter=False,
-                                                          include_author_detail=include_author_detail)
-
-        result = documents.overlay_document(merge_tome, local_tome)
-
-        if include_local_file_info:
-            for file_info in result['files']:
-                self._add_local_file_info(file_info)
-        
-        return result
-
     def get_latest_tome_related_change(self, tome_guid):
         """ returns the id of the friend (or 0 for "local"), the date of the latest change
             affecting the merge db entry of the tome.
@@ -345,19 +317,6 @@ class MainDB:
             an author document may be empty (only guid, no name key) if the fidelity is below the relevance threshold
         """
         return self.local_db.get_author_document_by_guid(author_guid, ignore_fidelity_filter)
-
-    def get_author_document_with_local_overlay_by_guid(self, author_guid, ignore_fidelity_filter=False):
-        """ returns the full author document for a given tome identified by id
-            an author document may be empty (only guid, no name key) if the fidelity is below the relevance threshold.
-            After getting the full author document, entries which have a local entry will be replaced if their fidelity
-            is of larger magnitude
-        """
-        merge_author = self.get_author_document_by_guid(author_guid, ignore_fidelity_filter, keep_id=True)
-        local_author = self.get_local_author_document_by_guid(author_guid, ignore_fidelity_filter)
-        
-        result = documents.overlay_document(merge_author, local_author)
-        
-        return result
 
     def document_modification_date_by_guid(self, doc_type, guid):
         return self.merge_db.document_modification_date_by_guid(doc_type, guid)

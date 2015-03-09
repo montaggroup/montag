@@ -43,7 +43,8 @@ class test_calculate_items_difference(unittest.TestCase):
 
 class test_calculate_delete_all(unittest.TestCase):
     def setUp(self):
-        self.merge_db = mergedb.MergeDB(":memory:", pydb.unittests.guess_schema_path(), enable_db_sync=False)
+        self.merge_db = mergedb.MergeDB(":memory:", pydb.unittests.guess_schema_path(),
+                                        local_db=None, enable_db_sync=False)
 
     def test_delete_all_tomes_table(self):
         m = self.merge_db
@@ -83,7 +84,8 @@ def _insert_tome_with_file(merge_db, tome_fidelity, file_fidelity, tome_id=1, to
 
 class test_get_high_fidelity_tome_file_hashes_without_local_file(unittest.TestCase):
     def setUp(self):
-        self.merge_db = mergedb.MergeDB(":memory:", pydb.unittests.guess_schema_path(), enable_db_sync=False)
+        self.merge_db = mergedb.MergeDB(":memory:", pydb.unittests.guess_schema_path(),
+                                        local_db=None, enable_db_sync=False)
 
     def test_empty(self):
         hashes = self.merge_db.get_high_fidelity_tome_file_hashes_without_local_file(
@@ -158,7 +160,8 @@ class test_get_high_fidelity_tome_file_hashes_without_local_file(unittest.TestCa
 
 class test_get_tome_document(unittest.TestCase):
     def setUp(self):
-        self.merge_db = mergedb.MergeDB(":memory:", pydb.unittests.guess_schema_path(), enable_db_sync=False)
+        self.merge_db = mergedb.MergeDB(":memory:", pydb.unittests.guess_schema_path(),
+                                        local_db=None, enable_db_sync=False)
 
     def test_get_tome_document_by_guid_should_not_include_localFileExists(self):
         _insert_tome_with_file(self.merge_db, tome_fidelity=50, file_fidelity=50, tome_guid='guiiid')
@@ -207,18 +210,18 @@ class test_merge_items_bipolar(unittest.TestCase):
         self.item_b = {'fidelity': 40, 'text': 'b'}
 
     def test_having_only_one_item_returns_that(self):
-        result = mergedb.merge_items_bipolar([self.item_a], lambda x: x['text'])
+        result = mergedb.merge_items_bipolar([], [self.item_a], lambda x: x['text'])
         self.assertEqual(len(result), 1)
         self.assertEqual(result['a']['fidelity'], 30)
 
     def test_having_two_different_items_returns_those(self):
-        result = mergedb.merge_items_bipolar([self.item_a, self.item_b], lambda x: x['text'])
+        result = mergedb.merge_items_bipolar([], [self.item_a, self.item_b], lambda x: x['text'])
         self.assertEqual(len(result), 2)
         self.assertEqual(result['a']['fidelity'], 30)
         self.assertEqual(result['b']['fidelity'], 40)
 
     def test_having_two_diffent_opinions_negative_and_positive_and_effective_value_will_be_calculated(self):
-        result = mergedb.merge_items_bipolar([self.item_a, self.item_a_neg], lambda x: x['text'])
+        result = mergedb.merge_items_bipolar([], [self.item_a, self.item_a_neg], lambda x: x['text'])
         self.assertEqual(len(result), 1)
         self.assertEqual(result['a']['fidelity'], 25)
 

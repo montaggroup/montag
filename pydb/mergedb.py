@@ -13,9 +13,11 @@ logger = logging.getLogger('mergedb')
 
 
 class MergeDB(pydb.basedb.BaseDB):
-    def __init__(self, db_file_path, schema_dir, enable_db_sync):
+    def __init__(self, db_file_path, schema_dir, local_db, enable_db_sync):
         super(MergeDB, self).__init__(db_file_path, schema_dir, init_sql_file="db-schema-merge.sql",
                                       enable_db_sync=enable_db_sync)
+
+        self.local_db = local_db
         self.merge_sources = set()
         self._update_schema_if_necessary()
         logger.info("Merge DB initialized")
@@ -34,6 +36,8 @@ class MergeDB(pydb.basedb.BaseDB):
             logger.info("Migration complete")
             self._update_schema_if_necessary()
 
+        # @fixme: trigger recalc of merge db entries where local db entries exist
+
     def _update_all_author_name_keys(self):
         with sqlitedb.Transaction(self):
             authors = self.get_all_authors()
@@ -48,6 +52,9 @@ class MergeDB(pydb.basedb.BaseDB):
         for table in (databases.data_tables + databases.local_tables):
             self.con.execute("DELETE FROM %s" % table)
             # print "Deleting from "+table
+
+    def _unipolar_opinion_sources(self):
+        return self.merge_sources | {self.local_db}
 
     def _replace_tome(self, guid, new_tome_fields):
 
@@ -131,7 +138,6 @@ class MergeDB(pydb.basedb.BaseDB):
     def _request_author_related_item_update(self, author_guid, item_name, item_key, get_item_by_guid_fct,
                                             replace_item_fct):
         logger.info("%s update requested for author guid %s" % (item_name, author_guid))
-        item_opinions = []
 
         author = self.get_author_by_guid(author_guid)
         if not author:
@@ -142,13 +148,17 @@ class MergeDB(pydb.basedb.BaseDB):
         all_guids_for_this_author += self.get_all_relevant_author_fusion_source_guids(author_id)
         # print("All guids for tomes {}: {}".format(author_guid, all_guids_for_this_author))
 
+        foreign_opinions = []
+        local_opinions = []
+
         for author_data_guid in all_guids_for_this_author:
             for source in self.merge_sources:
-                item_opinions += get_item_by_guid_fct(source, author_data_guid)
+                foreign_opinions += get_item_by_guid_fct(source, author_data_guid)
+            local_opinions += get_item_by_guid_fct(self.local_db, author_data_guid)
 
-        logger.debug("%s Opinions: %s" % (item_name, str(item_opinions)))
+        logger.debug("%s Opinions: %s" % (item_name, str(foreign_opinions)))
         # merge bipolar, there might be opinions opposing the item<->tome link
-        new_items_dict = merge_items_bipolar(item_opinions, group_fun=lambda x: x[item_key])
+        new_items_dict = merge_items_bipolar(local_opinions, foreign_opinions, group_fun=lambda x: x[item_key])
 
         old_items = get_item_by_guid_fct(self, author_guid)
         old_items_dict = {x[item_key]: x for x in old_items}
@@ -300,7 +310,7 @@ class MergeDB(pydb.basedb.BaseDB):
 
             return
 
-        author_data = [source.get_author_by_guid(guid) for source in self.merge_sources]
+        author_data = [source.get_author_by_guid(guid) for source in self._unipolar_opinion_sources()]
         # authors: unipolar, as there is only one possible opinion per (author, peer)
         best_author = item_with_best_opinion_unipolar(author_data)
 
@@ -408,7 +418,7 @@ class MergeDB(pydb.basedb.BaseDB):
 
         # do normal tome handling
 
-        tome_data = [source.get_tome_by_guid(guid) for source in self.merge_sources]
+        tome_data = [source.get_tome_by_guid(guid) for source in self._unipolar_opinion_sources()]
         # print "Tome data list from all sources for tome %s:\n%s" % (guid, tome_data)
         # tomes: unipolar, as there is only one possible opinion per (tome, peer)
         best_tome = item_with_best_opinion_unipolar(tome_data)
@@ -466,7 +476,6 @@ class MergeDB(pydb.basedb.BaseDB):
 
     def _request_tome_related_item_update(self, tome_guid, item_name, item_key, get_item_by_guid_fct, replace_item_fct):
         logger.info("%s update requested for guid %s" % (item_name, tome_guid))
-        item_opinions = []
 
         tome = self.get_tome_by_guid(tome_guid)
         if not tome:
@@ -477,13 +486,17 @@ class MergeDB(pydb.basedb.BaseDB):
         all_guids_for_this_tome += self.get_all_relevant_tome_fusion_source_guids(tome_id)
         # print("All guids for tomes {}: {}".format(tome_guid, all_guids_for_this_tome))
 
+        foreign_opinions = []
+        local_opinions = []
+
         for tome_data_guid in all_guids_for_this_tome:
             for source in self.merge_sources:
-                item_opinions += get_item_by_guid_fct(source, tome_data_guid)
+                foreign_opinions += get_item_by_guid_fct(source, tome_data_guid)
+            local_opinions += get_item_by_guid_fct(self.local_db, tome_data_guid)
 
-        logger.debug("%s Opinions: %s" % (item_name, str(item_opinions)))
+        logger.debug("%s Opinions: %s" % (item_name, str(foreign_opinions)))
         # merge bipolar, there might be opinions opposing the item<->tome link
-        new_items_dict = merge_items_bipolar(item_opinions, group_fun=lambda x: x[item_key])
+        new_items_dict = merge_items_bipolar(local_opinions, foreign_opinions, group_fun=lambda x: x[item_key])
 
         old_items = get_item_by_guid_fct(self, tome_guid)
         old_items_dict = {x[item_key]: x for x in old_items}
@@ -806,11 +819,12 @@ class MergeDB(pydb.basedb.BaseDB):
 
 
 
-def merge_items_bipolar(items, group_fun):
+def merge_items_bipolar(local_opinions, foreign_opinions, group_fun):
     """ returns the merged version of items from multiple sources, grouped by group_fun.
     The result is a dictionary group_id => best item from group """
 
     groups = defaultdict(list)
+    items = local_opinions + foreign_opinions
     for item in items:
         logger.debug("Calling group on {}".format(str(item)))
         group_id = group_fun(item)
@@ -818,6 +832,7 @@ def merge_items_bipolar(items, group_fun):
 
     group_winners = dict()
     for group_id, members in groups.iteritems():
+        # @fixme: consider the locals special here
         group_winners[group_id] = item_with_best_opinion_bipolar(members)
 
     return group_winners
