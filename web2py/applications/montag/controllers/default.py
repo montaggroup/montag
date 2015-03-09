@@ -283,7 +283,7 @@ def _author_edit_form(author, required_fidelity):
 @auth.requires_login()
 def edit_author():
     author_guid = request.args[0]
-    author_doc = pdb.get_author_document_by_guid(author_guid)
+    author_doc = pdb.get_author_document_by_guid(author_guid, keep_id=True)
     if 'name' not in author_doc:
         session.flash = "No such author"
         redirect(URL('tomesearch'))
@@ -300,7 +300,7 @@ def edit_author():
             author_doc[f] = read_form_field(form, f)
 
         pdb.load_own_author_document(author_doc)
-        author_doc = pdb.get_author_document_by_guid(author_guid)
+        author_doc = pdb.get_author_document_by_guid(author_guid, keep_id=True)
         response.flash = 'Stored new values'
     elif form.errors:
         response.flash = 'form has errors'
