@@ -412,7 +412,7 @@ def do_fix_databases(args, db):
     db().fix_databases()
 
 def do_recalculate_tome_merge_db_entry(args, db):
-    db().recalculate_tome_merge_entry(args.tome_guid)
+    db().recalculate_tome_merge_db_entry(args.tome_guid)
 
 def do_rebuild_merge_db(args, db):
     print "Do not forget to rebuild the search index after this command completed."
