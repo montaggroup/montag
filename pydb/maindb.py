@@ -175,19 +175,19 @@ class MainDB:
         """ returns a tome from the merge table identified by guid """
         return self.merge_db.get_tome_by_guid(tome_guid)
 
-    def get_tome_document(self, tome_id, ignore_fidelity_filter=False):
-        tome = self.get_tome(tome_id)
-        if tome is None:
-            return None
-        return self.get_tome_document_by_guid(tome['guid'], ignore_fidelity_filter)
-
     def get_tome_document_by_guid(self, tome_guid, ignore_fidelity_filter=False,
-                                  include_author_detail=False, keep_id=False):
+                                  include_author_detail=False, keep_id=False, include_local_file_info=False):
         """ returns the full tome document (including files, tags..) for a given tome identified by id
             a tome document may be empty (only guid, no title key) if the fidelity is below the relevance threshold
         """
-        return self.merge_db.get_tome_document_by_guid(tome_guid, ignore_fidelity_filter,
+        result = self.merge_db.get_tome_document_by_guid(tome_guid, ignore_fidelity_filter,
                                                        include_author_detail=include_author_detail, keep_id=keep_id)
+
+        if include_local_file_info:
+            for file_info in result['files']:
+                self._add_local_file_info(file_info)
+
+        return result
 
     def get_local_tome_document_by_guid(self, tome_guid, ignore_fidelity_filter=False, include_author_detail=False):
         """ returns the local tome document (including files, tags..) for a given tome identified by id
