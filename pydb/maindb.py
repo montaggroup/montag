@@ -183,7 +183,7 @@ class MainDB:
         result = self.merge_db.get_tome_document_by_guid(tome_guid, ignore_fidelity_filter,
                                                          include_author_detail=include_author_detail,
                                                          keep_id=keep_id)
-        if result is None:
+        if not 'title' in result:  # document was deleted
             return result
 
         if include_local_file_info:
