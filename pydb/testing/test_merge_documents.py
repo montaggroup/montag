@@ -2,7 +2,7 @@ import unittest
 import copy
 
 import logging
-logger = logging.getLogger('test_overlay_documents')
+logger = logging.getLogger('test_merge_of_documents')
 
 import os
 import helpers
