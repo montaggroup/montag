@@ -190,17 +190,30 @@ class test_item_with_best_opinion_bipolar(unittest.TestCase):
         self.item_b = {'fidelity': 40, 'text': 'a'}
         self.item_c = {'fidelity': -10, 'text': 'a'}
 
+        self.result = None
+
+
+    def given(self, item_group):
+        self.result = mergedb.item_with_best_opinion_bipolar(item_group)
+
+    def expect(self, fidelity):
+        self.assertEqual(self.result['fidelity'], fidelity)
+
     def test_having_only_one_item_returns_that(self):
-        result = mergedb.item_with_best_opinion_bipolar([self.item_a])
-        self.assertEqual(result['fidelity'], 30)
+        self.given(mergedb.BipolarGroup(local_opinions=[], all_opinions=[self.item_a]))
+        self.expect(30)
 
     def test_having_two_items_with_positive_fidelity_it_will_return_the_max(self):
-        result = mergedb.item_with_best_opinion_bipolar([self.item_a, self.item_b])
-        self.assertEqual(result['fidelity'], 40)
+        self.given(mergedb.BipolarGroup(local_opinions=[], all_opinions=[self.item_a, self.item_b]))
+        self.expect(40)
 
     def test_having_two_items_with_positive_and_negative_fidelity_it_will_return_the_difference_as_effective_fidelity(self):
-        result = mergedb.item_with_best_opinion_bipolar([self.item_a, self.item_c])
-        self.assertEqual(result['fidelity'], 20)
+        self.given(mergedb.BipolarGroup(local_opinions=[], all_opinions=[self.item_a, self.item_c]))
+        self.expect(20)
+
+    def test_local_fidelity_overides_merge_if_local_negative_and_merge_positive(self):
+        self.given(mergedb.BipolarGroup(local_opinions=[self.item_a], all_opinions=[self.item_a, self.item_c]))
+        self.expect(30)
 
 
 class test_merge_items_bipolar(unittest.TestCase):

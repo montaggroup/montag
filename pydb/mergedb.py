@@ -2,7 +2,7 @@ from pydb.basedb import data_fields_equal
 import pydb.names
 import network_params
 import time
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 import logging
 import databases
 import pydb
@@ -818,42 +818,68 @@ class MergeDB(pydb.basedb.BaseDB):
         return problems
 
 
+BipolarGroup = namedtuple('BipolarGroup', ['local_opinions', 'all_opinions'])
+
 
 def merge_items_bipolar(local_opinions, foreign_opinions, group_fun):
     """ returns the merged version of items from multiple sources, grouped by group_fun.
     The result is a dictionary group_id => best item from group """
 
-    groups = defaultdict(list)
-    items = local_opinions + foreign_opinions
-    for item in items:
+    def mkgroup():
+        return BipolarGroup([], [])
+
+    groups = defaultdict(mkgroup)
+    for item in local_opinions:
+        if item is None:
+            continue
         logger.debug("Calling group on {}".format(str(item)))
         group_id = group_fun(item)
-        groups[group_id].append(item)
+        groups[group_id].local_opinions.append(item)
+
+    for item in foreign_opinions + local_opinions:
+        if item is None:
+            continue
+        logger.debug("Calling group on {}".format(str(item)))
+        group_id = group_fun(item)
+        groups[group_id].all_opinions.append(item)
+
 
     group_winners = dict()
-    for group_id, members in groups.iteritems():
-        # @fixme: consider the locals special here
-        group_winners[group_id] = item_with_best_opinion_bipolar(members)
+    for group_id, group in groups.iteritems():
+        group_winners[group_id] = item_with_best_opinion_bipolar(group)
 
     return group_winners
 
 
-def item_with_best_opinion_bipolar(items_of_one_group_with_same_meaning):
+def item_with_best_opinion_bipolar(bipolar_group):
     """ returns the best item of a group of items from multiple sources.
     all items here need to have the same 'message' in them """
-    filtered_items = filter(lambda x: x, items_of_one_group_with_same_meaning)
-    if not filtered_items:
+
+    # remove none entries
+    if not bipolar_group.all_opinions:
         return None
 
-    min_item = min(filtered_items, key=lambda x: x['fidelity'])
+    min_item = min(bipolar_group.all_opinions, key=lambda x: x['fidelity'])
     min_fidelity = min(min_item['fidelity'], 0)
 
-    max_item = max(filtered_items, key=lambda x: x['fidelity'])
+    max_item = max(bipolar_group.all_opinions, key=lambda x: x['fidelity'])
     max_fidelity = max(max_item['fidelity'], 0)
 
     result_item = copy.deepcopy(max_item)
     effective_fidelity = max_fidelity + min_fidelity
     result_item['fidelity'] = effective_fidelity
+
+    # now overlay
+    if bipolar_group.local_opinions:
+        if len(bipolar_group.local_opinions) > 0:
+            logger.error("Local group has more than 1 entry: {}".format(bipolar_group))
+
+        local_item = bipolar_group.local_opinions[0]
+        local_fidelity = local_item['fidelity']
+
+        merge_fidelity = result_item['fidelity']
+        if abs(local_fidelity) > abs(merge_fidelity) or local_fidelity * merge_fidelity < 0:
+            result_item['fidelity'] = local_fidelity
 
     return result_item
 

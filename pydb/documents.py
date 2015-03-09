@@ -105,32 +105,6 @@ def _wrap_language(lan):
 
     return lan
 
-
-
-
-def _overlay_item(local_items_by_key, merge_item, item_id):
-    # todo move to merge db
-    if item_id not in local_items_by_key:
-        return merge_item
-
-    local_item = local_items_by_key[item_id]
-    local_fidelity = local_item['fidelity']
-    merge_fidelity = merge_item['fidelity']
-    if abs(local_fidelity) > abs(merge_fidelity) or local_fidelity * merge_fidelity < 0:
-        new_item = copy.deepcopy(local_item)
-        if 'id' in merge_item:
-            new_item['id'] = merge_item['id']
-        if 'detail' in merge_item:
-            detail = merge_item['detail']
-            if 'id' in detail:
-                new_item['detail']['id'] = detail['id']
-
-        result_item = new_item
-    else:
-        result_item = merge_item
-
-    return result_item
-
 def document_export_filter(items, ignore_fidelity_filter):
     return [_without_ids_and_mod_date(item) for item in items
             if abs(item['fidelity']) >= network_params.Min_Relevant_Fidelity or ignore_fidelity_filter]
