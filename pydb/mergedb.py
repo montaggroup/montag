@@ -36,8 +36,12 @@ class MergeDB(basedb.BaseDB):
             self._update_all_author_name_keys()
             logger.info("Migration complete")
             self._update_schema_if_necessary()
-
-        # @fixme: trigger recalc of merge db entries where local db entries exist
+        if self._get_schema_version() == 2:
+            logger.info("Migrating MergeDB to V2, please wait")
+            self._execute_sql_file('db-schema-update-merge_db_3.sql')
+            _recalculate_merge_db_entries_for_all_tomes_with_local_db_entries(self, self.local_db)
+            logger.info("Migration complete")
+            self._update_schema_if_necessary()
 
     def _update_all_author_name_keys(self):
         with sqlitedb.Transaction(self):
