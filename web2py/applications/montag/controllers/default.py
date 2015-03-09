@@ -312,7 +312,7 @@ def tomesearch():
     retval = {}
     form = build_search_form()
 
-    if form.validate(formname = 'search', session = None, request_vars=request.vars, message_onsuccess='', keepvalues=True):
+    if form.validate(formname='search', session=None, request_vars=request.vars, message_onsuccess='', keepvalues=True):
         query = read_form_field(form,'query').strip()
         if _is_tome_or_author_guid(query):
             tome = pdb.get_tome_by_guid(query)
@@ -331,7 +331,6 @@ def tomesearch():
         if 'page' in request.vars:
             page_number = int(request.vars.page)
         pass_paged_query_results_to_view(search_query, retval, page_number)
-
 
     retval['form'] = form
     retval['query'] = read_form_field(form, 'query')
