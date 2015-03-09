@@ -411,6 +411,8 @@ def do_check_databases(args, db):
 def do_fix_databases(args, db):
     db().fix_databases()
 
+def do_recalculate_tome_merge_db_entry(args, db):
+    db().recalculate_tome_merge_entry(args.tome_guid)
 
 def do_rebuild_merge_db(args, db):
     print "Do not forget to rebuild the search index after this command completed."
@@ -678,38 +680,44 @@ parser_service_cancel_job = subparsers.add_parser('service_cancel_job',
 parser_service_cancel_job.add_argument('id', help='job id')
 parser_service_cancel_job.set_defaults(func=do_service_cancel_job)
 
-parser.check_database = subparsers.add_parser('check_databases', help='instructs the server to check the databases')
-parser.check_database.set_defaults(func=do_check_databases)
+parser_check_database = subparsers.add_parser('check_databases', help='instructs the server to check the databases')
+parser_check_database.set_defaults(func=do_check_databases)
 
-parser.check_database = subparsers.add_parser('fix_databases',
+parser_check_database = subparsers.add_parser('fix_databases',
                                               help='instructs the server to try to fix some database inconsistencies by rebuilding the affected parts of merge db')
-parser.check_database.set_defaults(func=do_fix_databases)
+parser_check_database.set_defaults(func=do_fix_databases)
 
-parser.rebuild_merge_db = subparsers.add_parser('rebuild_merge_db', help='instructs the server to rebuild the merge db'
+parser_recalculate_tome_merge_db_entry = subparsers.add_parser('recalculate_tome_merge_db_entry', help='instructs the server to recalculate the merge db entry for a given tome. '
+                                                                                                       'Should not be required for normal operation.')
+parser_recalculate_tome_merge_db_entry.add_argument('tome_guid', help='tome guid')
+parser_recalculate_tome_merge_db_entry.set_defaults(func=do_recalculate_tome_merge_db_entry)
+
+
+parser_rebuild_merge_db = subparsers.add_parser('rebuild_merge_db', help='instructs the server to rebuild the merge db'
                                                                          'using the local source databases')
-parser.rebuild_merge_db.set_defaults(func=do_rebuild_merge_db)
+parser_rebuild_merge_db.set_defaults(func=do_rebuild_merge_db)
 
-parser.encrypt_comm_data = subparsers.add_parser('encrypt_comm_data',
+parser_encrypt_comm_data = subparsers.add_parser('encrypt_comm_data',
                                                  help='instructs the server to encrypt comm data information. Will ask for a password on the console.')
-parser.encrypt_comm_data.set_defaults(func=do_encrypt_comm_data)
+parser_encrypt_comm_data.set_defaults(func=do_encrypt_comm_data)
 
-parser.unlock_comm_data = subparsers.add_parser('unlock_comm_data',
+parser_unlock_comm_data = subparsers.add_parser('unlock_comm_data',
                                                 help='instructs the server to unlock encrypted comm data information for use by the services. Will ask for a password on the console')
-parser.unlock_comm_data.set_defaults(func=do_unlock_comm_data)
+parser_unlock_comm_data.set_defaults(func=do_unlock_comm_data)
 
-parser.comm_data_status = subparsers.add_parser('show_comm_data_status',
+parser_comm_data_status = subparsers.add_parser('show_comm_data_status',
                                                 help='Shows the status of comm data encryption / locking')
-parser.comm_data_status.set_defaults(func=do_show_comm_data_status)
+parser_comm_data_status.set_defaults(func=do_show_comm_data_status)
 
-parser.disk_usage = subparsers.add_parser('show_disk_usage', help='Shows the disk usage of the file store')
-parser.disk_usage.set_defaults(func=do_show_disk_usage)
+parser_disk_usage = subparsers.add_parser('show_disk_usage', help='Shows the disk usage of the file store')
+parser_disk_usage.set_defaults(func=do_show_disk_usage)
 
-parser.remove_local_tome_links_to_missing_files = \
+parser_remove_local_tome_links_to_missing_files = \
     subparsers.add_parser('remove_local_tome_links_to_missing_files',
                           help='removes tome<->file link info from the local source database '
                                'for all files which are not locally stored at the moment. '
                                'useful for removing ghost file links. Do not use if you have a metadata-only node')
-parser.remove_local_tome_links_to_missing_files.set_defaults(func=do_remove_local_tome_links_to_missing_files)
+parser_remove_local_tome_links_to_missing_files.set_defaults(func=do_remove_local_tome_links_to_missing_files)
 
 parser_create_satellite = subparsers.add_parser('create_satellite',
                                                 help='Creates a satellite db for starting a friend\'s db')

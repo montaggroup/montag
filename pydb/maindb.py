@@ -703,6 +703,10 @@ class MainDB:
         """
         return self.merge_db.get_author_fusion_target_guid(source_author_guid)
 
+    def recalculate_tome_merge_db_entry(self, tome_guid):
+        self.merge_db.request_complete_tome_update(tome_guid, include_fusion_source_update=True)
+
+
     def rebuild_merge_db(self):
         with Transaction(self.merge_db):
             logger.info("Deleting old merge db contents")

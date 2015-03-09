@@ -1,4 +1,3 @@
-from pydb.basedb import data_fields_equal
 import pydb.names
 import network_params
 import time
@@ -8,11 +7,13 @@ import databases
 import pydb
 import copy
 import sqlitedb
+import basedb
+from basedb import data_fields_equal
 
 logger = logging.getLogger('mergedb')
 
 
-class MergeDB(pydb.basedb.BaseDB):
+class MergeDB(basedb.BaseDB):
     def __init__(self, db_file_path, schema_dir, local_db, enable_db_sync):
         super(MergeDB, self).__init__(db_file_path, schema_dir, init_sql_file="db-schema-merge.sql",
                                       enable_db_sync=enable_db_sync)
@@ -906,3 +907,10 @@ def calculate_items_difference(old_items_dict, new_items_dict):
     logger.debug("Keys to remove: " + repr(keys_to_remove))
     logger.debug("Keys to check: " + repr(keys_to_check))
     return keys_to_add, keys_to_remove, keys_to_check
+
+
+def _recalculate_merge_db_entries_for_all_tomes_with_local_db_entries(merge_db, local_db):
+    all_tomes = list(local_db.get_all_tomes())
+    with sqlitedb.Transaction(merge_db):
+        for tome in all_tomes:
+            merge_db.request_complete_tome_update(tome['guid'], include_fusion_source_update=True)
