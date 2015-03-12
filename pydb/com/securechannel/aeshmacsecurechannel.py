@@ -195,6 +195,6 @@ class AesHmacSecureChannel():
         self.session_cipher_outgoing = pydb.crypto.AesCtr(session_secret_cipher_outgoing)
         self.session_cipher_incoming = pydb.crypto.AesCtr(session_secret_cipher_incoming)
 
-        logger.info("Established@%s session_cipher_secret: {}... ".format(
+        logger.info("Established@{} session_cipher_secret: {}... ".format(
             self.role, session_secret_cipher.encode("hex_codec")[:4]))
 
