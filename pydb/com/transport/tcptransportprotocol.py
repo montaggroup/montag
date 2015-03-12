@@ -36,6 +36,7 @@ def meminfo(msg):
 
 
 def is_lan_address(host_address):
+    # this helpful regex was taken from http://stackoverflow.com/a/28532296
     priv_lo = re.compile("^127\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
     priv_24 = re.compile("^10\.\d{1,3}\.\d{1,3}\.\d{1,3}$")
     priv_20 = re.compile("^192\.168\.\d{1,3}.\d{1,3}$")
