@@ -38,6 +38,9 @@ def get_int_option(section, name, default):
 def enable_covers():
     return get_boolean_option('common', 'enable_covers', True)
 
+def ignore_rate_limit_in_lan():
+    return get_boolean_option('common', 'ignore_rate_limit_in_lan', True)
+
 
 _has_ebook_convert = None
 
