@@ -53,12 +53,5 @@ class TestAddAuthor(unittest.TestCase):
         author_doc = self.main_db.get_local_author_document_by_guid(guid)
         self.assertEqual(author_doc['name'], 'john Smith')
 
-    def test_after_adding_we_can_retrieve_an_overlayed_document(self):
-        id = self.main_db.add_author(name='john Smith')
-        item = self.main_db.get_author(id)
-        guid = item['guid']
-        author_doc = self.main_db.get_author_document_with_local_overlay_by_guid(guid)
-        self.assertEqual(author_doc['name'], 'john Smith')
-
 if __name__ == '__main__':
     unittest.main()

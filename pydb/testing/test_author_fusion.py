@@ -58,10 +58,11 @@ tome_author_1_doc = {
 }
 
 tome_author_both_doc = copy.deepcopy(tome_author_1_doc)
-tome_author_both_doc['authors'].append({'guid': 'aaaaaaaaaabbbbbbbbbbccccccccccd2',
-                                        'order': 1,
-                                        'fidelity': 65})
-
+tome_author_both_doc['authors'].append({
+        'guid': 'aaaaaaaaaabbbbbbbbbbccccccccccd2',
+        'order': 1,
+        'fidelity': 65
+})
 
 class TestAuthorFusion(unittest.TestCase):
     def setUp(self):
@@ -131,13 +132,6 @@ class TestAuthorFusionTomeChanges(unittest.TestCase):
         author = result_tome['authors'][0]
         self.assertEqual(author['guid'], 'aaaaaaaaaabbbbbbbbbbccccccccccd2')
 
-        # check overlayed output
-        result_tome = self.main_db.get_tome_document_with_local_overlay_by_guid(tome_author_1_doc['guid'])
-
-        self.assertEqual(len(result_tome['authors']), 1)
-        author = result_tome['authors'][0]
-        self.assertEqual(author['guid'], 'aaaaaaaaaabbbbbbbbbbccccccccccd2')
-
     def test_after_fusing_two_authors_affected_remotely_created_tome_is_linking_against_the_fusion_target(self):
         self.main_db.add_friend('friend')
         self.main_db.load_author_documents_from_friend(1, [author_doc_1])
@@ -151,12 +145,6 @@ class TestAuthorFusionTomeChanges(unittest.TestCase):
         author = result_tome['authors'][0]
         self.assertEqual(author['guid'], 'aaaaaaaaaabbbbbbbbbbccccccccccd2')
 
-        result_tome = self.main_db.get_tome_document_with_local_overlay_by_guid(tome_author_1_doc['guid'])
-
-        self.assertEqual(len(result_tome['authors']), 1)
-        author = result_tome['authors'][0]
-        self.assertEqual(author['guid'], 'aaaaaaaaaabbbbbbbbbbccccccccccd2')
-
     def test_after_fusing_two_authors_a_locally_created_tome_by_both_authors_only_has_one_author(self):
         self.assertEqual(len(tome_author_both_doc['authors']), 2)
         self.main_db.load_own_tome_document(tome_author_both_doc)
@@ -165,13 +153,6 @@ class TestAuthorFusionTomeChanges(unittest.TestCase):
 
         # check merge db output
         result_tome = self.main_db.get_tome_document_by_guid(tome_author_both_doc['guid'])
-
-        self.assertEqual(len(result_tome['authors']), 1)
-        author = result_tome['authors'][0]
-        self.assertEqual(author['guid'], 'aaaaaaaaaabbbbbbbbbbccccccccccd2')
-
-        # check overlayed output
-        result_tome = self.main_db.get_tome_document_with_local_overlay_by_guid(tome_author_both_doc['guid'])
 
         self.assertEqual(len(result_tome['authors']), 1)
         author = result_tome['authors'][0]

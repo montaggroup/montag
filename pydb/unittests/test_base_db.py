@@ -10,7 +10,8 @@ import copy
 class test_tome_statistics(unittest.TestCase):
     def setUp(self):
         # a merge db derives from base db
-        self.merge_db = mergedb.MergeDB(":memory:", pydb.unittests.guess_schema_path(), enable_db_sync=False)
+        self.merge_db = mergedb.MergeDB(":memory:", pydb.unittests.guess_schema_path(),
+                                        local_db=None, enable_db_sync=False)
         self.assertTrue(isinstance(self.merge_db, basedb.BaseDB))
 
     def test_empty(self):
@@ -81,7 +82,8 @@ class test_tome_statistics(unittest.TestCase):
 class test_schema_version(unittest.TestCase):
     def setUp(self):
         # a merge db derives from base db
-        self.merge_db = mergedb.MergeDB(":memory:", pydb.unittests.guess_schema_path(), enable_db_sync=False)
+        self.merge_db = mergedb.MergeDB(":memory:", pydb.unittests.guess_schema_path(),
+                                        local_db=None, enable_db_sync=False)
         self.assertTrue(isinstance(self.merge_db, basedb.BaseDB))
 
     def test_after_set_schema_version_to_two_read_schema_version_should_return_two(self):

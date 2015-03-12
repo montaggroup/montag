@@ -61,7 +61,8 @@ def get_query_page(query, start_offset, end_offset):
     for tome_id in result_tome_ids[start_offset:end_offset]:
         merge_tome = pdb.get_tome(tome_id)
         if merge_tome is not None:
-            tome = pdb.get_tome_document_with_local_overlay_by_guid(merge_tome['guid'], include_local_file_info=True, include_author_detail=True)
+            tome = pdb.get_tome_document_by_guid(merge_tome['guid'], keep_id=True,
+                                                 include_local_file_info=True, include_author_detail=True)
             tomelist.append(tome)
 
     def tome_key(t):

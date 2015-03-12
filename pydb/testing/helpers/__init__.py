@@ -13,7 +13,7 @@ logger = logging.getLogger('testing.helpers')
 def build_main_db_memory_only(schema_path):
     """ builds a database with all subdatabases in memory """
     local_db = pydb.localdb.LocalDB(":memory:", schema_path, enable_db_sync=False)
-    merge_db = pydb.mergedb.MergeDB(":memory:", schema_path, enable_db_sync=False)
+    merge_db = pydb.mergedb.MergeDB(":memory:", schema_path, local_db=local_db, enable_db_sync=False)
     merge_db.add_source(local_db)
     friends_db = pydb.friendsdb.FriendsDB(":memory:", schema_path)
     index_server = mock.MagicMock()
