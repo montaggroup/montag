@@ -103,7 +103,7 @@ class TcpTransportProtocol(Protocol):
         logger.debug("Stop called")
         self.transport.loseConnection()
 
-    def set_max_data_length(self, new_max_data_lmength):
+    def set_max_data_length(self, new_max_data_length):
         self.max_data_length = new_max_data_length
 
     def get_delay_after_chunk(self, chunk_size):
