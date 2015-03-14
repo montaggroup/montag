@@ -76,18 +76,27 @@ jQuery(document).ready(function(){
     {{pass}}
 {{return}}
 
+{{ def show_tome_tag_line(tome_doc): }}
+    {{  tag_info = tome_tag_links(tome_doc) }}
+    {{ if tag_info: }} —
+        {{ =tag_info }}
+    {{pass}}
+{{ return }}
+
+{{ def show_tome_edition_tags_block(tome_doc): }}
+{{ _show_tome_edition_line(tome_doc) }}
+    {{=tome['principal_language']}} {{=pydb.tome_type_text(tome_doc['type'])}} — {{=int(tome_doc['fidelity'])}}/100
+    {{show_tome_tag_line(tome_doc)}}<br>
+{{ return }}
+
 {{ def show_short_tome_info_block(tome): }}
 <li class="tome">
     <div class="tome_info_paragraph">
     <span class="tome_info_block"> {{=tome_link(tome)}} by {{=authors_links(tome['authors'])}}
     </span><br>
         
-       
-    {{ _show_tome_edition_line(tome) }}
-    {{=tome['principal_language']}} {{=pydb.tome_type_text(tome['type'])}} — {{=int(tome['fidelity'])}}/100
-    {{ if tome['tags']: }} —
-        {{ = tome_tag_links(tome) }}
-    {{pass}}<br>
+    {{show_tome_edition_tags_block(tome)}}
+
     </div>
     <div class="clearfix"></div>
 </li>
@@ -111,13 +120,8 @@ jQuery(document).ready(function(){
         {{=additional_tome_button_html}}
     {{pass}}
     </span><br>
-        
-        
-    {{ _show_tome_edition_line(tome) }}
-    {{=tome['principal_language']}} {{=pydb.tome_type_text(tome['type'])}} — {{=int(tome['fidelity'])}}/100
-    {{ if tome['tags']: }} —
-        {{ = tome_tag_links(tome) }}
-    {{pass}}<br>
+
+    {{show_tome_edition_tags_block(tome)}}
 
     {{ if tome['synopses']: }}
         {{ relevant_synopsis = sorted(tome['synopses'], key=itemgetter('fidelity'), reverse=True)[0] }}
