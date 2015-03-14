@@ -12,3 +12,8 @@ def read_form_field(form, fieldname):
 def TOOLTIP(text):
     tip = A(IMG(_src=URL('static', 'images/clker/grey_question_mark.png')), _class="tooltip_trigger", _title=text)
     return tip
+
+
+def create_error_page(message):
+    response.view = 'error/error.html'
+    return {'message': message}

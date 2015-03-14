@@ -164,10 +164,13 @@ def _add_tome_from_file_form(metadata):
 
 @auth.requires_login()
 def add_tome_from_file():
-    file_hash=request.args[0]
-    file_extension=request.args[1]
-    file_size=request.args[2]
+    file_hash = request.args[0]
+    file_extension = request.args[1]
+    file_size = request.args[2]
     author_ids = []
+
+    if not 'metadata' in session:
+        return create_error_page('It seems that the session broke somehow - do you have a cookie blocker?')
 
     form=_add_tome_from_file_form(session.metadata)
 
