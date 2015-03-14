@@ -24,17 +24,18 @@ def clear_metadata(source_stream, extension, output_stream):
     if m:
         result = m.clear_metadata(source_stream, output_stream)
         if result is None:
-            raise Exception("Module did not adhere to add strip_file api")
+            raise AssertionError("Module did not adhere to add strip_file api")
         return result
     return False
 
 
 def add_plain_metadata(source_stream, tome_file, output_stream, author_docs, tome_doc):
+    """ may raise a ValueError if the file could not be parsed ( ^= broken ) """
     m = responsible_module(tome_file['file_extension'])
     if m:
         result = m.add_metadata(source_stream, output_stream, author_docs, tome_doc, tome_file)
         if result is None:
-            raise Exception("Module did not adhere to add metadata api")
+            raise AssertionError("Module did not adhere to add metadata api")
         return result
     return False
 

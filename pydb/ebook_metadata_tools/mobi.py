@@ -28,6 +28,8 @@ class Sectionizer:
     def __init__(self, stream):
         self.f = stream
         header = self.f.read(78)
+        if(len(header)) < 78:
+            raise ValueError("Mobi header too small.")
         self.rawheader = header
         self.identifier = header[0x3C:0x3C + 8]
         self.num_sections, = struct.unpack_from('>L', header, 74)

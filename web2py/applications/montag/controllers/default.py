@@ -105,13 +105,12 @@ def _stream_tome_file(tome_id, tome_file, contents_stream):
 
     enriched_file = cStringIO.StringIO()
     added = pydb.ebook_metadata_tools.add_plain_metadata(contents_stream, tome_file, enriched_file, author_docs, tome_doc)
-    if not added: #use the file stream just as was passed, no metadata could be added.
+    if not added:  # use the file stream just as was passed, no metadata could be added.
         enriched_file = cStringIO.StringIO(contents_stream.read())
 
     enriched_file.seek(0, os.SEEK_END)
     file_size = enriched_file.tell()
     enriched_file.seek(0)
-    
 
     filename = generate_download_filename(tome, tome_file)
     
