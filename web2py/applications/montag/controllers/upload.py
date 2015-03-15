@@ -146,19 +146,18 @@ def _add_tome_from_file_form(metadata):
         else:
             return the_dict[key]
 
-    form = SQLFORM.factory(
-        Field('title', requires=IS_NOT_EMPTY(), default=db_str_to_form(from_dict(metadata, 'title')),
-              comment=TOOLTIP('Please enter the title of the book like it is written on the cover.'),),
-        Field('subtitle'),
-        Field('edition'),
-        Field('principal_language', default=db_str_to_form(from_dict(metadata, 'principal_language', 'en')),
-              comment=TOOLTIP('Please use two letter ISO 639-1 codes (e.g. en for English).')),
-        Field('publication_year', default=db_str_to_form(from_dict(metadata,'publication_year', ''))),
-        Field('tome_type', default=TomeType.Fiction, widget=SQLFORM.widgets.radio.widget,
-              requires=IS_IN_SET({TomeType.Fiction: 'fiction', TomeType.NonFiction: 'non-fiction'})),
-        Field('authors','text', requires=AuthorValidator(), default=[{'name': n} for n in metadata['author_names']]),
-        Field('fidelity', requires=FidelityValidator(), default=DEFAULT_ADD_FIDELITY)
-        )
+    form = SQLFORM.factory(Field('title', requires=IS_NOT_EMPTY(), default=db_str_to_form(from_dict(metadata, 'title')),
+                                 comment=TOOLTIP('Please enter the title of the book like it is written on the cover.'),),
+                           Field('subtitle'),
+                           Field('edition'),
+                           Field('principal_language', default=db_str_to_form(from_dict(metadata, 'principal_language', 'en')),
+                                 comment=TOOLTIP('Please use two letter ISO 639-1 codes (e.g. en for English).')),
+                           Field('publication_year', default=db_str_to_form(from_dict(metadata,'publication_year', ''))),
+                           Field('tome_type', default=TomeType.Fiction, widget=SQLFORM.widgets.radio.widget,
+                                 requires=IS_IN_SET({TomeType.Fiction: 'fiction', TomeType.NonFiction: 'non-fiction'})),
+                           Field('authors','text', requires=AuthorValidator(), default=[{'name': n} for n in metadata['author_names']]),
+                           Field('fidelity', requires=FidelityValidator(), default=DEFAULT_ADD_FIDELITY),
+                           submit_button='Add')
     return form
 
 

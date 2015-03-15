@@ -267,16 +267,14 @@ def view_tome_debug_info():
 
 
 def _author_edit_form(author, required_fidelity):
-   form = SQLFORM.factory(
-        Field('name',requires=IS_NOT_EMPTY(), default=db_str_to_form(author['name']), comment=XML(r'<input type="button" value="Guess name case" onclick="title_case_field(&quot;no_table_name&quot;)">')),
-                                   
-        Field('date_of_birth', default=author['date_of_birth'], 
-               comment=TOOLTIP('Please enter the date in ISO&nbsp;8601, e.g. 1920-08-22. If only the year is known, use that.')),
-         Field('date_of_death',default=author['date_of_death'], 
-               comment=TOOLTIP('Please enter the date in ISO&nbsp;8601, e.g. 1993-02-21. If only the year is known, use that.')),
-        Field('fidelity', requires=FidelityValidator(), default=required_fidelity, comment='Current Value: {}'.format(author['fidelity'])),
-        )
-   return form
+    form = SQLFORM.factory(Field('name',requires=IS_NOT_EMPTY(), default=db_str_to_form(author['name']), comment=XML(r'<input type="button" value="Guess name case" onclick="title_case_field(&quot;no_table_name&quot;)">')),
+                           Field('date_of_birth', default=author['date_of_birth'],
+                           comment=TOOLTIP('Please enter the date in ISO&nbsp;8601, e.g. 1920-08-22. If only the year is known, use that.')),
+                           Field('date_of_death',default=author['date_of_death'],
+                           comment=TOOLTIP('Please enter the date in ISO&nbsp;8601, e.g. 1993-02-21. If only the year is known, use that.')),
+                           Field('fidelity', requires=FidelityValidator(), default=required_fidelity, comment='Current Value: {}'.format(author['fidelity'])),
+                           submit_button='Save')
+    return form
 
 
 @auth.requires_login()
@@ -342,37 +340,35 @@ def tomesearch():
 
 
 def _tome_edit_form(tome, required_tome_fidelity):
-
-    form = SQLFORM.factory(
-        Field('title',requires=IS_NOT_EMPTY(), default=tome['title'].encode('utf-8'),
-              comment=DIV(
+    form = SQLFORM.factory(Field('title',requires=IS_NOT_EMPTY(), default=tome['title'].encode('utf-8'),
+                                 comment=DIV(
                            TOOLTIP('Please enter the title of the book like it is written on the cover.'),
                            XML(r'<input type="button" value="Guess title case" onclick="title_case_field(&quot;no_table_title&quot;)">'),
-                           _class='nowrap'
-              )),
-        Field('subtitle', default=db_str_to_form(tome['subtitle']), comment=XML(r'<input type="button" value="Guess subtitle case" onclick="title_case_field(&quot;no_table_subtitle&quot;)">')),
-        Field('edition', default=db_str_to_form(tome['edition'])),
-        Field('principal_language', default=db_str_to_form(tome['principal_language']),
-              comment=TOOLTIP('Please use two letter ISO 639-1 codes (e.g. en for English).')),
-        Field('publication_year', default=str(tome['publication_year']).encode('utf-8')),
-        Field('tags','text', default=tome['tags'], requires=TagValidator()),
-        Field('type', default=tome['type'], widget=SQLFORM.widgets.radio.widget, requires=IS_IN_SET({TomeType.Fiction:'fiction',TomeType.NonFiction:'non-fiction'})),
-        Field('fidelity', requires=FidelityValidator(), default=required_tome_fidelity, comment='Current Value: {}'.format(tome['fidelity'])),
-        name="edit_tome"
-        )
+                               _class='nowrap')),
+                           Field('subtitle', default=db_str_to_form(tome['subtitle']),
+                                 comment=XML(r'<input type="button" value="Guess subtitle case" onclick="title_case_field(&quot;no_table_subtitle&quot;)">')),
+                           Field('edition', default=db_str_to_form(tome['edition'])),
+                           Field('principal_language', default=db_str_to_form(tome['principal_language']),
+                                 comment=TOOLTIP('Please use two letter ISO 639-1 codes (e.g. en for English).')),
+                           Field('publication_year', default=str(tome['publication_year']).encode('utf-8')),
+                           Field('tags','text', default=tome['tags'], requires=TagValidator()),
+                           Field('type', default=tome['type'], widget=SQLFORM.widgets.radio.widget,
+                                 requires=IS_IN_SET({TomeType.Fiction:'fiction',TomeType.NonFiction:'non-fiction'})),
+                           Field('fidelity', requires=FidelityValidator(), default=required_tome_fidelity,
+                                 comment='Current Value: {}'.format(tome['fidelity'])),
+                           submit_button='Save',
+                           name="edit_tome")
 
     return form
 
 
 def _tome_synopses_form(synopsis):
-    form = SQLFORM.factory(
-        Field('content','text', default=synopsis['content'].encode('utf-8')),
-        Field('fidelity', requires=FidelityValidator(), default=synopsis['fidelity']+0.1),
-        hidden={
-                'guid': synopsis['guid'],
-                '_formname':'edit_synopsis_{}'.format(synopsis['guid'])
-        },
-        )
+    form = SQLFORM.factory(Field('content','text', default=synopsis['content'].encode('utf-8')),
+                           Field('fidelity', requires=FidelityValidator(), default=synopsis['fidelity']+0.1),
+                           hidden={'guid': synopsis['guid'],
+                                   '_formname':'edit_synopsis_{}'.format(synopsis['guid'])
+                           },
+                           submit_button='Save')
     return form
 
 
@@ -463,7 +459,7 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
         elif tome_doc['publication_year']=='None':
             tome_doc['publication_year']=None
         pdb.load_own_tome_document(tome_doc)
-        redirect(URL('edit_tome', args=(tome_doc['guid'])))
+        redirect(URL('view_tome', args=(tome_doc['guid'])))
 
     elif form.errors:
         response.flash = 'form has errors'
@@ -479,16 +475,15 @@ def edit_tome_file_link():
     tome=pdb.get_tome(tome_id)
 
     files = pdb.get_tome_files( tome_id, include_local_file_info = True)
-    tome_files=filter( lambda x: x['hash']==file_hash, files)
-    tome_file=tome_files[0]
+    tome_files = filter( lambda x: x['hash']==file_hash, files)
+    tome_file = tome_files[0]
 
-    form = SQLFORM.factory(
-        Field('file_extension', default=tome_file['file_extension'].encode('utf-8')),
-        Field('fidelity', requires=FidelityValidator(), default=tome_file['fidelity']+0.1)
-    )
+    form = SQLFORM.factory(Field('file_extension', default=tome_file['file_extension'].encode('utf-8')),
+                           Field('fidelity', requires=FidelityValidator(), default=tome_file['fidelity']+0.1),
+                           submit_button='Save')
 
-    title_text=pydb.title.coalesce_title(tome['title'], tome['subtitle'])
-    response.title = "Edit Files %s - Montag" % title_text
+    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    response.title = "Edit Files {} - Montag".format(title_text)
     
     field_names=['file_extension','fidelity']
 
@@ -516,14 +511,13 @@ def link_tome_to_file():
     tome_id = request.args[0]
     tome = pdb.get_tome(tome_id)
  
-    form = SQLFORM.factory(
-        Field('hash'),
-        Field('file_extension', default="epub"),
-        Field('fidelity', requires=FidelityValidator(), default=70)
-    )
-    
-    title_text=pydb.title.coalesce_title(tome['title'], tome['subtitle'])
-    response.title = "Edit Files %s - Montag" % title_text
+    form = SQLFORM.factory(Field('hash'),
+                           Field('file_extension', default="epub"),
+                           Field('fidelity', requires=FidelityValidator(), default=70),
+                           submit_button='Save')
+
+    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    response.title = "Edit Files of {} - Montag".format(title_text)
     
     if form.process(keepvalues=True).accepted:
     
@@ -555,22 +549,21 @@ def edit_tome_author_link():
     tome_authors = pdb.get_tome_authors(tome_id)
     tome_author = None
     for ta in tome_authors:
-        if int(ta['id'])==int(author_id):
+        if int(ta['id']) == int(author_id):
             tome_author = ta
     
     if tome_author is None:
         return dict( error="Tome and author not linked?", form=None, tome=tome, author=None, authors=tome_authors)
-    author_guid=tome_author['guid']
+    author_guid = tome_author['guid']
     
-    form = SQLFORM.factory(
-        Field('order', default=tome_author['author_order']),
-        Field('fidelity', requires=FidelityValidator(), default=tome_author['link_fidelity']+0.1)
-    )
+    form = SQLFORM.factory(Field('order', default=tome_author['author_order']),
+                           Field('fidelity', requires=FidelityValidator(), default=tome_author['link_fidelity']+0.1),
+                           submit_button='Save')
 
-    title_text=pydb.title.coalesce_title(tome['title'], tome['subtitle'])
-    response.title = "Edit Author Link %s <=>  %s - Montag" % (tome_author['name'], title_text)
+    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    response.title = "Edit Author Link {} <=>  {} - Montag".format(tome_author['name'], title_text)
     
-    field_names=['order','fidelity']
+    field_names = ['order','fidelity']
 
     if form.process(keepvalues=True).accepted:
         doc = pdb.get_tome_document_by_guid(tome['guid'])
@@ -595,8 +588,8 @@ def edit_tome_author_link():
 
 @auth.requires_login()
 def link_tome_to_author():
-    tome_id=request.args[0]
-    tome=pdb.get_tome(tome_id)
+    tome_id = request.args[0]
+    tome = pdb.get_tome(tome_id)
 
     tome_authors = pdb.get_tome_authors(tome_id)
 
@@ -606,14 +599,13 @@ def link_tome_to_author():
     else:
         max_author_order = 0
         
-    form = SQLFORM.factory(
-        Field('author_name'),
-        Field('order', default=max_author_order+1, label='Order Value'),
-        Field('fidelity', requires=FidelityValidator(), default=70)
-    )
+    form = SQLFORM.factory(Field('author_name'),
+                           Field('order', default=max_author_order+1, label='Order Value'),
+                           Field('fidelity', requires=FidelityValidator(), default=70),
+                           submit_button='Save')
 
-    title_text=pydb.title.coalesce_title(tome['title'], tome['subtitle'])
-    response.title = "Add Author to %s - Montag" % title_text
+    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    response.title = "Add Author to {} - Montag".format(title_text)
 
     if form.process(keepvalues=True).accepted:
 

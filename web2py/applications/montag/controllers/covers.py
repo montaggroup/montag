@@ -54,11 +54,10 @@ def edit_covers_compact():
 
 
 def _set_cover_from_content_form():
-   default_cover_fidelity = 80
-   form = SQLFORM.factory(
-        Field('fidelity', requires=FidelityValidator(), default=default_cover_fidelity)
-        )
-   return form
+    default_cover_fidelity = 80
+    form = SQLFORM.factory(Field('fidelity', requires=FidelityValidator(), default=default_cover_fidelity),
+                           submit_button='Save')
+    return form
 
 
 @auth.requires_login()
@@ -105,12 +104,11 @@ def set_cover_from_content():
 
 
 def _set_main_cover_form():
-   default_cover_fidelity = 80
+    default_cover_fidelity = 80
     # \todo use a more sensible value for fidelity
-   form = SQLFORM.factory(
-        Field('fidelity',requires=FidelityValidator(), default=default_cover_fidelity)
-        )
-   return form
+    form = SQLFORM.factory(Field('fidelity', requires=FidelityValidator(), default=default_cover_fidelity),
+                           submit_button='Save')
+    return form
 
 
 @auth.requires_login()
