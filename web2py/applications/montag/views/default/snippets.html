@@ -85,7 +85,7 @@ jQuery(document).ready(function(){
 
 {{ def show_tome_edition_tags_block(tome_doc): }}
 {{ _show_tome_edition_line(tome_doc) }}
-    {{=tome['principal_language']}} {{=pydb.tome_type_text(tome_doc['type'])}} — {{=int(tome_doc['fidelity'])}}/100
+    {{=tome_doc['principal_language']}} {{=pydb.tome_type_text(tome_doc['type'])}} — {{=int(tome_doc['fidelity'])}}/100
     {{show_tome_tag_line(tome_doc)}}<br>
 {{ return }}
 
