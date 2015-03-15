@@ -340,7 +340,7 @@ def tomesearch():
 
 
 def _tome_edit_form(tome, required_tome_fidelity):
-    form = SQLFORM.factory(Field('title',requires=IS_NOT_EMPTY(), default=tome['title'].encode('utf-8'),
+    form = SQLFORM.factory(Field('title',requires=IS_NOT_EMPTY(), default=db_str_to_form(tome['title']),
                                  comment=DIV(
                            TOOLTIP('Please enter the title of the book like it is written on the cover.'),
                            XML(r'<input type="button" value="Guess title case" onclick="title_case_field(&quot;no_table_title&quot;)">'),
@@ -350,7 +350,7 @@ def _tome_edit_form(tome, required_tome_fidelity):
                            Field('edition', default=db_str_to_form(tome['edition'])),
                            Field('principal_language', default=db_str_to_form(tome['principal_language']),
                                  comment=TOOLTIP('Please use two letter ISO 639-1 codes (e.g. en for English).')),
-                           Field('publication_year', default=str(tome['publication_year']).encode('utf-8')),
+                           Field('publication_year', default=db_str_to_form(tome['publication_year'])),
                            Field('tags','text', default=tome['tags'], requires=TagValidator()),
                            Field('type', default=tome['type'], widget=SQLFORM.widgets.radio.widget,
                                  requires=IS_IN_SET({TomeType.Fiction:'fiction',TomeType.NonFiction:'non-fiction'})),
@@ -363,7 +363,7 @@ def _tome_edit_form(tome, required_tome_fidelity):
 
 
 def _tome_synopses_form(synopsis):
-    form = SQLFORM.factory(Field('content','text', default=synopsis['content'].encode('utf-8')),
+    form = SQLFORM.factory(Field('content','text', default=db_str_to_form(synopsis['content'])),
                            Field('fidelity', requires=FidelityValidator(), default=synopsis['fidelity']+0.1),
                            hidden={'guid': synopsis['guid'],
                                    '_formname':'edit_synopsis_{}'.format(synopsis['guid'])
@@ -478,7 +478,7 @@ def edit_tome_file_link():
     tome_files = filter( lambda x: x['hash']==file_hash, files)
     tome_file = tome_files[0]
 
-    form = SQLFORM.factory(Field('file_extension', default=tome_file['file_extension'].encode('utf-8')),
+    form = SQLFORM.factory(Field('file_extension', default=db_str_to_form(tome_file['file_extension'])),
                            Field('fidelity', requires=FidelityValidator(), default=tome_file['fidelity']+0.1),
                            submit_button='Save')
 

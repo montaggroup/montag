@@ -28,7 +28,11 @@ def author_list(author_link_infos):
 
 
 def search_link(text, query, class_="search_link"):
-    return A(text, _class=class_, _href=URL( 'default', 'tomesearch', vars={ 'query': query.encode('utf-8'), '_formname':'search', 'principal_language': '', 'tome_type':'Z'}))
+    return A(text, _class=class_, _href=URL('default', 'tomesearch',
+                                            vars={'query': db_str_to_form(query),
+                                                  '_formname':'search',
+                                                  'principal_language': '',
+                                                  'tome_type':'Z'}))
 
 def tag_link(tag_text):
     search_text = re.sub(" *[0-9]+$","",tag_text)
