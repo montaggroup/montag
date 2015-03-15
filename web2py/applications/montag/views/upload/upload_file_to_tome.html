@@ -1,4 +1,5 @@
 {{extend 'layout.html'}}
+{{include 'upload/upload_snippets.html'}}
 
 {{if tome is None: }}
 No such tome
@@ -9,16 +10,7 @@ No such tome
 
 {{=form}}
 
-<script type="text/javascript">
-Dropzone.options.dropzoneForm = {
-  init: function() {
-    this.on("success", function(file, reply) { window.location=reply; });
-  },
-  previewsContainer: false   
-};
-
-</script>
-
+{{add_dropzone_form('dropzoneForm')}}
 
 {{pass}}
 
