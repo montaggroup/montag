@@ -55,15 +55,14 @@ def _friend_edit_form(friend, comm_data):
         fields.append(Field('hostname', requires=IS_NOT_EMPTY(), default=''))
         fields.append(Field('secret', 'password', requires=IS_STRONG(min=8, special=0, upper=0), default='*'*6))
         fields.append(Field('confirm_secret', 'password', requires=IS_EQUAL_TO(request.vars.secret,
-                       error_message='secrets do not match'), default='-'*6))
+                             error_message='secrets do not match'), default='-'*6))
     form = SQLFORM.factory(*fields)
     return form
 
 
 def _friend_add_form():
-    form = SQLFORM.factory(
-        Field('name',requires=IS_NOT_EMPTY()),
-    )
+    form = SQLFORM.factory(Field('name', requires=IS_NOT_EMPTY()),
+                           submit_button='Save')
     return form
 
 def _load_comm_data(friend_id):
@@ -183,9 +182,8 @@ def fetch_updates_all():
     redirect('list_friends')
 
 def _unlock_comm_data_form():
-    form = SQLFORM.factory(
-        Field('unlock_password', 'password', requires=IS_NOT_EMPTY(), default=''),
-    )
+    form = SQLFORM.factory(Field('unlock_password', 'password', requires=IS_NOT_EMPTY(), default=''),
+                           submit_button='Unlock')
     return form
 
 

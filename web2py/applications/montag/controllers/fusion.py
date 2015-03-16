@@ -2,10 +2,10 @@ if False:
     from web2py.applications.montag.models.ide_fake import *
 
 def _select_author_merge_partner_form(first_author):
-    form = SQLFORM.factory(
-        Field('query',requires=IS_NOT_EMPTY(), default=db_str_to_form(first_author['name']), label="Search for"),
-        submit_button='Search',
-        _method = 'GET')
+    form = SQLFORM.factory(Field('query',requires=IS_NOT_EMPTY(), default=db_str_to_form(first_author['name']),
+                                 label="Search for"),
+                           submit_button='Search',
+                           _method='GET')
     return form
 
 
@@ -100,13 +100,13 @@ def execute_merge_authors():
     else:
         pdb.fuse_authors(first_author_guid, target_guid=second_author_guid)
 
-    redirect(URL('default','view_author', args=(first_author_guid)))
+    redirect(URL('default','view_author', args=first_author_guid))
 
 def _select_tome_merge_partner_form(first_tome):
-    form = SQLFORM.factory(
-        Field('query',requires=IS_NOT_EMPTY(), default=db_str_to_form(first_tome['title']), label="Search for"),
-        submit_button='Search',
-        _method = 'GET')
+    form = SQLFORM.factory(Field('query', requires=IS_NOT_EMPTY(),
+                                 default=db_str_to_form(first_tome['title']), label="Search for"),
+                           submit_button='Search',
+                           _method='GET')
     return form
 
 
