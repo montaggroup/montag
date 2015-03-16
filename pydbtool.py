@@ -23,6 +23,8 @@ sys.excepthook = Pyro4.util.excepthook
 json_indent = 4
 json_separators = (',', ': ')
 
+INSERT_BATCH_SIZE = 50
+
 
 def do_print_stats(args, db):
     merge_stats = db().get_merge_statistics()
@@ -106,7 +108,7 @@ def do_service_fetch_updates(args, db):
 
     com_service = pydb.pyrosetup.comservice()
     job_id = com_service.fetch_updates(friend_id)
-    print "Update started, job is is {}".format(job_id)
+    print "Update started, job id is {}".format(job_id)
 
 
 def do_service_list_jobs(args, db):
@@ -205,7 +207,7 @@ def let_user_edit_document(doc, always_discard=False, detect_unchanged=True):
         doc_file.write(text_content)
 
     while True:
-        rc = subprocess.call(["editor", filename])
+        subprocess.call(["editor", filename])
 
         try:
             with open(filename) as doc_file:
@@ -229,7 +231,7 @@ def do_edit_author(args, db):
     else:
         doc = db().get_author_document_by_guid(args.guid, args.ignore_fidelity_filter)
     edited_doc = let_user_edit_document(doc, detect_unchanged=not args.load_local)
-    if not edited_doc is None:
+    if edited_doc is not None:
         db().load_own_author_document(edited_doc)
 
 
@@ -240,7 +242,7 @@ def do_edit_tome(args, db):
         doc = db().get_tome_document_by_guid(args.guid, args.ignore_fidelity_filter)
 
     edited_doc = let_user_edit_document(doc, detect_unchanged=not args.load_local)
-    if not edited_doc is None:
+    if edited_doc is not None:
         db().load_own_tome_document(edited_doc)
 
 
@@ -252,6 +254,7 @@ def do_show_tome_debug_info(args, db):
     doc = db().get_debug_info_for_tome_by_guid(args.guid)
 
     print json.dumps(doc, indent=json_indent, separators=json_separators)
+
 
 def do_show_author_debug_info(args, db):
     doc = db().get_debug_info_for_author_by_guid(args.guid)
@@ -328,17 +331,15 @@ def do_import_file_store(args, db):
     def insert_files(file_list):
         print "Inserting {} files".format(len(file_list))
         result = pydb.pyrosetup.fileserver().add_files_from_local_disk(file_list)
-        succ = 0
-        failed = 0
+        succeeded_imports = 0
+        failed_imports = 0
         for fn, file_result in result.iteritems():
             if file_result:
-                succ += 1
+                succeeded_imports += 1
             else:
-                failed += 1
+                failed_imports += 1
                 print "Error while importing {}".format(fn)
-        return succ, failed
-
-    INSERT_BATCH_SIZE = 50
+        return succeeded_imports, failed_imports
 
     source_dir = os.path.abspath(args.source_directory)
     success_imports = 0
@@ -725,9 +726,9 @@ parser_create_satellite.add_argument('target_dir', help='target directory for sa
 parser_create_satellite.set_defaults(func=do_create_satellite)
 
 parser_re_strip_file = subparsers.add_parser('re_strip_file',
-                                                help='Commands the file server to try again to strip metadata '
-                                                     'of a file in the file store. Used usually after an '
-                                                     'change of the strip code.')
+                                             help='Commands the file server to try again to strip metadata '
+                                                  'of a file in the file store. Used usually after an '
+                                                  'change of the strip code.')
 parser_re_strip_file.add_argument('file_hash', help='hash of the file to strip again')
 parser_re_strip_file.add_argument('file_extension', help='extension of the file to strip again')
 
