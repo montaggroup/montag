@@ -85,9 +85,8 @@ def set_cover_from_content():
 
         file_extension = 'jpg'
         fd_cover, path_cover = tempfile.mkstemp('.' + file_extension)
-        cover_file = os.fdopen(fd_cover, 'wb')
-        cover_file.write(cover_contents.getvalue())
-        cover_file.close()
+        with os.fdopen(fd_cover, 'wb') as cover_file:
+            cover_file.write(cover_contents.getvalue())
 
         file_server = pydb.pyrosetup.fileserver()
         (local_file_id, file_hash, file_size) = file_server.add_file_from_local_disk(path_cover, file_extension,

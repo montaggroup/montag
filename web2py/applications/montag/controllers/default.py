@@ -78,16 +78,14 @@ def _convert_ebook(contents, source_extension, target_extension):
     # write into a temp file as to prevent ebook_convert from accessing the file store directly
     # this way we are sure that the file has the correct extension
     fd_orig, path_orig = tempfile.mkstemp('.' + source_extension)
-    orig_file = os.fdopen(fd_orig,'wb')
-    orig_file.write(contents)
-    orig_file.close()
-    
+    with os.fdopen(fd_orig,'wb') as orig_file:
+        orig_file.write(contents)
+
     fd_target, path_converted = tempfile.mkstemp('.'+target_extension)
     os.close(fd_target)
     
-    convert_result = subprocess.call(['ebook-convert', path_orig, path_converted])
+    subprocess.call(['ebook-convert', path_orig, path_converted])
 
-    
     with open(path_converted, 'rb') as converted_file:
         converted_content = cStringIO.StringIO(converted_file.read())
 

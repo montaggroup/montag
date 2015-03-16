@@ -1,3 +1,6 @@
 {{extend 'layout.html'}}
+{{include 'upload/upload_snippets.html'}}
 
-{{ =form }}
+{{=form}}
+
+{{add_dropzone_form('dropzoneForm')}}

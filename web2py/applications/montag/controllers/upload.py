@@ -34,9 +34,8 @@ def _insert_file(file_stream, original_file_name):
 
         (handle, file_path) = tempfile.mkstemp(suffix=extension_with_dot)
 
-        file=os.fdopen(handle, "wb")
-        file.write(file_stream.read())
-        file.close()
+        with os.fdopen(handle, "wb") as f:
+            f.write(file_stream.read())
 
         file_server = pydb.pyrosetup.fileserver()
         (id, hash, size) = file_server.add_file_from_local_disk(file_path, extension_with_dot[1:], move_file=True)
@@ -45,15 +44,14 @@ def _insert_file(file_stream, original_file_name):
 
 
 def _create_upload_form():
-    form = FORM(TABLE(
-           TR(TD(DIV(DIV('Drop Files Here'), _class='dz-message'))),
-           TR(TD(' -- or --')),
-           TR(TD(INPUT(_type='file',
-                                       _name='file',
-                                       requires=IS_NOT_EMPTY()))),
-           TR(TD(INPUT(_type='submit',_value='Submit')))
-           ,_class='upload_file'
-       ),  _class='dropzone', _id='dropzoneForm')
+    form = FORM(TABLE(TR(TD(DIV(DIV('Drop File Here'), _class='dz-message'))),
+                      TR(TD(' -- or --')),
+                      TR(TD(INPUT(_type='file',
+                                  _name='file',
+                                  requires=IS_NOT_EMPTY()))),
+                      TR(TD(INPUT(_type='submit', _value='Submit'))),
+                      _class='upload_file'),
+                _class='dropzone', _id='dropzoneForm')
     return form
 
 
@@ -123,7 +121,7 @@ def upload_file_to_tome():
         _, extension_with_dot = os.path.splitext(f.filename)
         extension = extension_with_dot[1:]
 
-        fidelity = 60
+        fidelity = DEFAULT_ADD_FIDELITY
         (_, file_hash, size) = _insert_file(f.file, f.filename)
 
         pdb.link_tome_to_file(tome['id'], file_hash, size, extension, FileType.Content, fidelity)
@@ -171,7 +169,7 @@ def add_tome_from_file():
     if not 'metadata' in session:
         return create_error_page('It seems that the session broke somehow - do you have a cookie blocker?')
 
-    form=_add_tome_from_file_form(session.metadata)
+    form = _add_tome_from_file_form(session.metadata)
 
     if form.process(keepvalues=True, dbio=False).accepted:
         fidelity = read_form_field(form, 'fidelity')
@@ -195,18 +193,18 @@ def add_tome_from_file():
 
     return dict(form=form, author_ids=author_ids)
 
+
 def _upload_cover_form():
-    
-    form = FORM(TABLE(
-           TR(TD('Upload File:'), TD(INPUT(_type='file',
-                                       _name='new_tome_cover',
-                                       requires=IS_NOT_EMPTY()))),
-           TR(TD('Fidelity:'), TD(INPUT(   _type='text',
-                                       value=75.0,
-                                       _name='fidelity',
-                                       requires=FidelityValidator()))),
-           TR(TD(INPUT(_type='submit',_value='Submit')))
-       ))
+    form = FORM(TABLE(TR(TD(DIV(DIV('Drop File Here'), _class='dz-message'))),
+                      TR(TD(' -- or --')),
+                      TR(TD(INPUT(_type='file',
+                                  _name='file',
+                                  requires=IS_NOT_EMPTY()))),
+                      TR(
+                          TD(INPUT(_type='submit',
+                                   _value='Submit'))),
+                             _class='upload_file'),
+                _class='dropzone', _id='dropzoneForm')
 
     return form
 
@@ -215,20 +213,33 @@ def _upload_cover_form():
 def upload_cover():
     tome_id = request.args[0]
     tome = pdb.get_tome(tome_id)
+    response.enable_dropzone = True
 
     form = _upload_cover_form()
 
     if form.process(keepvalues=True, dbio=False).accepted:
-        fidelity = read_form_field(form, 'fidelity')
+        f = request.vars.file
+        is_dropzone = False
 
-        f = request.vars.new_tome_cover
-        (_, extension_with_dot)=os.path.splitext(f.filename)
+        if isinstance(f, list):  # dropzone uploads result in lists
+            f = f[1]
+            is_dropzone = True
+
+        (_, extension_with_dot) = os.path.splitext(f.filename)
         file_extension = extension_with_dot[1:]
 
-        (id, file_hash, file_size) =  _insert_file(f.file, f.filename)
-        pdb.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Cover, fidelity)
+        (file_id, file_hash, file_size) = _insert_file(f.file, f.filename)
+        pdb.link_tome_to_file(tome_id, file_hash, file_size, file_extension,
+                              FileType.Cover, fidelity=DEFAULT_ADD_FIDELITY)
         response.flash = 'Successfully uploaded cover'
-        redirect(URL(f='view_tome',c='default', args=(tome['guid'])))
+
+        target_url = URL(f='view_tome', c='default', args=(tome['guid']))
+
+        if is_dropzone:
+            return target_url
+        else:
+            redirect(target_url)
+
     elif form.errors:
         response.flash = 'form has errors'
 
