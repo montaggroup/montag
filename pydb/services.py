@@ -16,9 +16,14 @@ service_prefix = 'montag-'
 basenames = ["pydbserver", "comserver", "comservice", "indexserver", "fileserver", "web2py"]
 
 extension = executionenvironment.script_extension()
-names = [service_prefix + name + "." + extension for name in basenames]
 
 PSUTIL2 = psutil.version_info >= (2, 0)
+
+
+def service_name(basename):
+    return service_prefix + basename + "." + extension
+
+names = [service_name(basename) for basename in basenames]
 
 
 def pidlist():
@@ -110,6 +115,7 @@ def logfile_path(service_name):
 
 def start(service_name, log_level=DEFAULT_LOG_LEVEL):
     startargs = executionenvironment.base_args_to_start_service(service_name)
+    print startargs
     startargs.append('-l')
     startargs.append(log_level)
     try:

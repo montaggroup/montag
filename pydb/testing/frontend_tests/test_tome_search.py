@@ -22,11 +22,11 @@ def prepare_environment(controller_name):
 
 
 def start_services():
-    pydb.services.start('montag-pydbserver')
+    pydb.services.start(pydb.services.service_name('pydbserver'))
 
 
 def stop_services():
-    pydb.services.stop('montag-pydbserver')
+    pydb.services.stop(pydb.services.service_name('pydbserver'))
 
 
 class TestTomeSearch(unittest.TestCase):

@@ -15,11 +15,14 @@ def python_binary_to_use_for_scripts():
     return sys.executable
 
 
-def base_args_to_start_service(service_name):
+def base_args_to_start_service(service_executable):
     startargs = []
     if not using_py2exe():
         startargs.append(python_binary_to_use_for_scripts())
-    startargs.append(service_name)
+
+    service_dir = os.path.relpath(os.path.join(os.path.dirname(__file__), '..'))
+
+    startargs.append(os.path.join(service_dir, service_executable))
     return startargs
 
 
