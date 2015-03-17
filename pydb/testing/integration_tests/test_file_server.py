@@ -21,7 +21,7 @@ class TestFileServer(unittest.TestCase):
 
         pydb_base_dir = tempfile.mkdtemp('test_file_server')
         pydbserver = pydb.maindb.build(os.path.join(pydb_base_dir, 'db'),
-                                       os.path.join(script_path, '..', '..', 'db-schemas'))
+                                       os.path.join(script_path,'..', '..', '..', 'db-schemas'))
 
         self.file_server = pydb.fileserver.build(os.path.join(pydb_base_dir, 'filestore'), pydbserver)
         print "filestore is in ", os.path.join(pydb_base_dir, 'filestore')

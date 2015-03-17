@@ -1,18 +1,20 @@
 import unittest
+import logging
+
 import pydb
 
-import logging
+
 logger = logging.getLogger('test_tome_add')
 
 import os
-import helpers
+from pydb.testing.integration_tests import helpers
 
 
 logging.basicConfig(level=logging.WARN)
 
 
 def get_schema_dir():
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'db-schemas'))
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'db-schemas'))
 
 
 class TestAddTome(unittest.TestCase):
