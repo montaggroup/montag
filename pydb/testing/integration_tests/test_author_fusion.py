@@ -1,17 +1,13 @@
 import unittest
 import copy
-import os
 import logging
 
 from pydb.testing.integration_tests import helpers
 
-
 logger = logging.getLogger('test_author_fusion')
 logging.basicConfig(level=logging.INFO)
 
-
-def get_schema_dir():
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'db-schemas'))
+import pydb.testing
 
 
 author_doc_1 = {
@@ -67,7 +63,7 @@ tome_author_both_doc['authors'].append({
 
 class TestAuthorFusion(unittest.TestCase):
     def setUp(self):
-        self.main_db = helpers.build_main_db_memory_only(get_schema_dir())
+        self.main_db = helpers.build_main_db_memory_only(pydb.testing.guess_schema_path())
         self.main_db.load_own_author_document(author_doc_1)
         self.main_db.load_own_author_document(author_doc_2)
 
@@ -109,7 +105,7 @@ class TestAuthorFusion(unittest.TestCase):
 
 class TestAuthorFusionTomeChanges(unittest.TestCase):
     def setUp(self):
-        self.main_db = helpers.build_main_db_memory_only(get_schema_dir())
+        self.main_db = helpers.build_main_db_memory_only(pydb.testing.guess_schema_path())
         self.main_db.load_own_author_document(author_doc_1)
         self.main_db.load_own_author_document(author_doc_2)
 

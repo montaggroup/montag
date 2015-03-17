@@ -4,16 +4,11 @@ import copy
 import logging
 logger = logging.getLogger('test_merge_of_documents')
 
-import os
+import pydb.testing
 from pydb.testing.integration_tests import helpers
 
 
 logging.basicConfig(level=logging.INFO)
-
-
-def get_schema_dir():
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'db-schemas'))
-
 
 tome_doc_friend_1 = {
     'title': 'a tome',
@@ -68,7 +63,7 @@ def _build_local_doc(file_fidelity=50):
 
 class TestMergeOfDocuments(unittest.TestCase):
     def setUp(self):
-        self.main_db = helpers.build_main_db_memory_only(get_schema_dir())
+        self.main_db = helpers.build_main_db_memory_only(pydb.testing.guess_schema_path())
         self.friend_1_id = self.main_db.add_friend('a friend')
 
         self.main_db.load_tome_documents_from_friend(self.friend_1_id, [tome_doc_friend_1])

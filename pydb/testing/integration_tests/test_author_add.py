@@ -3,20 +3,16 @@ import unittest
 import logging
 logger = logging.getLogger('test_author_add')
 
-import os
 from pydb.testing.integration_tests import helpers
-
+import pydb.testing
 
 logging.basicConfig(level=logging.INFO)
 
 
-def get_schema_dir():
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', 'db-schemas'))
-
 
 class TestAddAuthor(unittest.TestCase):
     def setUp(self):
-        self.main_db = helpers.build_main_db_memory_only(get_schema_dir())
+        self.main_db = helpers.build_main_db_memory_only(pydb.testing.guess_schema_path())
         self.friend_1_id = self.main_db.add_friend('a friend')
 
     def test_adding_an_author_generates_a_name_key(self):
