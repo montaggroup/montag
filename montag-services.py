@@ -29,8 +29,8 @@ def do_start_services(args):
                 services.start(name, log_level=args.log_level)
                 if 'pydbserver' in name:  # allow service to start up
                     _wait_for_db_ping_ok()
-            except EnvironmentError:
-                print 'could not start service %s' % name
+            except EnvironmentError as e:
+                print 'Could not start service {}: {}'.format(name, e)
                 sys.exit(1)
 
 
