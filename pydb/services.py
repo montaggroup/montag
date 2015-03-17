@@ -115,7 +115,6 @@ def logfile_path(service_name):
 
 def start(service_name, log_level=DEFAULT_LOG_LEVEL):
     startargs = executionenvironment.base_args_to_start_service(service_name)
-    print startargs
     startargs.append('-l')
     startargs.append(log_level)
     try:

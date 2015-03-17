@@ -16,14 +16,20 @@ def python_binary_to_use_for_scripts():
 
 
 def base_args_to_start_service(service_executable):
-    startargs = []
+    start_args = []
     if not using_py2exe():
-        startargs.append(python_binary_to_use_for_scripts())
+        start_args.append(python_binary_to_use_for_scripts())
 
-    service_dir = os.path.relpath(os.path.join(os.path.dirname(__file__), '..'))
+    services_dir = os.path.join(os.path.dirname(__file__), '..')
+    service_dir = os.path.relpath(services_dir)
 
-    startargs.append(os.path.join(service_dir, service_executable))
-    return startargs
+    if service_dir == '.':  # ./ makes the ps output less nice
+        path_to_service_executable = service_executable
+    else:
+        path_to_service_executable = os.path.join(service_dir, service_executable)
+
+    start_args.append(path_to_service_executable)
+    return start_args
 
 
 def is_montag_process(process_info, candidate_names):
