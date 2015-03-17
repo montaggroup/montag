@@ -13,7 +13,6 @@ import gluon.shell
 import pydb.services
 
 
-
 def prepare_environment(controller_name):
     app_dir = os.path.join('applications', 'montag')
     env = gluon.shell.env(app_dir, c='default', dir=app_dir, import_models=True)
@@ -29,6 +28,11 @@ def stop_services():
     pydb.services.stop_all_ignoring_exceptions()
 
 
+def dump_result(res):
+    for key, value in res.iteritems():
+        print "{}: {}".format(key, value)
+
+
 class TestTomeSearch(unittest.TestCase):
     def setUp(self):
         self.env = prepare_environment('default')
@@ -38,9 +42,9 @@ class TestTomeSearch(unittest.TestCase):
     def tearDown(self):
         stop_services()
 
-    def test_opening_search_form_works(self):
+    def test_opening_search_form_returns_a_form_element(self):
         res = self.env['tomesearch']()
-        print res
+        self.assertIn('form', res)
 
 
 if __name__ == '__main__':
