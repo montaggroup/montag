@@ -136,3 +136,15 @@ def stop(service_process):
     """
     service_process.terminate()
     service_process.wait(timeout=5)
+
+
+def stop_all_ignoring_exceptions(verbose=False):
+    services_status = get_current_services_status()
+    for name in names[::-1]:
+        if services_status[name]['status'] != 'not running':
+            if verbose:
+                print 'stopping service {}'.format(name)
+            try:
+                stop(services_status[name]['process'])
+            except Exception:
+                print 'could not stop service {}' .format(name)

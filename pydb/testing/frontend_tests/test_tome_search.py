@@ -26,7 +26,7 @@ def start_services():
 
 
 def stop_services():
-    pydb.services.stop(pydb.services.service_name('pydbserver'))
+    pydb.services.stop_all_ignoring_exceptions()
 
 
 class TestTomeSearch(unittest.TestCase):
