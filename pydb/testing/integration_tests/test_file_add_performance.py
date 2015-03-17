@@ -4,6 +4,7 @@ import os
 import time
 import tempfile
 import mock
+from pydb.testing.integration_tests import get_test_data_path
 
 sys.path.append(os.getcwd())
 
@@ -33,7 +34,7 @@ class TestFileAddPerformance(unittest.TestCase):
             time.sleep(0.5)
 
             script_path = os.path.dirname(__file__)
-            file_path = os.path.join(script_path, 'test_data', 'pg1661.epub')
+            file_path = get_test_data_path('pg1661.epub')
 
             # read the file to fill the os cache
             test_file_contents = open(file_path, "rb").read()

@@ -1,10 +1,11 @@
 import unittest
 import os
 import pydb.ebook_metadata_tools as etools
+from pydb.testing.integration_tests import get_test_data_path
 
 script_path = os.path.dirname(__file__)
-epub_file_path = os.path.join(script_path, 'test_data', 'pg1661.epub')
-txt_file_path = os.path.join(script_path, 'test_data', 'pg1661.txt')
+epub_file_path = get_test_data_path('pg1661.epub')
+txt_file_path = get_test_data_path('pg1661.txt')
 
 
 def extract_cover_from_file(file_path, extension):
