@@ -1,7 +1,7 @@
 import sys
 import os
 
-web2py_path = os.path.join('..', '..', '..', 'web2py')
+web2py_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'web2py')
 sys.path.append(os.path.realpath(web2py_path))
 
 # web2py likes to run with current dir = web2py path
