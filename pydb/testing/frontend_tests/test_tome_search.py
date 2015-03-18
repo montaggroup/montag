@@ -15,6 +15,9 @@ import pydb.services
 
 def prepare_environment(controller_name):
     app_dir = os.path.join('applications', 'montag')
+    db_dir = os.path.join(app_dir, 'databases')
+    if not os.path.isdir(db_dir):  # without db dir, DAL wont work
+        os.mkdir(db_dir)
     env = gluon.shell.env(app_dir, c='default', dir=app_dir, import_models=True)
     execfile(os.path.join(app_dir, 'controllers', controller_name + '.py'), env)
     return env
