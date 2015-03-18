@@ -71,7 +71,7 @@ class TestTomeSearch(unittest.TestCase):
         self._add_get_vars({
             '_formname': 'search',
             'query': 'hello',
-            'principal_language': 'en',
+            'principal_language': '',
             'tome_type': '2'
         })
         res = self.env['tomesearch']()
