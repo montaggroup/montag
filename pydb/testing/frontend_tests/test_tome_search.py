@@ -56,6 +56,10 @@ class TestTomeSearch(unittest.TestCase):
         self.request.vars.update(var_dict)
         self.request.post_vars.update(var_dict)
 
+    def _add_get_vars(self, var_dict):
+        self.request.vars.update(var_dict)
+        self.request.get_vars.update(var_dict)
+
     def test_opening_search_form_returns_a_form_element_and_view_renders(self):
         res = self.env['tomesearch']()
         self.assertIn('form', res)
@@ -64,7 +68,7 @@ class TestTomeSearch(unittest.TestCase):
         self.assertIn('<form ', html)
 
     def test_executed_search_from_returns_a_result_list_and_view_renders(self):
-        self._add_post_vars({
+        self._add_get_vars({
             '_formname': 'search',
             'query': 'hello',
             'principal_language': 'en',
