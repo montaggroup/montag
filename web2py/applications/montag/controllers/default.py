@@ -559,7 +559,7 @@ def edit_tome_author_link():
                            submit_button='Save')
 
     title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
-    response.title = "Edit Author Link {} <=>  {} - Montag".format(tome_author['name'], title_text)
+    response.title = u"Edit Author Link {} <=>  {} - Montag".format(tome_author['name'], title_text)
     
     field_names = ['order','fidelity']
 
@@ -603,7 +603,7 @@ def link_tome_to_author():
                            submit_button='Save')
 
     title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
-    response.title = "Add Author to {} - Montag".format(title_text)
+    response.title = u"Add Author to {} - Montag".format(title_text)
 
     if form.process(keepvalues=True).accepted:
 
