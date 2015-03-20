@@ -173,8 +173,8 @@ def add_tome_from_file():
 
         tome = pdb.get_tome(tome_id)
         pdb.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Content, fidelity)
-        response.flash = 'Successfully created tome, please edit details now'
-        redirect(URL(f='edit_tome', c='default', args=(tome['guid'])))
+        response.flash = 'Tome successfully added.'
+        redirect(URL(f='view_tome', c='default', args=(tome['guid'])))
     elif form.errors:
         response.flash = 'form has errors'
 
