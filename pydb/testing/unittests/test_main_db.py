@@ -1,7 +1,8 @@
 import unittest
-import pydb.maindb as main_db
-import pydb.unittests
+
 import mock
+
+import pydb.maindb as main_db
 
 
 class TestMainDb(unittest.TestCase):

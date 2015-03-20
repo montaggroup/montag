@@ -1,23 +1,18 @@
 import unittest
-import pydb
-
 import logging
+
 logger = logging.getLogger('test_tome_add')
 
-import os
-import helpers
+import pydb
+import pydb.testing
+from pydb.testing.integration_tests import helpers
 
 
 logging.basicConfig(level=logging.WARN)
 
-
-def get_schema_dir():
-    return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'db-schemas'))
-
-
 class TestAddTome(unittest.TestCase):
     def setUp(self):
-        self.main_db = helpers.build_main_db_memory_only(get_schema_dir())
+        self.main_db = helpers.build_main_db_memory_only(pydb.testing.guess_schema_path())
 
     def test_adding_an_tome_generates_a_tome_id_with_which_we_can_fetch_the_tome_again(self):
         author_id = self.main_db.add_author(name='john smith')
@@ -32,7 +27,7 @@ class TestAddTome(unittest.TestCase):
 
 class TestFindOrCreateTome(unittest.TestCase):
     def setUp(self):
-        self.main_db = helpers.build_main_db_memory_only(get_schema_dir())
+        self.main_db = helpers.build_main_db_memory_only(pydb.testing.guess_schema_path())
         self.author_id = self.main_db.add_author(name='john smith')
 
     def _add_tome(self, tome_type=pydb.TomeType.Fiction,

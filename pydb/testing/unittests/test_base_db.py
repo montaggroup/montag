@@ -1,16 +1,16 @@
 import unittest
+import copy
 
 import pydb.basedb as basedb
 import pydb.mergedb as mergedb
-import pydb.unittests
+import pydb.testing.unittests
 from pydb import TomeType
-import copy
 
 
 class test_tome_statistics(unittest.TestCase):
     def setUp(self):
         # a merge db derives from base db
-        self.merge_db = mergedb.MergeDB(":memory:", pydb.unittests.guess_schema_path(),
+        self.merge_db = mergedb.MergeDB(":memory:", pydb.testing.guess_schema_path(),
                                         local_db=None, enable_db_sync=False)
         self.assertTrue(isinstance(self.merge_db, basedb.BaseDB))
 
@@ -82,7 +82,7 @@ class test_tome_statistics(unittest.TestCase):
 class test_schema_version(unittest.TestCase):
     def setUp(self):
         # a merge db derives from base db
-        self.merge_db = mergedb.MergeDB(":memory:", pydb.unittests.guess_schema_path(),
+        self.merge_db = mergedb.MergeDB(":memory:", pydb.testing.guess_schema_path(),
                                         local_db=None, enable_db_sync=False)
         self.assertTrue(isinstance(self.merge_db, basedb.BaseDB))
 

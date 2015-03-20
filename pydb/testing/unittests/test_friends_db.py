@@ -1,12 +1,13 @@
 import unittest
+
 import pydb.friendsdb
-import pydb.unittests
+import pydb.testing.unittests
 
 
 class test_delete_friends(unittest.TestCase):
 
     def setUp(self):
-        self.friends_db = pydb.friendsdb.FriendsDB(":memory:", pydb.unittests.guess_schema_path())
+        self.friends_db = pydb.friendsdb.FriendsDB(":memory:", pydb.testing.guess_schema_path())
 
     def test_get_non_existing_by_name(self):
         f = self.friends_db.get_friend_by_name("no friend")
@@ -33,7 +34,7 @@ class test_delete_friends(unittest.TestCase):
 
 class test_can_connect_to(unittest.TestCase):
     def setUp(self):
-        self.friends_db = pydb.friendsdb.FriendsDB(":memory:", pydb.unittests.guess_schema_path())
+        self.friends_db = pydb.friendsdb.FriendsDB(":memory:", pydb.testing.guess_schema_path())
         self.friend_id = friend_id = self.friends_db.add_friend("a friend")
 
     def test_setup(self):

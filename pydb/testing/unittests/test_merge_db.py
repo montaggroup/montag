@@ -1,7 +1,8 @@
 import unittest
+
 import pydb.mergedb as mergedb
 from pydb import FileType
-import pydb.unittests
+import pydb.testing.unittests
 
 
 class test_calculate_items_difference(unittest.TestCase):
@@ -43,7 +44,7 @@ class test_calculate_items_difference(unittest.TestCase):
 
 class test_calculate_delete_all(unittest.TestCase):
     def setUp(self):
-        self.merge_db = mergedb.MergeDB(":memory:", pydb.unittests.guess_schema_path(),
+        self.merge_db = mergedb.MergeDB(":memory:", pydb.testing.guess_schema_path(),
                                         local_db=None, enable_db_sync=False)
 
     def test_delete_all_tomes_table(self):
@@ -84,7 +85,7 @@ def _insert_tome_with_file(merge_db, tome_fidelity, file_fidelity, tome_id=1, to
 
 class test_get_high_fidelity_tome_file_hashes_without_local_file(unittest.TestCase):
     def setUp(self):
-        self.merge_db = mergedb.MergeDB(":memory:", pydb.unittests.guess_schema_path(),
+        self.merge_db = mergedb.MergeDB(":memory:", pydb.testing.guess_schema_path(),
                                         local_db=None, enable_db_sync=False)
 
     def test_empty(self):
@@ -160,7 +161,7 @@ class test_get_high_fidelity_tome_file_hashes_without_local_file(unittest.TestCa
 
 class test_get_tome_document(unittest.TestCase):
     def setUp(self):
-        self.merge_db = mergedb.MergeDB(":memory:", pydb.unittests.guess_schema_path(),
+        self.merge_db = mergedb.MergeDB(":memory:", pydb.testing.guess_schema_path(),
                                         local_db=None, enable_db_sync=False)
 
     def test_get_tome_document_by_guid_should_not_include_localFileExists(self):

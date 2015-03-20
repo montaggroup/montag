@@ -10,6 +10,7 @@ import pydb.com.transport.localloopbacktransportprotocol
 import pydb.com.jsonsession
 import pydb.com.json_and_binary_session
 import pydb.com.session
+from pydb.testing.integration_tests import get_data_path
 from cStringIO import StringIO
 import time
 import logging
@@ -23,8 +24,7 @@ FILE_DELIVERY_REPETITIONS = 10
 
 class TestFileTransferPerformance(unittest.TestCase):
     def setUp(self):
-        script_path = os.path.dirname(__file__)
-        self.test_file_contents = open(os.path.join(script_path, 'test_data', 'pg1661.epub'), "rb").read()
+        self.test_file_contents = open(get_data_path('pg1661.epub'), "rb").read()
         self.file_stream = StringIO(self.test_file_contents)
 
         self.received_file_contents = ""
