@@ -12,7 +12,7 @@ def script_extension():
 
 
 def python_binary_to_use_for_scripts():
-    return 'python2.7'
+    return sys.executable
 
 
 def base_args_to_start_service(service_name):
