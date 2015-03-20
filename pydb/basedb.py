@@ -147,7 +147,8 @@ class BaseDB(sqlitedb.SqliteDB):
         result = []
         name_without_wildcards = author_name.replace('%', '').lower()
 
-        for row in self.cur.execute("SELECT * FROM authors WHERE name LIKE ? ORDER BY name", [author_name]):
+        for row in self.cur.execute("SELECT * FROM authors WHERE name LIKE ? ORDER BY name, date_of_birth, guid",
+                                    [author_name]):
             fields = {key: row[key] for key in row.keys()}
             if fields['name'].lower() == name_without_wildcards:
                 result.insert(0, fields)

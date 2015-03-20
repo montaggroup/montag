@@ -2,17 +2,20 @@ if False:
     from ide_fake import *
 
 import pydb
+import pydb.pyrosetup
+
+SEARCH_ITEMS_PER_PAGE = 20
 
 
 def pass_paged_query_results_to_view(query, view_dict, page_number):
-    items_per_page = 20
+    items_per_page = SEARCH_ITEMS_PER_PAGE
 
     page_start = page_number * items_per_page
     page_end = (page_number+1) * items_per_page
 
     total_count, tomes = get_query_page(query, page_start, page_end)
 
-    page_end=page_start+len(tomes)
+    page_end = page_start + len(tomes)
     view_dict['page'] = page_number
     view_dict['page_start'] = page_start
     view_dict['page_end'] = page_end
@@ -40,7 +43,7 @@ def build_search_form():
     lang_dict = {lang: lang for lang in lang_list}
     lang_dict[""] = "don't care"
     form = SQLFORM.factory(
-        Field('query',requires=IS_NOT_EMPTY(), default="", label="Search for"),
+        Field('query', requires=IS_NOT_EMPTY(), default="", label="Search for"),
         Field('principal_language', default="", requires=IS_IN_SET(lang_dict)),
         Field('tome_type', label="", default="Z",
               widget=SQLFORM.widgets.radio.widget,
@@ -49,7 +52,7 @@ def build_search_form():
                   pydb.TomeType.NonFiction: 'Non-Fiction',
                   "Z": "Don't Care"})),
         submit_button='Search',
-        _method = 'GET')
+        _method='GET')
     return form
 
 
@@ -57,7 +60,7 @@ def get_query_page(query, start_offset, end_offset):
     index_server = pydb.pyrosetup.indexserver()
     result_tome_ids = index_server.search_tomes(query)
 
-    tomelist=[]
+    tomelist = []
     for tome_id in result_tome_ids[start_offset:end_offset]:
         merge_tome = pdb.get_tome(tome_id)
         if merge_tome is not None:
@@ -77,30 +80,38 @@ def get_query_page(query, start_offset, end_offset):
 def get_author_query_page(query, start_offset, end_offset):
     result_authors = pdb.find_authors(query) + pdb.find_authors_with_same_name_key(query)
 
+    name_without_wildcards = query.replace('%', '').lower()
+
     guids = set()
-    dedup_authors = []
+    normal_authors = []
+    prio_authors = []  # those will be placed in front of the result list
+
     for author in result_authors:
         guid = author['guid']
         if guid in guids:
             continue
         guids.add(guid)
-        dedup_authors.append(author)
+        if author['name'].lower() == name_without_wildcards:  # prepare to place in front
+            prio_authors.append(author)
+        else:
+            normal_authors.append(author)
 
-    dedup_authors.sort(key=lambda a: (a['name'], a['date_of_birth'], a['guid']))
+    normal_authors.sort(key=lambda a: (a['name'], a['date_of_birth'], a['guid']))
+    authors = prio_authors + normal_authors
 
-    authors_slice = dedup_authors[start_offset:end_offset]
-    return len(dedup_authors), authors_slice
+    authors_slice = authors[start_offset:end_offset]
+    return len(authors), authors_slice
 
 
 def pass_paged_author_query_results_to_view(query, view_dict, page_number):
-    items_per_page = 20
+    items_per_page = SEARCH_ITEMS_PER_PAGE
 
     page_start = page_number * items_per_page
     page_end = (page_number+1) * items_per_page
 
-    total_count, authors  = get_author_query_page(query, page_start, page_end)
+    total_count, authors = get_author_query_page(query, page_start, page_end)
 
-    page_end=page_start+len(authors)
+    page_end = page_start+len(authors)
     view_dict['page'] = page_number
     view_dict['page_start'] = page_start
     view_dict['page_end'] = page_end
