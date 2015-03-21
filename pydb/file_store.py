@@ -109,19 +109,20 @@ def strip_file_to_temp(source_path, extension_without_dot, remove_original=False
         None, None if stripping not possible or not leading to a new file
         and raises an exception if the source file is broken
     """
-    (handle, filename_stripped) = tempfile.mkstemp(suffix='.' + extension_without_dot)
-    logger.info("Writing to file %s" % filename_stripped)
-    f = os.fdopen(handle, "wb")
+    (handle_stripped, filename_stripped) = tempfile.mkstemp(suffix='.' + extension_without_dot)
+    logger.info(u"Writing to file {}".format(filename_stripped))
 
-    with open(source_path, 'rb') as source_stream:
-        if strip_file(source_stream, extension_without_dot, f):
-            f.close()
-            if remove_original:
-                os.remove(source_path)
-            file_hash_after_stripping = hash_file(filename_stripped)
-            return filename_stripped, file_hash_after_stripping
+    success = False
+    with os.fdopen(handle_stripped, "wb") as target_stream:
+        with open(source_path, 'rb') as source_stream:
+            if strip_file(source_stream, extension_without_dot, target_stream):
+                success = True
 
-        else:
-            f.close()
-            os.remove(filename_stripped)
-            return None, None
+    if success:
+        if remove_original:
+            os.remove(source_path)
+        file_hash_after_stripping = hash_file(filename_stripped)
+        return filename_stripped, file_hash_after_stripping
+    else:
+        os.remove(filename_stripped)
+        return None, None
