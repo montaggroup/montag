@@ -1,7 +1,5 @@
 {{extend 'layout.html'}}
-<h1>Edit details for file link</h1>
-
-<h2> {{=tome_link(tome)}} </h2>
+<h1 class="first_on_page">Edit details for file linked to {{=tome_link(tome)}}</h1>
 <ul>
 <li>  {{ if file['has_local_copy']: 
            =A(tome['title']+"."+file['file_extension'], _href=URL( 'getfile',args=[tome['id'],file['hash']] ))  
