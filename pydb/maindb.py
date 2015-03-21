@@ -184,7 +184,7 @@ class MainDB:
         result = self.merge_db.get_tome_document_by_guid(tome_guid, ignore_fidelity_filter,
                                                          include_author_detail=include_author_detail,
                                                          keep_id=keep_id)
-        if not 'title' in result:  # document was deleted
+        if 'title' not in result:  # document was deleted
             return result
 
         if include_local_file_info:
@@ -397,9 +397,7 @@ class MainDB:
         if edition is not None:
             edition = edition.strip()
 
-
-
-        if not fidelity:
+        if fidelity is None:
             fidelity = self.default_add_fidelity
 
         # prepare the local information about the author
@@ -713,7 +711,6 @@ class MainDB:
     def recalculate_tome_merge_db_entry(self, tome_guid):
         self.merge_db.request_complete_tome_update(tome_guid, include_fusion_source_update=True)
 
-
     def rebuild_merge_db(self):
         with Transaction(self.merge_db):
             logger.info("Deleting old merge db contents")
@@ -905,13 +902,13 @@ class MainDB:
         if len(tome_candidates) == 1:  # one tome, use it
             return tome_candidates[0]['id']
 
-        if len(tome_candidates) > 1:  #  multiple candidates left, try to filter more strict
+        if len(tome_candidates) > 1:  # multiple candidates left, try to filter more strict
                 tome_candidates = filter_tomes(tome_candidates, 'edition', edition, strict=True)
 
                 if len(tome_candidates) == 1:  # one tome now left, use it
                     return tome_candidates[0]['id']
 
-        if len(tome_candidates) > 1:  #  multiple candidates left, try to filter more strict
+        if len(tome_candidates) > 1:  # multiple candidates left, try to filter more strict
                 tome_candidates = filter_tomes(tome_candidates, 'publication_year', publication_year, strict=True)
 
                 if len(tome_candidates) == 1:  # one tome now left, use it
@@ -1007,7 +1004,6 @@ class MainDB:
 
         new_tome_doc = self.get_tome_document_by_guid(target_guid)
 
-
         if data_tome != target_tome:  # copy data from data tome over
             for key, value in data_tome.iteritems():
                 if key in new_tome_doc:
@@ -1018,7 +1014,6 @@ class MainDB:
         required_fidelity_2 = self.calculate_required_tome_fidelity(target_tome['id'])
         new_tome_doc['fidelity'] = max(required_fidelity_1, required_fidelity_2)  # we are not less certain than before
         new_tome_doc['fusion_sources'].append({'source_guid': source_guid, 'fidelity': Default_Manual_Fidelity})
-
 
         self.load_own_tome_document(new_tome_doc)
 
@@ -1042,14 +1037,17 @@ class MainDB:
                     if key.lower() not in ("guid"):
                         new_author_doc[key] = data_author[key]
 
-
         required_fidelity_1 = self.calculate_required_author_fidelity(source_author['id'])
         required_fidelity_2 = self.calculate_required_author_fidelity(target_author['id'])
-        new_author_doc['fidelity'] = max(required_fidelity_1, required_fidelity_2)  # we are not less certain than before
-        new_author_doc['fusion_sources'].append({'source_guid': source_guid, 'fidelity': Default_Manual_Fidelity})
 
+        # we are not less certain than before
+        new_author_doc['fidelity'] = max(required_fidelity_1, required_fidelity_2)
+
+        new_author_doc['fusion_sources'].append(
+            {'source_guid': source_guid, 'fidelity': Default_Manual_Fidelity})
 
         self.load_own_author_document(new_author_doc)
+
 
 def _effective_friend_fidelity(friend_fidelity, specific_friend_deduction=Friend_Fidelity_Deduction):
     f = friend_fidelity
