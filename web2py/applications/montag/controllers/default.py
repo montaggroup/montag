@@ -236,8 +236,8 @@ def view_tome():
         if tome_guid:
             redirect(URL('view_tome', args=(tome_guid)))
 
-    title_text=pydb.title.coalesce_title(tome['title'], tome['subtitle'])
-    response.title = "%s - Montag" % title_text
+    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    response.title = u"{} - Montag".format(title_text)
 
     return {
         'tome': tome

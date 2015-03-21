@@ -49,6 +49,7 @@ def _title_suggestion(filename):
 @auth.requires_login()
 def upload_file():
     response.enable_dropzone = True
+    response.title = "Add Tome - Montag"
     form = _create_upload_form()
 
     if form.accepts(request.vars):
@@ -90,8 +91,12 @@ def upload_file_to_tome():
 
     tome = pdb.get_tome_by_guid(tome_guid)
     if tome is None:
+        response.title = u"Upload File - Montag"
         response.flash = 'Tome not found'
         return dict(form=form, tome=None)
+
+    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    response.title = u"Upload File to {} - Montag".format(title_text)
 
     if form.accepts(request.vars):
         f = request.vars.file
@@ -151,6 +156,8 @@ def add_tome_from_file():
     file_hash = request.args[0]
     file_extension = request.args[1]
     file_size = request.args[2]
+    response.title = "Add Tome - Montag"
+
     author_ids = []
 
     if 'metadata' not in session:
@@ -200,6 +207,12 @@ def _upload_cover_form():
 def upload_cover():
     tome_id = request.args[0]
     tome = pdb.get_tome(tome_id)
+    if tome is None:
+        response.flash = 'Tome not found'
+        return dict(form=None, tome=None)
+
+    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    response.title = u"Upload Cover for {} - Montag".format(title_text)
     response.enable_dropzone = True
 
     form = _upload_cover_form()
