@@ -852,6 +852,7 @@ class MainDB:
     # using e.g. a tome title
     def find_or_create_author(self, author_name, fidelity):
         """ returns a merge db author id """
+        author_name = author_name.strip()
         author_candidates = self.find_authors(author_name)
 
         if len(author_candidates) == 1:  # we have only one candidate, use it
@@ -874,6 +875,12 @@ class MainDB:
 
     def find_or_create_tome(self, title, language, author_ids, subtitle, tome_type, fidelity, 
                             edition=None, publication_year=None, tags_values=None):
+
+        title = title.strip()
+        if subtitle is not None:
+            subtitle = subtitle.strip()
+        if edition is not None:
+            edition = edition.strip()
 
         def filter_tomes(candidates, field_name, value_to_find, strict=False):
             if value_to_find is None and not strict:
