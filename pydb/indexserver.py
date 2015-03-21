@@ -6,19 +6,22 @@ import logging
 logger = logging.getLogger('indexserver')
 
 
+def build(db_dir, schema_dir):
+    if not os.path.exists(db_dir):
+        os.makedirs(db_dir)
+
+    index_thread = indexthread.build(db_dir, schema_dir)
+    whoosh_index = whooshindex.WhooshIndex(db_dir)
+
+    return IndexServer(whoosh_index, index_thread)
+
+
 class IndexServer():
-    def __init__(self, base_path):
-        db_dir = os.path.join(base_path, "db")
-        if not os.path.exists(db_dir):
-            os.mkdir(db_dir)
+    def __init__(self,  whoosh_index, index_thread):
+        self.whoosh_index = whoosh_index
+        self.index_thread = index_thread
 
-        schema_path = os.path.join(base_path, "db-schemas")
-
-        self.whoosh_index = whooshindex.WhooshIndex(db_dir)
-
-        progress_file_name = os.path.join(db_dir, "whoosh_progress.txt")
-        progress_file = indexthread.ProgressFile(progress_file_name)
-        self.index_thread = indexthread.IndexThread(schema_path, db_dir, progress_file)
+    def start(self):
         self.index_thread.start()
 
     def stop(self):

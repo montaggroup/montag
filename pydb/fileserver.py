@@ -11,6 +11,9 @@ def db_path(db_dir, db_name):
 
 
 def build(file_store_path, pydb_server):
+    if not os.path.exists(file_store_path):
+        os.makedirs(file_store_path)
+
     file_store_ = file_store.FileStore(file_store_path)
     fs = FileServer(pydb_server, file_store_)
     return fs

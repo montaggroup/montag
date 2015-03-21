@@ -5,27 +5,17 @@ logging.basicConfig(level=logging.INFO)
 
 import Pyro4
 import argparse
-import os
 import time
-import sys
-from pydb.executionenvironment import using_py2exe
+from pydb.executionenvironment import determine_database_directory, get_schema_dir
 import pydb.indexserver
 import pydb.config
 import pydb.logconfig
 
-def get_main_dir():
-    if using_py2exe():
-        return os.path.dirname(sys.executable)
-    return os.path.dirname(sys.argv[0])
-
-
 if __name__ == "__main__":
     import pydb.pyrosetup
 
-    base_path = get_main_dir()
-
     parser = argparse.ArgumentParser(description='Runs the indexing server')
-    parser.add_argument('--basepath', '-b', dest='basepath', help='Sets the basepath for the server', action='store')
+    parser.add_argument('--basepath', '-b', dest='basepath', help='Sets the base path for the server', action='store')
     parser.add_argument('--name', '-n', dest='pyro_name', help='Sets the Pyro4 name for the server', action='store',
                         default="index_server")
     parser.add_argument('--port', '-p', dest='pyro_port', help='Sets the Pyro4 port for the server', action='store',
@@ -39,8 +29,10 @@ if __name__ == "__main__":
     logger = logging.getLogger('indexserver')
     logger.info('### logging started at %s local time. ###', time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime()))
 
+    db_dir = determine_database_directory(args.basepath)
     pydb.config.read_config()
-    index_server = pydb.indexserver.IndexServer(base_path)
+    index_server = pydb.indexserver.build(db_dir, schema_dir=get_schema_dir())
+    index_server.start()
 
     daemon = Pyro4.Daemon(port=args.pyro_port)  # make a Pyro daemon
 

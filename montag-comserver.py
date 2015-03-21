@@ -16,6 +16,7 @@ if __name__ == "__main__":
     pydb.logconfig.catch_twisted_log_messages()
 
     parser = argparse.ArgumentParser(description='Runs the communication server')
+    parser.add_argument('--basepath', '-b', dest='basepath', help='Sets the basepath for the server', action='store')
     pydb.logconfig.add_log_level_to_parser(parser)
 
     args = parser.parse_args()

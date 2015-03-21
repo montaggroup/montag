@@ -7,17 +7,23 @@ import json
 import logging
 
 # not a hard boundary, index server will try to keep update batches around this size
-TargetIndexingBatchSize = 10000
+TARGET_INDEXING_BATCH_SIZE = 10000
 
 logger = logging.getLogger('indexthread')
 
 
+def build(db_dir, schema_dir):
+    progress_file_name = os.path.join(db_dir, "whoosh_progress.txt")
+    progress_file = ProgressFile(progress_file_name)
+    return IndexThread(db_dir, schema_dir, progress_file)
+
+
 class IndexThread(threading.Thread):
-    def __init__(self, schema_path, db_dir, progress_file):
+    def __init__(self, db_dir, schema_dir, progress_file):
         threading.Thread.__init__(self)
         self.progress_file = progress_file
 
-        self.schema_dir = schema_path
+        self.schema_dir = schema_dir
         self.db_dir = db_dir
 
         self.min_mod_date_authors, self.min_mod_date_tomes = self.progress_file.load_mod_dates()
@@ -55,7 +61,7 @@ class IndexThread(threading.Thread):
     def _create_tome_change_list(self):
         all_updated = True
 
-        update_batch_size = int(TargetIndexingBatchSize / 2)
+        update_batch_size = int(TARGET_INDEXING_BATCH_SIZE / 2)
 
         modified_author_guids, new_min_mod_date_authors = \
             self.merge_db.get_modified_document_guids("author", update_batch_size, self.min_mod_date_authors)

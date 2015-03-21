@@ -1,7 +1,7 @@
 import logging
 
 def set_log_level(loglevel_string):
-    # from the python logging howtok
+    # from the python logging howto
     numeric_level = getattr(logging, loglevel_string.upper(), None)
     if not isinstance(numeric_level, int):
         raise ValueError('Invalid log level: {}'.format(loglevel_string))

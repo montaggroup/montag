@@ -14,10 +14,21 @@ import pydb.pyrosetup
 import pydb.config
 import pydb.logconfig
 
+
+def determine_file_store_dir(override_base_path=None):
+    if override_base_path is None:
+        base_path = get_main_dir()
+    else:
+        base_path = args.basepath
+
+    # todo: read from config files
+    return os.path.join(base_path, "filestore")
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Runs the file server')
-    parser.add_argument('--basepath', '-b', dest='basepath', help='Sets the basepath for the server', action='store')
+    parser.add_argument('--basepath', '-b', dest='basepath', help='Sets the base path for the server', action='store')
     parser.add_argument('--name', '-n', dest='pyro_name', help='Sets the Pyro4 name for the server', action='store',
                         default="fileserver")
     parser.add_argument('--port', '-p', dest='pyro_port', help='Sets the Pyro4 port for the server', action='store',
@@ -25,7 +36,6 @@ if __name__ == "__main__":
     parser.add_argument('--no-sync', dest='no_sync',
                         help='Disable database sync - may lead to COMPLETE data loss on error (eg. power failure)',
                         action="store_true", default=False)
-
     pydb.logconfig.add_log_level_to_parser(parser)
 
     args = parser.parse_args()
@@ -36,16 +46,7 @@ if __name__ == "__main__":
     logger = logging.getLogger('fileserver')
     logger.info('### logging started at %s local time. ###', time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime()))
 
-    if args.basepath is None:
-        base_path = get_main_dir()
-    else:
-        base_path = args.basepath
-
-    # todo: read from config files
-    store_dir = os.path.join(base_path, "filestore")
-    if not os.path.exists(store_dir):
-        os.mkdir(store_dir)
-
+    store_dir = determine_file_store_dir(args.basepath)
     file_server = pydb.fileserver.build(store_dir, pydb.pyrosetup.pydbserver())
 
     daemon = Pyro4.Daemon(port=args.pyro_port)
