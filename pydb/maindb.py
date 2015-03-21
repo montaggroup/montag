@@ -335,6 +335,8 @@ class MainDB:
         if not fidelity:
             fidelity = self.default_add_fidelity
 
+        name = name.strip()
+
         if not guid:
             guid = self.generate_guid()
 
@@ -388,6 +390,14 @@ class MainDB:
             is_fiction: None => unknown, True => fiction, False=>non_fiction
         """
         logging.debug("Called add_tome")
+
+        title = title.strip()
+        if subtitle is not None:
+            subtitle = subtitle.strip()
+        if edition is not None:
+            edition = edition.strip()
+
+
 
         if not fidelity:
             fidelity = self.default_add_fidelity
