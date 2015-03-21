@@ -23,7 +23,7 @@ def _insert_file(file_stream, original_file_name):
         (file_id, file_hash, file_size) = file_server.add_file_from_local_disk(file_path, extension_with_dot[1:],
                                                                                move_file=True)
 
-        return file_id, hash, file_size
+        return file_id, file_hash, file_size
 
 
 def _create_upload_form():
