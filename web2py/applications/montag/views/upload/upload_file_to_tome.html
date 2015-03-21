@@ -4,9 +4,7 @@
 {{if tome is None: }}
 No such tome
 {{else:}}
-<h2>
-    Upload file to {{=tome['title']}}
-</h2>
+<h1>Upload file for {{=tome_link(tome)}}</h1>
 
 {{=form}}
 
