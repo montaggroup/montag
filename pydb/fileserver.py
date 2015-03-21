@@ -88,7 +88,7 @@ class FileServer:
                     file_hash = new_hash
 
             except ValueError:
-                logger.warning("Could not strip file %s, seems to be broken" % source_path)
+                logger.warning(u"Could not strip file {}, seems to be broken".format(source_path))
                 return None, None, None
 
         size = self.file_store.add_file(source_path, file_hash, extension, move_file)
