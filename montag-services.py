@@ -53,14 +53,8 @@ def _wait_for_db_ping_ok():
     return db_ok
 
 def do_stop_services(args):
-    services_status = services.get_current_services_status()
-    for name in services.names[::-1]:
-        if services_status[name]['status'] != 'not running':
-            print 'stopping service {}'.format(name)
-            try:
-                services.stop(services_status[name]['process'])
-            except Exception:
-                print 'could not stop service %s' % name
+    services.stop_all_ignoring_exceptions(verbose=True)
+
 
 
 def do_restart_services(args):

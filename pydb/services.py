@@ -16,9 +16,14 @@ service_prefix = 'montag-'
 basenames = ["pydbserver", "comserver", "comservice", "indexserver", "fileserver", "web2py"]
 
 extension = executionenvironment.script_extension()
-names = [service_prefix + name + "." + extension for name in basenames]
 
 PSUTIL2 = psutil.version_info >= (2, 0)
+
+
+def service_name(basename):
+    return service_prefix + basename + "." + extension
+
+names = [service_name(basename) for basename in basenames]
 
 
 def pidlist():
@@ -131,3 +136,15 @@ def stop(service_process):
     """
     service_process.terminate()
     service_process.wait(timeout=5)
+
+
+def stop_all_ignoring_exceptions(verbose=False):
+    services_status = get_current_services_status()
+    for name in names[::-1]:
+        if services_status[name]['status'] != 'not running':
+            if verbose:
+                print 'stopping service {}'.format(name)
+            try:
+                stop(services_status[name]['process'])
+            except Exception:
+                print 'could not stop service {}' .format(name)
