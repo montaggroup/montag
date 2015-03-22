@@ -18,6 +18,7 @@ def get_main_dir():
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Runs the web interface')
+    parser.add_argument('--basepath', '-b', dest='basepath', help='Sets the basepath for the server', action='store')
     pydb.logconfig.add_log_level_to_parser(parser)
     
     args = parser.parse_args()

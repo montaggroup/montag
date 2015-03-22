@@ -7,7 +7,7 @@ import pydb.testing.unittests
 
 class test_comm_data_activate_locking(unittest.TestCase):
     def setUp(self):
-        self.cds = commdatastore.CommDataStore(":memory:", pydb.testing.guess_schema_path())
+        self.cds = commdatastore.CommDataStore(":memory:", pydb.testing.guess_schema_dir())
         self.passphrase = "hello"
         commdatastore.default_iteration_count = 10
 
@@ -48,7 +48,7 @@ class test_comm_data_activate_locking(unittest.TestCase):
 
 class test_comm_data_store_unlock_without_locking_active(unittest.TestCase):
     def setUp(self):
-        self.cds = commdatastore.CommDataStore(":memory:", pydb.testing.guess_schema_path())
+        self.cds = commdatastore.CommDataStore(":memory:", pydb.testing.guess_schema_dir())
 
         self.a_friend_id = self.cds._friends_db.add_friend('a_friend')
         self.cds._friends_db.set_comm_data_string(self.a_friend_id, '{"secret": "secret_comm_data"}')
@@ -69,7 +69,7 @@ class test_comm_data_store_unlock(unittest.TestCase):
     def setUp(self):
         self.passphrase = "hello123"
 
-        self.cds = commdatastore.CommDataStore(":memory:", pydb.testing.guess_schema_path())
+        self.cds = commdatastore.CommDataStore(":memory:", pydb.testing.guess_schema_dir())
 
         self.a_friend_id = self.cds._friends_db.add_friend('a_friend')
         self.cds._friends_db.set_comm_data_string(self.a_friend_id,

@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.WARN)
 
 class TestAddTome(unittest.TestCase):
     def setUp(self):
-        self.main_db = helpers.build_main_db_memory_only(pydb.testing.guess_schema_path())
+        self.main_db = helpers.build_main_db_memory_only(pydb.testing.guess_schema_dir())
 
     def test_adding_an_tome_generates_a_tome_id_with_which_we_can_fetch_the_tome_again(self):
         author_id = self.main_db.add_author(name='john smith')
@@ -27,7 +27,7 @@ class TestAddTome(unittest.TestCase):
 
 class TestFindOrCreateTome(unittest.TestCase):
     def setUp(self):
-        self.main_db = helpers.build_main_db_memory_only(pydb.testing.guess_schema_path())
+        self.main_db = helpers.build_main_db_memory_only(pydb.testing.guess_schema_dir())
         self.author_id = self.main_db.add_author(name='john smith')
 
     def _add_tome(self, tome_type=pydb.TomeType.Fiction,

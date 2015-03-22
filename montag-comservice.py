@@ -22,6 +22,7 @@ if __name__ == "__main__":
     cs = pydb.comservice.build()
 
     parser = argparse.ArgumentParser(description='Runs the communication client service')
+    parser.add_argument('--basepath', '-b', dest='basepath', help='Sets the basepath for the server', action='store')
     parser.add_argument('--name', '-n', dest='pyro_name', help='Sets the Pyro4 name for the server', action='store',
                         default="comservice")
     parser.add_argument('--port', '-p', dest='pyro_port', help='Sets the Pyro4 port for the server', action='store',

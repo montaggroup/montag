@@ -1,7 +1,7 @@
 import os
 
 
-def guess_schema_path():
+def guess_schema_dir():
     if os.path.exists("db-schemas"):
         return "db-schemas"
 

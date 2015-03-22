@@ -68,3 +68,16 @@ def get_main_dir():
     if using_py2exe():
         return os.path.dirname(sys.executable)
     return os.path.dirname(sys.argv[0])
+
+
+def get_schema_dir():
+    return os.path.join(get_main_dir(), "db-schemas")
+
+
+def determine_database_directory(override_base_dir=None):
+    if override_base_dir is None:
+        base_dir = get_main_dir()
+    else:
+        base_dir = override_base_dir
+
+    return os.path.join(base_dir, "db")

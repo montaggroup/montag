@@ -12,7 +12,7 @@ logging.basicConfig(level=logging.INFO)
 
 class TestAddAuthor(unittest.TestCase):
     def setUp(self):
-        self.main_db = helpers.build_main_db_memory_only(pydb.testing.guess_schema_path())
+        self.main_db = helpers.build_main_db_memory_only(pydb.testing.guess_schema_dir())
         self.friend_1_id = self.main_db.add_friend('a friend')
 
     def test_adding_an_author_generates_a_name_key(self):

@@ -26,19 +26,22 @@ def db_path(db_dir, db_name):
     return os.path.join(db_dir, db_name + ".db")
 
 
-def build(db_dir, schema_path, enable_db_sync=True):
+def build(db_dir, schema_dir, enable_db_sync=True):
+    if not os.path.exists(db_dir):
+        os.makedirs(db_dir)
+
     foreign_db_dir = os.path.join(db_dir, "foreign")
     if not os.path.exists(foreign_db_dir):
         os.makedirs(foreign_db_dir)
 
-    local_db = LocalDB(db_path(db_dir, "local"), schema_path, enable_db_sync)
-    merge_db = MergeDB(db_path(db_dir, "merge"), schema_path, local_db=local_db, enable_db_sync=False)
+    local_db = LocalDB(db_path(db_dir, "local"), schema_dir, enable_db_sync)
+    merge_db = MergeDB(db_path(db_dir, "merge"), schema_dir, local_db=local_db, enable_db_sync=False)
     merge_db.add_source(local_db)
-    friends_db = FriendsDB(db_path(db_dir, "friends"), schema_path)
+    friends_db = FriendsDB(db_path(db_dir, "friends"), schema_dir)
 
     def build_foreign_db(friend_id):
         foreign_db_path = db_path(db_dir, os.path.join("foreign", str(friend_id)))
-        foreign_db = ForeignDB(foreign_db_path, schema_path, friend_id, enable_db_sync=enable_db_sync)
+        foreign_db = ForeignDB(foreign_db_path, schema_dir, friend_id, enable_db_sync=enable_db_sync)
         return foreign_db
 
     index_server = pyrosetup.indexserver()
