@@ -11,8 +11,7 @@ def build(db_dir, schema_dir):
         os.makedirs(db_dir)
 
     index_thread = indexthread.build(db_dir, schema_dir)
-    whoosh_index = whooshindex.WhooshIndex(db_dir)
-
+    whoosh_index = whooshindex.build(db_dir)
     return IndexServer(whoosh_index, index_thread)
 
 
