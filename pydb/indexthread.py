@@ -37,7 +37,7 @@ class IndexThread(threading.Thread):
         self.update_trigger.set()
 
     def run(self):
-        self.whoosh_index = whooshindex.WhooshIndex(self.db_dir)
+        self.whoosh_index = whooshindex.build(self.db_dir)
         # @todo: can we split the merge db in one class with sources and one without?
         self.merge_db = mergedb.MergeDB(os.path.join(self.db_dir, "merge.db"), self.schema_dir,
                                         local_db=None, enable_db_sync=False)

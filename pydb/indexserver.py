@@ -14,7 +14,7 @@ class IndexServer():
 
         schema_path = os.path.join(base_path, "db-schemas")
 
-        self.whoosh_index = whooshindex.WhooshIndex(db_dir)
+        self.whoosh_index = whooshindex.build(db_dir)
 
         progress_file_name = os.path.join(db_dir, "whoosh_progress.txt")
         progress_file = indexthread.ProgressFile(progress_file_name)
