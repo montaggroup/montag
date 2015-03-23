@@ -210,7 +210,7 @@ def view_author():
     tomes = pdb.get_tomes_by_author(author['id'])
     tomes.sort(key=lambda x: x['title'])
 
-    response.title = "%s - Montag" % author['name']
+    response.title = "{} - Montag".format(author['name'])
 
     tomelist = []
     for tome in tomes:
@@ -290,21 +290,24 @@ def edit_author():
         
     required_fidelity = pdb.calculate_required_author_fidelity(author_doc['id'])
 
-    field_names = ['name', 'date_of_birth', 'date_of_death', 'fidelity']
+
 
     form = _author_edit_form(author_doc, required_fidelity)
-    response.title = "Edit %s - Montag" % author_doc['name']
+    response.title = "Edit {} - Montag".fromat(author_doc['name'])
 
     if form.process(keepvalues=True, session=None).accepted:
+        field_names = ['name', 'date_of_birth', 'date_of_death', 'fidelity']
         for f in field_names:
             author_doc[f] = read_form_field(form, f)
 
         pdb.load_own_author_document(author_doc)
         author_doc = pdb.get_author_document_by_guid(author_guid, keep_id=True)
         response.flash = 'Stored new values'
+        redirect(URL('view_author', args=[author_guid]))
     elif form.errors:
         response.flash = 'form has errors'
     return dict(form=form, author=author_doc, required_fidelity=required_fidelity)
+
 
 def _is_tome_or_author_guid(string):
     return re.match("[0-9a-z]{32}", string)
