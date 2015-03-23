@@ -1,5 +1,4 @@
 import os
-import gluon.shell
 import sys
 
 
@@ -9,7 +8,6 @@ def prepare_web2py():
     web2py_path = os.path.join(os.path.dirname(__file__), '..', '..', '..', 'web2py')
     sys.path.append(os.path.realpath(web2py_path))
     os.chdir(web2py_path)
-
 
 def build_request(controller_name, function_name):
     env = _prepare_environment(controller_name)
@@ -60,6 +58,8 @@ def _prepare_environment(controller_name):
     db_dir = os.path.join(app_dir, 'databases')
     if not os.path.isdir(db_dir):  # without db dir, DAL wont work
         os.mkdir(db_dir)
+
+    import gluon.shell
     env = gluon.shell.env(app_dir, c=controller_name, dir=app_dir, import_models=True)
     execfile(os.path.join(app_dir, 'controllers', controller_name + '.py'), env)
 
