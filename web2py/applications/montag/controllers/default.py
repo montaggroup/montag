@@ -290,10 +290,8 @@ def edit_author():
         
     required_fidelity = pdb.calculate_required_author_fidelity(author_doc['id'])
 
-
-
     form = _author_edit_form(author_doc, required_fidelity)
-    response.title = "Edit {} - Montag".fromat(author_doc['name'])
+    response.title = "Edit {} - Montag".format(author_doc['name'])
 
     if form.process(keepvalues=True, session=None).accepted:
         field_names = ['name', 'date_of_birth', 'date_of_death', 'fidelity']
