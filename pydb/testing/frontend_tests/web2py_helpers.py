@@ -18,7 +18,6 @@ class Web2pyRequest():
     def __init__(self, environment, controller_name, function_name):
         self.env = environment
         self.request = self.env['request']
-        self.response = self.env['response']
         self.controller_name = controller_name
         self.function_name = function_name
         self.result = None
@@ -39,7 +38,10 @@ class Web2pyRequest():
         self.result = self.env[self.function_name]()
         return self.result
 
-    def dunmp_result(self):
+    def dump_result(self):
+        if self.result is None:
+            self.execute()
+
         for key, value in self.result.iteritems():
             print "{}: {}".format(key, value)
 
@@ -47,9 +49,10 @@ class Web2pyRequest():
         if self.result is None:
             self.execute()
 
-        self.response._view_environment.update(self.env)
+        response = self.env['response']
+        response._view_environment.update(self.env)
         view_file = '{}/{}.html'.format(self.controller_name, self.function_name)
-        html = self.response.render(view_file, self.result)
+        html = response.render(view_file, self.result)
         return html
 
 
