@@ -24,7 +24,7 @@ def getfile():
     tome_file = pdb.get_tome_file(tome_id, file_hash)
 
     fp = pydb.pyrosetup.fileserver().get_local_file_path(file_hash)
-    plain_file = open(fp,"rb")
+    plain_file = open(fp, "rb")
 
     return _stream_tome_file(tome_id, tome_file, plain_file)
 
@@ -265,12 +265,17 @@ def view_tome_debug_info():
 
 
 def _author_edit_form(author, required_fidelity):
-    form = SQLFORM.factory(Field('name',requires=IS_NOT_EMPTY(), default=db_str_to_form(author['name']), comment=XML(r'<input type="button" value="Guess name case" onclick="title_case_field(&quot;no_table_name&quot;)">')),
+    form = SQLFORM.factory(Field('name',requires=IS_NOT_EMPTY(), default=db_str_to_form(author['name']),
+                                 comment=XML(r'<input type="button" value="Guess name case" '
+                                             r'onclick="title_case_field(&quot;no_table_name&quot;)">')),
                            Field('date_of_birth', default=author['date_of_birth'],
-                           comment=TOOLTIP('Please enter the date in ISO&nbsp;8601, e.g. 1920-08-22. If only the year is known, use that.')),
-                           Field('date_of_death',default=author['date_of_death'],
-                           comment=TOOLTIP('Please enter the date in ISO&nbsp;8601, e.g. 1993-02-21. If only the year is known, use that.')),
-                           Field('fidelity', requires=FidelityValidator(), default=required_fidelity, comment='Current Value: {}'.format(author['fidelity'])),
+                                 comment=TOOLTIP('Please enter the date in ISO&nbsp;8601, '
+                                                 'e.g. 1920-08-22. If only the year is known, use that.')),
+                           Field('date_of_death', default=author['date_of_death'],
+                                 comment=TOOLTIP('Please enter the date in ISO&nbsp;8601, '
+                                                 'e.g. 1993-02-21. If only the year is known, use that.')),
+                           Field('fidelity', requires=FidelityValidator(), default=required_fidelity,
+                                 comment='Current Value: {}'.format(author['fidelity'])),
                            submit_button='Save')
     return form
 
@@ -560,15 +565,13 @@ def edit_tome_author_link():
 
     title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
     response.title = u"Edit Author Link {} <=>  {} - Montag".format(tome_author['name'], title_text)
-    
-    field_names = ['order','fidelity']
 
     if form.process(keepvalues=True).accepted:
         doc = pdb.get_tome_document_by_guid(tome['guid'])
         other_authors = filter( lambda x: x['guid']!=author_guid, doc['authors'])
         tome_author_doc = filter( lambda x: x['guid']==author_guid, doc['authors'])[0]
 
-        for f in field_names:
+        for f in ('order', 'fidelity'):
             tome_author_doc[f]=read_form_field(form, f)
 
         other_authors.append(tome_author_doc)
@@ -606,7 +609,6 @@ def link_tome_to_author():
     response.title = u"Add Author to {} - Montag".format(title_text)
 
     if form.process(keepvalues=True).accepted:
-
         author_name = read_form_field(form, 'author_name')
         fidelity = read_form_field(form, 'fidelity')
         author_order = float(read_form_field(form, 'order'))
@@ -617,7 +619,7 @@ def link_tome_to_author():
         pdb.link_tome_to_author(tome_id, author_id, author_order, fidelity)
 
         session.flash = 'Added author to tome'
-        redirect(URL('edit_tome_author_link', args=(tome_id, author_id)))
+        redirect(URL('edit_tome', args=(tome['guid']), anchor='authors'))
     elif form.errors:
         response.flash = 'form has errors'
 
