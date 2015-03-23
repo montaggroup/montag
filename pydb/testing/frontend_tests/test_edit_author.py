@@ -17,12 +17,12 @@ class TestEditAuthor(unittest.TestCase):
 
     def test_edit_author_returns_form_and_view_renders(self):
         author_id = self.pdb.add_author('john doe')
-        author = self.pdb.get_author(author_id)
-        author_guid = author['guid']
+        db_author = self.pdb.get_author(author_id)
+        author_guid = db_author['guid']
 
         self.edit_author.add_args(author_guid)
         res = self.edit_author.execute()
-        print res
+
         self.assertIn('author', res)
         author_data = res['author']
         self.assertEqual(author_data['name'], 'john doe')

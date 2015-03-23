@@ -48,7 +48,10 @@ class Web2pyRequest():
     def render_result(self):
         if self.result is None:
             self.execute()
-        html = self.response.render('{}/{}.html'.format(self.controller_name, self.function_name), self.result)
+
+        self.response._view_environment.update(self.env)
+        view_file = '{}/{}.html'.format(self.controller_name, self.function_name)
+        html = self.response.render(view_file, self.result)
         return html
 
 
