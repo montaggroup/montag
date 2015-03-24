@@ -24,7 +24,7 @@ def getfile():
     tome_file = pdb.get_tome_file(tome_id, file_hash)
 
     fp = pydb.pyrosetup.fileserver().get_local_file_path(file_hash)
-    plain_file = open(fp,"rb")
+    plain_file = open(fp, "rb")
 
     return _stream_tome_file(tome_id, tome_file, plain_file)
 
@@ -210,7 +210,7 @@ def view_author():
     tomes = pdb.get_tomes_by_author(author['id'])
     tomes.sort(key=lambda x: x['title'])
 
-    response.title = "%s - Montag" % author['name']
+    response.title = "{} - Montag".format(author['name'])
 
     tomelist = []
     for tome in tomes:
@@ -265,12 +265,17 @@ def view_tome_debug_info():
 
 
 def _author_edit_form(author, required_fidelity):
-    form = SQLFORM.factory(Field('name',requires=IS_NOT_EMPTY(), default=db_str_to_form(author['name']), comment=XML(r'<input type="button" value="Guess name case" onclick="title_case_field(&quot;no_table_name&quot;)">')),
+    form = SQLFORM.factory(Field('name',requires=IS_NOT_EMPTY(), default=db_str_to_form(author['name']),
+                                 comment=XML(r'<input type="button" value="Guess name case" '
+                                             r'onclick="title_case_field(&quot;no_table_name&quot;)">')),
                            Field('date_of_birth', default=author['date_of_birth'],
-                           comment=TOOLTIP('Please enter the date in ISO&nbsp;8601, e.g. 1920-08-22. If only the year is known, use that.')),
-                           Field('date_of_death',default=author['date_of_death'],
-                           comment=TOOLTIP('Please enter the date in ISO&nbsp;8601, e.g. 1993-02-21. If only the year is known, use that.')),
-                           Field('fidelity', requires=FidelityValidator(), default=required_fidelity, comment='Current Value: {}'.format(author['fidelity'])),
+                                 comment=TOOLTIP('Please enter the date in ISO&nbsp;8601, '
+                                                 'e.g. 1920-08-22. If only the year is known, use that.')),
+                           Field('date_of_death', default=author['date_of_death'],
+                                 comment=TOOLTIP('Please enter the date in ISO&nbsp;8601, '
+                                                 'e.g. 1993-02-21. If only the year is known, use that.')),
+                           Field('fidelity', requires=FidelityValidator(), default=required_fidelity,
+                                 comment='Current Value: {}'.format(author['fidelity'])),
                            submit_button='Save')
     return form
 
@@ -285,21 +290,22 @@ def edit_author():
         
     required_fidelity = pdb.calculate_required_author_fidelity(author_doc['id'])
 
-    field_names = ['name', 'date_of_birth', 'date_of_death', 'fidelity']
-
     form = _author_edit_form(author_doc, required_fidelity)
-    response.title = "Edit %s - Montag" % author_doc['name']
+    response.title = "Edit {} - Montag".format(author_doc['name'])
 
     if form.process(keepvalues=True, session=None).accepted:
+        field_names = ['name', 'date_of_birth', 'date_of_death', 'fidelity']
         for f in field_names:
             author_doc[f] = read_form_field(form, f)
 
         pdb.load_own_author_document(author_doc)
         author_doc = pdb.get_author_document_by_guid(author_guid, keep_id=True)
         response.flash = 'Stored new values'
+        redirect(URL('view_author', args=[author_guid]))
     elif form.errors:
         response.flash = 'form has errors'
     return dict(form=form, author=author_doc, required_fidelity=required_fidelity)
+
 
 def _is_tome_or_author_guid(string):
     return re.match("[0-9a-z]{32}", string)
@@ -560,14 +566,13 @@ def edit_tome_author_link():
 
     title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
     response.title = u"Edit Author Link {} <=>  {} - Montag".format(tome_author['name'], title_text)
-    
+
     if form.process(keepvalues=True).accepted:
         doc = pdb.get_tome_document_by_guid(tome['guid'])
         other_authors = filter(lambda x: x['guid'] != author_guid, doc['authors'])
         tome_author_doc = filter(lambda x: x['guid'] == author_guid, doc['authors'])[0]
 
-        field_names = ('order', 'fidelity')
-        for f in field_names:
+        for f in ('order', 'fidelity'):
             tome_author_doc[f] = read_form_field(form, f)
 
         other_authors.append(tome_author_doc)
@@ -616,7 +621,7 @@ def link_tome_to_author():
         pdb.link_tome_to_author(tome_id, author_id, author_order, fidelity)
 
         session.flash = 'Added author to tome'
-        redirect(URL('edit_tome_author_link', args=(tome_id, author_id)))
+        redirect(URL('edit_tome', args=(tome['guid']), anchor='authors'))
     elif form.errors:
         response.flash = 'form has errors'
 
