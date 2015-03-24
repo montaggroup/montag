@@ -109,16 +109,21 @@ def get_current_services_status():
     return services_status
 
 
-def logfile_path(service_name):
-    return os.path.join(log_path, getpass.getuser() + '-' + service_name.replace('.py', '.log').replace('.exe', '.log'))
+def logfile_path(service_name, log_file_base_path=log_path):
+    return os.path.join(log_file_base_path, getpass.getuser() + '-' + service_name.replace('.py', '.log').replace('.exe', '.log'))
 
 
-def start(service_name, log_level=DEFAULT_LOG_LEVEL):
+def start(service_name, log_level=DEFAULT_LOG_LEVEL, base_dir_path=None, log_file_base_path=log_path):
     startargs = executionenvironment.base_args_to_start_service(service_name)
-    startargs.append('-l')
+    startargs.append('--loglevel')
     startargs.append(log_level)
+
+    if base_dir_path is not None:
+        startargs.append('--basepath')
+        startargs.append(base_dir_path)
+
     try:
-        with open(logfile_path(service_name), 'wb', 1) as logfile:
+        with open(logfile_path(service_name, log_file_base_path=log_file_base_path), 'wb', 1) as logfile:
             p = psutil.Popen(startargs, stdout=logfile, stderr=logfile)
             logfile.flush()
             return_code = p.wait(timeout=1)
