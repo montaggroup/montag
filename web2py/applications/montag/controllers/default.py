@@ -557,7 +557,7 @@ def edit_tome_author_link():
             tome_author = ta
     
     if tome_author is None:
-        return dict( error="Tome and author not linked?", form=None, tome=tome, author=None, authors=tome_authors)
+        return dict(error="Tome and author not linked?", form=None, tome=tome, author=None, authors=tome_authors)
     author_guid = tome_author['guid']
     
     form = SQLFORM.factory(Field('order', default=tome_author['author_order']),
@@ -569,14 +569,14 @@ def edit_tome_author_link():
 
     if form.process(keepvalues=True).accepted:
         doc = pdb.get_tome_document_by_guid(tome['guid'])
-        other_authors = filter( lambda x: x['guid']!=author_guid, doc['authors'])
-        tome_author_doc = filter( lambda x: x['guid']==author_guid, doc['authors'])[0]
+        other_authors = filter(lambda x: x['guid'] != author_guid, doc['authors'])
+        tome_author_doc = filter(lambda x: x['guid'] == author_guid, doc['authors'])[0]
 
         for f in ('order', 'fidelity'):
-            tome_author_doc[f]=read_form_field(form, f)
+            tome_author_doc[f] = read_form_field(form, f)
 
         other_authors.append(tome_author_doc)
-        doc['authors']=other_authors
+        doc['authors'] = other_authors
         pdb.load_own_tome_document(doc)
         tome_authors = pdb.get_tome_authors(tome_id)
 
@@ -610,6 +610,7 @@ def link_tome_to_author():
     response.title = u"Add Author to {} - Montag".format(title_text)
 
     if form.process(keepvalues=True).accepted:
+
         author_name = read_form_field(form, 'author_name')
         fidelity = read_form_field(form, 'fidelity')
         author_order = float(read_form_field(form, 'order'))

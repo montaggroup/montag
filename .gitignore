@@ -76,3 +76,7 @@ pydb.conf
 
 # virtual environment
 venv/
+
+
+# pycharm config
+.idea

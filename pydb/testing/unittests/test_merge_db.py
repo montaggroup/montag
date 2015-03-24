@@ -1,4 +1,6 @@
 import unittest
+import logging
+logging.basicConfig()
 
 import pydb.mergedb as mergedb
 from pydb import FileType
@@ -190,9 +192,9 @@ class test_item_with_best_opinion_bipolar(unittest.TestCase):
         self.item_a = {'fidelity': 30, 'text': 'a'}
         self.item_b = {'fidelity': 40, 'text': 'a'}
         self.item_c = {'fidelity': -10, 'text': 'a'}
+        self.item_d = {'fidelity': -50, 'text': 'a'}
 
         self.result = None
-
 
     def given(self, item_group):
         self.result = mergedb.item_with_best_opinion_bipolar(item_group)
@@ -212,8 +214,18 @@ class test_item_with_best_opinion_bipolar(unittest.TestCase):
         self.given(mergedb.BipolarGroup(local_opinions=[], all_opinions=[self.item_a, self.item_c]))
         self.expect(20)
 
-    def test_local_fidelity_overides_merge_if_local_negative_and_merge_positive(self):
+    def test_local_fidelity_overrides_merge_if_local_negative_and_merge_positive(self):
         self.given(mergedb.BipolarGroup(local_opinions=[self.item_a], all_opinions=[self.item_a, self.item_c]))
+        self.expect(30)
+
+    def test_using_two_local_items_with_second_one_negative_the_positive_one_will_win(self):
+        local_ops = [self.item_a,  self.item_d]
+        self.given(mergedb.BipolarGroup(local_opinions=local_ops, all_opinions=local_ops))
+        self.expect(30)
+
+    def test_using_two_local_items_with_first_one_negative_the_positive_one_will_win(self):
+        local_ops = [self.item_d,  self.item_a]
+        self.given(mergedb.BipolarGroup(local_opinions=local_ops, all_opinions=local_ops))
         self.expect(30)
 
 
