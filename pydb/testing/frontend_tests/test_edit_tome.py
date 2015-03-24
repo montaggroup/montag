@@ -40,8 +40,8 @@ class TestEditAuthor(unittest.TestCase):
         self.assertIn('hi-fi-tag', html)
         # negative high fidelity tags are part of the opinion -> should be visible for editing
         self.assertIn('neg-fi-tag', html)
-        # low fidelity tags are part of the opinion -> should be visible for editing
-        self.assertIn('lo-fi-tag', html)
+        # low fidelity tags are not part of of the opinion -> should not be visible for editing
+        self.assertNotIn('lo-fi-tag', html)
 
 
 if __name__ == '__main__':
