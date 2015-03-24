@@ -19,7 +19,11 @@ class TestWeb2pyShutdown(unittest.TestCase):
     def test_shutdown_works_while_client_connected(self):
         self.connection = httplib.HTTPConnection('localhost', 8000, timeout=10)
         self.connection.connect()
-        self.connection.putrequest('GET', '/montag/')
+        for i in range(10):
+            self.connection.request("GET", "/montag/friends/list_friends", headers={"Connection": "keep-alive"})
+            result = self.connection.getresponse()
+            result.read()
+
         service_helpers.stop_services(ignore_exceptions=False)
 
 
