@@ -834,14 +834,14 @@ def merge_items_bipolar(local_opinions, foreign_opinions, group_fun):
     for item in local_opinions:
         if item is None:
             continue
-        logger.debug("Calling group on {}".format(str(item)))
+        logger.debug(u"Calling group on {}".format(str(item)))
         group_id = group_fun(item)
         groups[group_id].local_opinions.append(item)
 
     for item in foreign_opinions + local_opinions:
         if item is None:
             continue
-        logger.debug("Calling group on {}".format(str(item)))
+        logger.debug(u"Calling group on {}".format(str(item)))
         group_id = group_fun(item)
         groups[group_id].all_opinions.append(item)
 
@@ -852,11 +852,25 @@ def merge_items_bipolar(local_opinions, foreign_opinions, group_fun):
     return group_winners
 
 
-def extract_authoritative_local_opinion(bipolar_group):
-    if len(bipolar_group.local_opinions) > 1:
-        logger.warning("Local opinion group has more than 1 entry: {}".format(bipolar_group.local_opinions))
+def extract_authoritative_local_opinion(local_opinions):
+    if len(local_opinions) > 1:
+        def get_fidelity(x):
+            return x['fidelity']
 
-    return bipolar_group.local_opinions[0]
+        positives = [o for o in local_opinions if o['fidelity'] > 0]
+        max_pos = max(positives, key=get_fidelity)
+
+        if max_pos:  # if we have a positive association, we want to have it win over the negative one
+            # so if one use removed an invalid author and the other user merged it with a valid one,
+            # we won't lose the valid association
+            result = max_pos
+        else:  # all are negative, use the strongest
+            result = min(local_opinions, key=get_fidelity)
+
+        logger.warning(u"Local opinion group has more than 1 entry: {} - using {}".format(local_opinions, result))
+        return result
+
+    return local_opinions[0]
 
 
 def item_with_best_opinion_bipolar(bipolar_group):
@@ -879,7 +893,7 @@ def item_with_best_opinion_bipolar(bipolar_group):
 
     # now overlay local
     if bipolar_group.local_opinions:
-        local_item = extract_authoritative_local_opinion(bipolar_group)
+        local_item = extract_authoritative_local_opinion(bipolar_group.local_opinions)
         local_fidelity = local_item['fidelity']
 
         merge_fidelity = result_item['fidelity']
