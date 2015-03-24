@@ -551,7 +551,7 @@ def edit_tome_author_link():
             tome_author = ta
     
     if tome_author is None:
-        return dict( error="Tome and author not linked?", form=None, tome=tome, author=None, authors=tome_authors)
+        return dict(error="Tome and author not linked?", form=None, tome=tome, author=None, authors=tome_authors)
     author_guid = tome_author['guid']
     
     form = SQLFORM.factory(Field('order', default=tome_author['author_order']),
@@ -561,18 +561,17 @@ def edit_tome_author_link():
     title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
     response.title = u"Edit Author Link {} <=>  {} - Montag".format(tome_author['name'], title_text)
     
-    field_names = ['order','fidelity']
-
     if form.process(keepvalues=True).accepted:
         doc = pdb.get_tome_document_by_guid(tome['guid'])
-        other_authors = filter( lambda x: x['guid']!=author_guid, doc['authors'])
-        tome_author_doc = filter( lambda x: x['guid']==author_guid, doc['authors'])[0]
+        other_authors = filter(lambda x: x['guid'] != author_guid, doc['authors'])
+        tome_author_doc = filter(lambda x: x['guid'] == author_guid, doc['authors'])[0]
 
+        field_names = ('order', 'fidelity')
         for f in field_names:
-            tome_author_doc[f]=read_form_field(form, f)
+            tome_author_doc[f] = read_form_field(form, f)
 
         other_authors.append(tome_author_doc)
-        doc['authors']=other_authors
+        doc['authors'] = other_authors
         pdb.load_own_tome_document(doc)
         tome_authors = pdb.get_tome_authors(tome_id)
 

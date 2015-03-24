@@ -61,8 +61,8 @@ class MergeDB(basedb.BaseDB):
 
     def delete_all(self):
         for table in (databases.data_tables + databases.local_tables):
-            self.cur.execute("DELETE FROM %s" % table)
-            # print "Deleting from "+table
+            logger.debug(u"deleting contents of table {}".format(table))
+            self.cur.execute("DELETE FROM {}".format(table))
 
     def _unipolar_opinion_sources(self):
         return self.merge_sources | {self.local_db}
