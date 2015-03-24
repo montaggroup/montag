@@ -193,7 +193,6 @@ class test_item_with_best_opinion_bipolar(unittest.TestCase):
 
         self.result = None
 
-
     def given(self, item_group):
         self.result = mergedb.item_with_best_opinion_bipolar(item_group)
 

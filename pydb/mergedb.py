@@ -484,7 +484,7 @@ class MergeDB(basedb.BaseDB):
         self._request_tome_related_item_update(tome_guid, item_name, item_key, get_item_by_guid, replace_item)
 
     def _request_tome_related_item_update(self, tome_guid, item_name, item_key, get_item_by_guid_fct, replace_item_fct):
-        logger.info("%s update requested for guid %s" % (item_name, tome_guid))
+        logger.info("{} update requested for guid {}".format(item_name, tome_guid))
 
         tome = self.get_tome_by_guid(tome_guid)
         if not tome:
@@ -503,7 +503,7 @@ class MergeDB(basedb.BaseDB):
                 foreign_opinions += get_item_by_guid_fct(source, tome_data_guid)
             local_opinions += get_item_by_guid_fct(self.local_db, tome_data_guid)
 
-        logger.debug("%s Opinions: %s" % (item_name, str(foreign_opinions)))
+        logger.debug("{} Opinions: {}".format(item_name, str(foreign_opinions)))
         # merge bipolar, there might be opinions opposing the item<->tome link
         new_items_dict = merge_items_bipolar(local_opinions, foreign_opinions, group_fun=lambda x: x[item_key])
 
@@ -587,7 +587,6 @@ class MergeDB(basedb.BaseDB):
         key = pydb.names.calc_author_name_key(author_name)
 
         return self.get_list_of_objects("SELECT * FROM authors WHERE name_key=? ORDER BY name", [key])
-
 
     def document_modification_date_by_guid(self, doc_type, guid):
         table_name = doc_type + "_document_changes"
@@ -809,7 +808,8 @@ class MergeDB(basedb.BaseDB):
             
         add_check('tomes_with_titles_ending_in_an_article_having_fidelity_smaller_70',
                   from_clause='tomes',
-                  where_clause='(title LIKE "%, the" OR title LIKE "%, a" OR title LIKE "%, an") AND fidelity >= ? AND fidelity < 70',
+                  where_clause='(title LIKE "%, the" OR title LIKE "%, a" OR title LIKE "%, an") '
+                               'AND fidelity >= ? AND fidelity < 70',
                   params=[network_params.Min_Relevant_Fidelity])
 
         add_check('tomes_with_titles_containing_the_word_edition_having_fidelity_smaller_70',
@@ -845,12 +845,18 @@ def merge_items_bipolar(local_opinions, foreign_opinions, group_fun):
         group_id = group_fun(item)
         groups[group_id].all_opinions.append(item)
 
-
-    group_winners = dict()
+    group_winners = {}
     for group_id, group in groups.iteritems():
         group_winners[group_id] = item_with_best_opinion_bipolar(group)
 
     return group_winners
+
+
+def extract_authoritative_local_opinion(bipolar_group):
+    if len(bipolar_group.local_opinions) > 1:
+        logger.warning("Local opinion group has more than 1 entry: {}".format(bipolar_group.local_opinions))
+
+    return bipolar_group.local_opinions[0]
 
 
 def item_with_best_opinion_bipolar(bipolar_group):
@@ -873,10 +879,7 @@ def item_with_best_opinion_bipolar(bipolar_group):
 
     # now overlay local
     if bipolar_group.local_opinions:
-        if len(bipolar_group.local_opinions) > 0:
-            logger.error("Local group has more than 1 entry: {}".format(bipolar_group))
-
-        local_item = bipolar_group.local_opinions[0]
+        local_item = extract_authoritative_local_opinion(bipolar_group)
         local_fidelity = local_item['fidelity']
 
         merge_fidelity = result_item['fidelity']
