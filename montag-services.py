@@ -53,7 +53,7 @@ def _wait_for_db_ping_ok():
     return db_ok
 
 def do_stop_services(args):
-    services.stop_all_ignoring_exceptions(verbose=True)
+    services.stop_all(verbose=True)
 
 
 

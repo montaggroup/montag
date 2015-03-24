@@ -114,12 +114,12 @@ def logfile_path(service_name):
 
 
 def start(service_name, log_level=DEFAULT_LOG_LEVEL):
-    startargs = executionenvironment.base_args_to_start_service(service_name)
-    startargs.append('-l')
-    startargs.append(log_level)
+    start_args = executionenvironment.base_args_to_start_service(service_name)
+    start_args.append('-l')
+    start_args.append(log_level)
     try:
         with open(logfile_path(service_name), 'wb', 1) as logfile:
-            p = psutil.Popen(startargs, stdout=logfile, stderr=logfile)
+            p = psutil.Popen(start_args, stdout=logfile, stderr=logfile)
             logfile.flush()
             return_code = p.wait(timeout=1)
             if return_code:
@@ -138,7 +138,7 @@ def stop(service_process):
     service_process.wait(timeout=5)
 
 
-def stop_all_ignoring_exceptions(verbose=False):
+def stop_all(ignore_exceptions=True, verbose=False):
     services_status = get_current_services_status()
     for name in names[::-1]:
         if services_status[name]['status'] != 'not running':
@@ -148,3 +148,5 @@ def stop_all_ignoring_exceptions(verbose=False):
                 stop(services_status[name]['process'])
             except Exception:
                 print 'could not stop service {}' .format(name)
+                if not ignore_exceptions:
+                    raise
