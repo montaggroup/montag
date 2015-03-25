@@ -61,7 +61,9 @@ left_sidebar_enabled=True
     });
 
 
-addPagingKeyHandlers($("body"), book.prevPage, book.nextPage);
+addPagingKeyHandlers($("body"),
+                     function() { book.prevPage(); },
+                     function() { book.nextPage(); });
 
 initialBookPosition = null;
 if(location.hash) {
