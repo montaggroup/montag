@@ -1,0 +1,22 @@
+<script>
+function addPagingKeyHandlers(element, prevPageFunction, nextPageFunction)
+{
+    element.on("keydown", function(e){
+        var thisIndex = $(".selected").index();
+        var newIndex = null;
+        if(e.keyCode === 38 // up
+          || e.keyCode === 37 // left
+          ) {
+
+           prevPageFunction();
+        }
+        else if(e.keyCode === 40 // down
+                || e.keyCode === 39 // right
+                || e.keyCode === 32 // space
+               ) {
+
+           nextPageFunction();
+        }
+    })
+}
+</script>
