@@ -37,7 +37,7 @@ def dump_file(index, data):
         do_dumps = False
         if do_dumps:
             return
-        with open(get_data_path('out_{}.pdf'.format(index)), 'wb') as f:
+        with open(get_test_book_path('out_{}.pdf'.format(index)), 'wb') as f:
             f.write(data)
 
 
