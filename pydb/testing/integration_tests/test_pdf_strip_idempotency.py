@@ -2,7 +2,7 @@ import unittest
 import hashlib
 import pydb.ebook_metadata_tools.pdf as pdf
 import cStringIO
-from pydb.testing.integration_tests import get_data_path
+from pydb.testing.test_data import get_test_book_path
 
 
 class TestPdfStripIdempotency(unittest.TestCase):
