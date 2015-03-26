@@ -8,7 +8,7 @@ from pydb.testing.test_data import get_test_book_path
 class TestPdfStripIdempotency(unittest.TestCase):
 
     def test_multi_strip(self):
-        with open(get_data_path('pg1661.pdf'), 'rb') as f:
+        with open(get_test_book_path('pg1661.pdf'), 'rb') as f:
             original_data = f.read()
 
         print "Original hash         : {}, size {}".format(hashlib.sha256(original_data).hexdigest(),
