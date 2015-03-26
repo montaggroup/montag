@@ -7,7 +7,7 @@ from pydb import FileType
 import pydb.testing.unittests
 
 
-class test_calculate_items_difference(unittest.TestCase):
+class TestCalculateItemsDifference(unittest.TestCase):
     def setUp(self):
         pass
 
@@ -44,7 +44,7 @@ class test_calculate_items_difference(unittest.TestCase):
         self.assertEquals(len(keys_to_check), 1)
 
 
-class test_calculate_delete_all(unittest.TestCase):
+class TestDeleteAll(unittest.TestCase):
     def setUp(self):
         self.merge_db = mergedb.MergeDB(":memory:", pydb.testing.guess_schema_dir(),
                                         local_db=None, enable_db_sync=False)
@@ -85,7 +85,7 @@ def _insert_tome_with_file(merge_db, tome_fidelity, file_fidelity, tome_id=1, to
                                      'fidelity': file_fidelity})
 
 
-class test_get_high_fidelity_tome_file_hashes_without_local_file(unittest.TestCase):
+class TestGetHighFidelityTomeFileHashesWithoutLocalFile(unittest.TestCase):
     def setUp(self):
         self.merge_db = mergedb.MergeDB(":memory:", pydb.testing.guess_schema_dir(),
                                         local_db=None, enable_db_sync=False)
@@ -161,7 +161,7 @@ class test_get_high_fidelity_tome_file_hashes_without_local_file(unittest.TestCa
         self.assertEquals(len(hashes), 0)
 
 
-class test_get_tome_document(unittest.TestCase):
+class TestGetTomeDocument(unittest.TestCase):
     def setUp(self):
         self.merge_db = mergedb.MergeDB(":memory:", pydb.testing.guess_schema_dir(),
                                         local_db=None, enable_db_sync=False)
@@ -175,7 +175,7 @@ class test_get_tome_document(unittest.TestCase):
         self.assertNotIn('local_file_exists', file_link)
 
 
-class test_item_with_best_opinion_unipolar(unittest.TestCase):
+class TestItemWithBestOpinionUnipolar(unittest.TestCase):
     def test_having_two_items_with_different_fidelity_the_max_fidelity_item_is_returned(self):
 
         item_a = {'fidelity': 30, 'text': 'a'}
@@ -187,7 +187,7 @@ class test_item_with_best_opinion_unipolar(unittest.TestCase):
         self.assertEqual(result['text'], 'b')
 
 
-class test_item_with_best_opinion_bipolar(unittest.TestCase):
+class TestItemWithBestOpinionBipolar(unittest.TestCase):
     def setUp(self):
         self.item_a = {'fidelity': 30, 'text': 'a'}
         self.item_b = {'fidelity': 40, 'text': 'a'}
@@ -229,7 +229,7 @@ class test_item_with_best_opinion_bipolar(unittest.TestCase):
         self.expect(30)
 
 
-class test_merge_items_bipolar(unittest.TestCase):
+class TestMergeItemsBipolar(unittest.TestCase):
     def setUp(self):
         self.item_a = {'fidelity': 30, 'text': 'a'}
         self.item_a_neg = {'fidelity': -5, 'text': 'a'}
@@ -250,6 +250,33 @@ class test_merge_items_bipolar(unittest.TestCase):
         result = mergedb.merge_items_bipolar([], [self.item_a, self.item_a_neg], lambda x: x['text'])
         self.assertEqual(len(result), 1)
         self.assertEqual(result['a']['fidelity'], 25)
+
+
+class TestExtractAuthoritativeLocalOpinion(unittest.TestCase):
+    def setUp(self):
+        self.item_a = {'fidelity': 30, 'text': 'a'}
+        self.item_b = {'fidelity': 40, 'text': 'a'}
+        self.item_c = {'fidelity': -30, 'text': 'a'}
+        self.item_d = {'fidelity': -40, 'text': 'a'}
+
+    def given(self, local_opinions):
+        self.result = mergedb.extract_authoritative_local_opinion(local_opinions)
+
+    def expect(self, expected_result):
+        self.assertEqual(self.result, expected_result)
+
+    def test_empty_opinion_list_returns_none(self):
+        self.given([])
+        self.expect(None)
+
+    def test_list_with_single_item_returns_that_item(self):
+        self.given([self.item_a])
+        self.expect(self.item_a)
+
+    def test_list_with_two_negative_entries_returns_the_stronger_one(self):
+        self.given([self.item_c, self.item_d])
+        self.expect(self.item_d)
+
 
 if __name__ == '__main__':
     unittest.main()
