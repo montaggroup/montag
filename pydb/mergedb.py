@@ -851,18 +851,21 @@ def merge_items_bipolar(local_opinions, foreign_opinions, group_fun):
 
 
 def extract_authoritative_local_opinion(local_opinions):
+    if not local_opinions:
+        return None
+
     if len(local_opinions) > 1:
         def get_fidelity(x):
             return x['fidelity']
 
         positives = [o for o in local_opinions if o['fidelity'] > 0]
-        max_pos = max(positives, key=get_fidelity)
-
-        if max_pos:  # if we have a positive association, we want to have it win over the negative one
+        if positives:
+            # if we have a positive association, we want to have it win over the negative one
             # so if one use removed an invalid author and the other user merged it with a valid one,
             # we won't lose the valid association
-            result = max_pos
-        else:  # all are negative, use the strongest
+            result = max(positives, key=get_fidelity)
+        else:
+            # all are negative, use the strongest
             result = min(local_opinions, key=get_fidelity)
 
         logger.warning(u"Local opinion group has more than 1 entry: {} - using {}".format(local_opinions, result))
@@ -890,8 +893,8 @@ def item_with_best_opinion_bipolar(bipolar_group):
     result_item['fidelity'] = effective_fidelity
 
     # now overlay local
-    if bipolar_group.local_opinions:
-        local_item = extract_authoritative_local_opinion(bipolar_group.local_opinions)
+    local_item = extract_authoritative_local_opinion(bipolar_group.local_opinions)
+    if local_item is not None:
         local_fidelity = local_item['fidelity']
 
         merge_fidelity = result_item['fidelity']

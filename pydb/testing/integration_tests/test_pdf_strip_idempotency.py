@@ -2,13 +2,13 @@ import unittest
 import hashlib
 import pydb.ebook_metadata_tools.pdf as pdf
 import cStringIO
-from pydb.testing.integration_tests import get_data_path
+from pydb.testing.test_data import get_book_path
 
 
 class TestPdfStripIdempotency(unittest.TestCase):
 
     def test_multi_strip(self):
-        with open(get_data_path('pg1661.pdf'), 'rb') as f:
+        with open(get_book_path('pg1661.pdf'), 'rb') as f:
             original_data = f.read()
 
         print "Original hash         : {}, size {}".format(hashlib.sha256(original_data).hexdigest(),
@@ -37,7 +37,7 @@ def dump_file(index, data):
         do_dumps = False
         if do_dumps:
             return
-        with open(get_data_path('out_{}.pdf'.format(index)), 'wb') as f:
+        with open(get_book_path('out_{}.pdf'.format(index)), 'wb') as f:
             f.write(data)
 
 
