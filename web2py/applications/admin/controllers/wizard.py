@@ -243,7 +243,6 @@ def step6():
         Field('generate_menu', 'boolean', default=True),
         Field('apply_layout', 'boolean', default=True),
         Field('erase_database', 'boolean', default=True),
-        Field('populate_database', 'boolean', default=True),
         _id="generate_form", _class="form-horizontal span7 well well-small")
     if form.accepts(request.vars):
         if DEMO_MODE:
@@ -468,15 +467,6 @@ def make_view(page, contents):
     return s
 
 
-def populate(tables):
-    s = 'from gluon.contrib.populate import populate\n'
-    s += 'if db(db.auth_user).isempty():\n'
-    for table in sort_tables(tables):
-        t = table == 'auth_user' and 'auth_user' or 't_' + table
-        s += "     populate(db.%s,10)\n" % t
-    return s
-
-
 def create(options):
     if DEMO_MODE:
         session.flash = T('disabled in demo mode')
@@ -563,12 +553,6 @@ def create(options):
                          'models', 'db_wizard_populate.py')
     if os.path.exists(model):
         os.unlink(model)
-    if options.populate_database and session.app['tables']:
-        file = open(model, 'wb')
-        try:
-            file.write(populate(session.app['tables']))
-        finally:
-            file.close()
 
     ### create newapp/controllers/default.py
     if options.generate_controller:
