@@ -487,7 +487,7 @@ def edit_tome_file_link():
                            submit_button='Save')
 
     title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
-    response.title = "Edit Files {} - Montag".format(title_text)
+    response.title = u"Edit Files {} - Montag".format(title_text)
     
     field_names=['file_extension','fidelity']
 
