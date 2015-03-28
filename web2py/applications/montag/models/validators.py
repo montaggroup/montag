@@ -1,3 +1,8 @@
+# coding: utf8
+if False:
+    from ide_fake import *
+
+
 class TagValidator:
     def __init__(self, format="a", error_message="b"):
         pass
@@ -29,7 +34,7 @@ class TagValidator:
      
     def formatter(self, value):
         tags = value
-        return "\n".join(["%.1f %s" %(tag['fidelity'], tag['tag_value'].encode('utf-8')) for tag in tags])
+        return "\n".join(["%.1f %s" % (tag['fidelity'], db_str_to_form(tag['tag_value'])) for tag in tags])
 
 
 class FidelityValidator:
@@ -57,7 +62,7 @@ class AuthorValidator:
         authors=set()
         authors_list=[]
         
-        field_value=field_value.decode('utf-8')
+        field_value = field_value.decode('utf-8')
         for line in field_value.split('\n'):
             author_name = line.strip()
             if author_name:
@@ -72,4 +77,4 @@ class AuthorValidator:
 
     def formatter(self, value):
         authors = value
-        return '\n'.join([author['name'].encode('utf-8') for author in authors])
+        return '\n'.join([db_str_to_form(author['name']) for author in authors])

@@ -1,7 +1,7 @@
 {{
-response.files.append(URL(c='static',f='/js/pdf/pdf.js'))
-book_url = URL('default', 'getfile_as_pdf',args=[tome_id,file_hash,'.pdf'])
-response.title="View: {}".format(tome['title'].encode('utf-8'))
+response.files.append(URL(c='static', f='/js/pdf/pdf.js'))
+book_url = URL('default', 'getfile_as_pdf', args=[tome_id,file_hash,'.pdf'])
+response.title = "View: {}".format(db_str_to_form(tome['title']))
 response.breadcrumb_bar = XML("View {} by {}".format(tome_link(tome), authors_links(tome['authors'])))
 left_sidebar_enabled=True
 }}
@@ -16,7 +16,9 @@ left_sidebar_enabled=True
 </div>
 
 
-<div id="loader"><img src="{{=URL(r=request,c='static',f='/images/loader.gif') }}"></div>
+{{include 'viewer/loader.html'}}
+{{include 'viewer/paging.html'}}
+
 <script>
 var currentPdf = null;
 var currentPageNumber = 0;
@@ -29,7 +31,6 @@ function prevPage()
         gotoPageNum(currentPageNumber-1);
     }
 }
-
 
 function nextPage()
 {
@@ -153,32 +154,7 @@ function renderBook(url, targetDivId, outlineDivId, initialPageNumber)
     });
 }
 
-
-
-function hideLoader()
-{
-    document.getElementById("loader").style.display = "none";
-}
-
-
-$("body").on("keydown", function(e){
-    var thisIndex = $(".selected").index();
-    var newIndex = null;
-    if(e.keyCode === 38 // up
-      || e.keyCode === 37 // left
-      ) {
-        
-       prevPage();
-    }
-    else if(e.keyCode === 40 // down
-            || e.keyCode === 39 // right
-            || e.keyCode === 32 // space
-           ) {
-
-       nextPage();
-    }
-})
-
+addPagingKeyHandlers($("body"), prevPage, nextPage);
 
 var initialPageNumber = 1;
 if(location.hash) {
@@ -189,8 +165,6 @@ if(location.hash) {
 }
 
 renderBook("{{=book_url}}", "reader_area", "toc_container", initialPageNumber);
-
-
 </script>
 
 
