@@ -24,9 +24,9 @@ def prepare_tome_document(original_tome_doc, local_db):
     """ returns a new tome document with many corrections and checks applied """
     tome_doc = copy.deepcopy(original_tome_doc)
     if 'prepared' in tome_doc:
-        raise ValueError("Tome document already prepared: {}".format(tome_doc))
+        raise ValueError(u'Tome document already prepared: {}'.format(tome_doc))
     if 'guid' not in tome_doc:
-        raise ValueError("Tome document did not contain a guid: {}".format(tome_doc))
+        raise ValueError(u'Tome document did not contain a guid: {}'.format(tome_doc))
     # it's not a deleted tome
     tome_guid = tome_doc['guid']
     if 'title' in tome_doc:
@@ -81,9 +81,9 @@ def prepare_author_document(original_author_doc):
     """ returns a new author document with many corrections and checks applied """
     author_doc = copy.deepcopy(original_author_doc)
     if 'prepared' in author_doc:
-        raise ValueError("Author document already prepared: {}".format(author_doc))
+        raise ValueError(u'Author document already prepared: {}'.format(author_doc))
     if 'guid' not in author_doc:
-        raise ValueError("Author document did not contain a guid: {}".format(author_doc))
+        raise ValueError(u'Author document did not contain a guid: {}'.format(author_doc))
 
     # it's not a deleted author
     guid = author_doc['guid']

@@ -70,12 +70,12 @@ class MergeDB(basedb.BaseDB):
     def _replace_tome(self, guid, new_tome_fields):
         old_tome = self.get_tome_by_guid(guid)
 
-        logger.debug("new_tome_fields = {}".format(repr(new_tome_fields)))
+        logger.debug(u'new_tome_fields = {}'.format(repr(new_tome_fields)))
         if new_tome_fields is None:
-            logger.info("Merge db delete request for tome %s" % guid)
+            logger.info(u'Merge db delete request for tome {}'.format(guid))
             if old_tome:
-                logger.debug("Deleting tome with guid %s from merge db" % guid)
-                self.cur.execute("DELETE FROM tomes WHERE guid=?", [guid])
+                logger.debug(u'Deleting tome with guid %s from merge db'.format(guid))
+                self.cur.execute('DELETE FROM tomes WHERE guid=?', [guid])
                 self.update_document_modification_date_by_guid('tome', guid)
 
                 # remove authors/tags/.. of this tome
@@ -501,7 +501,7 @@ class MergeDB(basedb.BaseDB):
                 foreign_opinions += get_item_by_guid_fct(source, tome_data_guid)
             local_opinions += get_item_by_guid_fct(self.local_db, tome_data_guid)
 
-        logger.debug("{} Opinions: {}".format(item_name, str(foreign_opinions)))
+        logger.debug(u'{} Opinions: {}'.format(item_name, foreign_opinions))
         # merge bipolar, there might be opinions opposing the item<->tome link
         new_items_dict = merge_items_bipolar(local_opinions, foreign_opinions, group_fun=lambda x: x[item_key])
 

@@ -495,7 +495,7 @@ class MainDB:
                     tome_id = f['tome_id']
                     self.local_db.remove_file_link(tome_id, f['hash'])
                     tome = self.local_db.get_tome(tome_id)
-                    logger.info("Removing file {} from tome {}".format(f['hash'], tome['title']))
+                    logger.info(u'Removing file {} from tome {}'.format(f['hash'], tome['title']))
                     self.merge_db.request_tome_file_update(tome['guid'])
                     count += 1
         return count

@@ -454,10 +454,10 @@ class BaseDB(sqlitedb.SqliteDB):
             stuff might not have been changed at all - but mergedb will detect that
         """
         if 'prepared' not in doc:
-            raise ValueError("Tome doc not prepared: {}".format(doc))
+            raise ValueError(u'Tome doc not prepared: {}'.format(doc))
         guid = doc['guid']
 
-        logger.debug("Applying update for tome {} {}".format(guid, doc))
+        logger.debug(u'Applying update for tome {} {}'.format(guid, doc))
 
         # check authors for existence to avoid inserting incomplete entries
         author_links = []
@@ -677,7 +677,7 @@ def data_fields_equal(fields_a, fields_b):
     """ returns true if the data in fields_a equals data in fields_b
         note: special comparison rules apply (e.g. ignoring of modification dates)
     """
-    logger.debug("Comparing {} to {}".format(repr(fields_a), repr(fields_b)))
+    logger.debug(u'Comparing {} to {}'.format(repr(fields_a), repr(fields_b)))
 
     keys_a = set(fields_a.keys())
     keys_b = set(fields_b.keys())

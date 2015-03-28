@@ -210,7 +210,7 @@ def view_author():
     tomes = pdb.get_tomes_by_author(author['id'])
     tomes.sort(key=lambda x: x['title'])
 
-    response.title = "{} - Montag".format(author['name'])
+    response.title = u'{} - Montag'.format(author['name'])
 
     tomelist = []
     for tome in tomes:
@@ -291,7 +291,7 @@ def edit_author():
     required_fidelity = pdb.calculate_required_author_fidelity(author_doc['id'])
 
     form = _author_edit_form(author_doc, required_fidelity)
-    response.title = "Edit {} - Montag".format(author_doc['name'])
+    response.title = u'Edit {} - Montag'.format(author_doc['name'])
 
     if form.process(keepvalues=True, session=None).accepted:
         field_names = ['name', 'date_of_birth', 'date_of_death', 'fidelity']
@@ -521,7 +521,7 @@ def link_tome_to_file():
                            submit_button='Save')
 
     title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
-    response.title = "Edit Files of {} - Montag".format(title_text)
+    response.title = u'Edit Files of {} - Montag'.format(title_text)
     
     if form.process(keepvalues=True).accepted:
     
@@ -532,7 +532,7 @@ def link_tome_to_file():
         local_file_size = pydb.pyrosetup.fileserver().get_local_file_size(file_hash)
         
         if not local_file_size:
-            response.flash = "This file is not known to the database, please check the hash"
+            response.flash = 'This file is not known to the database, please check the hash'
         else:
             pdb.link_tome_to_file(tome_id, file_hash, local_file_size, file_extension, FileType.Content, fidelity)
             session.flash = 'Added new file link'
