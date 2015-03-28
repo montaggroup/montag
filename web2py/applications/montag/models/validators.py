@@ -57,10 +57,10 @@ class AuthorValidator:
         pass
 
     def __call__(self, field_value):
-        authors=set()
-        authors_list=[]
+        authors = set()
+        authors_list = []
         
-        field_value=field_value.decode('utf-8')
+        field_value = field_value.decode('utf-8')
         for line in field_value.split('\n'):
             author_name = line.strip()
             if author_name:
