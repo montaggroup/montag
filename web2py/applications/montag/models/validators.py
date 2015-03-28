@@ -3,6 +3,9 @@ if False:
     from ide_fake import *
 
 
+if False:
+    from web2py.applications.montag.models.ide_fake import *
+
 class TagValidator:
     def __init__(self, format="a", error_message="b"):
         pass
@@ -18,7 +21,7 @@ class TagValidator:
                 fidelity = pydb.network_params.Default_Manual_Fidelity
                 value = line
                 if " " in line:
-                    (fidelity_string, value_string) = line.split(" ",1)
+                    (fidelity_string, value_string) = line.split(" ", 1)
                     try:
                         fidelity = float(fidelity_string)
                         value = value_string
@@ -29,7 +32,7 @@ class TagValidator:
                 if value in used_tag_values:
                     return None, u"Duplicate tag names entered: {}".format(value)
                 used_tag_values.add(value)
-                tags.append({"fidelity":fidelity, "tag_value" : value})
+                tags.append({"fidelity": fidelity, "tag_value": value})
         return tags, None
      
     def formatter(self, value):
@@ -44,9 +47,9 @@ class FidelityValidator:
     def __call__(self, field_value):
         fidelity = float(field_value)
         if fidelity < -100:
-            return None, u'Fidelity must be at least -100.';
+            return None, u'Fidelity must be at least -100.'
         if fidelity > 100:
-            return None, u'Fidelity must be at max 100.';
+            return None, u'Fidelity must be at max 100.'
 
         return fidelity, None
 
@@ -59,8 +62,8 @@ class AuthorValidator:
         pass
 
     def __call__(self, field_value):
-        authors=set()
-        authors_list=[]
+        authors = set()
+        authors_list = []
         
         field_value = field_value.decode('utf-8')
         for line in field_value.split('\n'):
@@ -72,7 +75,7 @@ class AuthorValidator:
                 authors_list.append(author_name)
 
         if not authors:
-            return None,'Empty author field'
+            return None, 'Empty author field'
         return authors_list, None
 
     def formatter(self, value):

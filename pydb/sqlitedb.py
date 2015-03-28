@@ -83,16 +83,16 @@ class SqliteDB(object):
             return row[0]
 
     def update_object(self, table_name, filter_dict, object_fields):
-        assignments = ["{} = ?".format(field_name) for field_name in object_fields.iterkeys()]
+        assignments = [u'{} = ?'.format(field_name) for field_name in object_fields.iterkeys()]
         set_string = ', '.join(assignments)
 
-        filter_conditions = ["{} = ?".format(field_name) for field_name in filter_dict.iterkeys()]
+        filter_conditions = [u'{} = ?'.format(field_name) for field_name in filter_dict.iterkeys()]
         filter_string = " AND ".join(filter_conditions)
 
         parameters = object_fields.values() + filter_dict.values()
 
-        query = u"UPDATE {} SET {} WHERE {}".format(table_name, set_string, filter_string)
-        logger.debug("Update query is {} {}".format(query, repr(parameters)))
+        query = u'UPDATE {} SET {} WHERE {}'.format(table_name, set_string, filter_string)
+        logger.debug(u'Update query is {} {}'.format(query, repr(parameters)))
         self.cur.execute(query, parameters)
 
     def insert_object(self, table_name, object_fields):
@@ -101,8 +101,8 @@ class SqliteDB(object):
 
         value_list = object_fields.values()
 
-        query = u"INSERT INTO {} ({}) VALUES ({}) ".format(table_name, field_string, question_marks)
-        logger.debug("Insert query is " + query + repr(value_list))
+        query = u'INSERT INTO {} ({}) VALUES ({}) '.format(table_name, field_string, question_marks)
+        logger.debug(u'Insert query is ' + query + repr(value_list))
         self.cur.execute(query, value_list)
 
         return self.cur.lastrowid
@@ -124,7 +124,7 @@ class Transaction():
             if exc_type is None:
                 self.db.commit()
             else:
-                logger.info("Caught an exception {} {}, rolling back".format(exc_type, exc_val))
+                logger.info(u'Caught an exception {} {}, rolling back'.format(exc_type, exc_val))
                 traceback.print_tb(exc_tb)
                 self.db.rollback()
                 return False

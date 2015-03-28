@@ -70,12 +70,12 @@ class MergeDB(basedb.BaseDB):
     def _replace_tome(self, guid, new_tome_fields):
         old_tome = self.get_tome_by_guid(guid)
 
-        logger.debug("new_tome_fields = {}".format(repr(new_tome_fields)))
+        logger.debug(u'new_tome_fields = {}'.format(repr(new_tome_fields)))
         if new_tome_fields is None:
-            logger.info("Merge db delete request for tome %s" % guid)
+            logger.info(u'Merge db delete request for tome {}'.format(guid))
             if old_tome:
-                logger.debug("Deleting tome with guid %s from merge db" % guid)
-                self.cur.execute("DELETE FROM tomes WHERE guid=?", [guid])
+                logger.debug(u'Deleting tome with guid %s from merge db'.format(guid))
+                self.cur.execute('DELETE FROM tomes WHERE guid=?', [guid])
                 self.update_document_modification_date_by_guid('tome', guid)
 
                 # remove authors/tags/.. of this tome
@@ -146,7 +146,7 @@ class MergeDB(basedb.BaseDB):
 
     def _request_author_related_item_update(self, author_guid, item_name, item_key, get_item_by_guid_fct,
                                             replace_item_fct):
-        logger.info("%s update requested for author guid %s" % (item_name, author_guid))
+        logger.info(u'{} update requested for author guid {}'.format(item_name, author_guid))
 
         author = self.get_author_by_guid(author_guid)
         if not author:
@@ -155,7 +155,6 @@ class MergeDB(basedb.BaseDB):
 
         all_guids_for_this_author = [author_guid]
         all_guids_for_this_author += self.get_all_relevant_author_fusion_source_guids(author_id)
-        # print("All guids for tomes {}: {}".format(author_guid, all_guids_for_this_author))
 
         foreign_opinions = []
         local_opinions = []
@@ -484,7 +483,7 @@ class MergeDB(basedb.BaseDB):
         self._request_tome_related_item_update(tome_guid, item_name, item_key, get_item_by_guid, replace_item)
 
     def _request_tome_related_item_update(self, tome_guid, item_name, item_key, get_item_by_guid_fct, replace_item_fct):
-        logger.info("{} update requested for guid {}".format(item_name, tome_guid))
+        logger.info('{} update requested for guid {}'.format(item_name, tome_guid))
 
         tome = self.get_tome_by_guid(tome_guid)
         if not tome:
@@ -493,7 +492,6 @@ class MergeDB(basedb.BaseDB):
 
         all_guids_for_this_tome = [tome_guid]
         all_guids_for_this_tome += self.get_all_relevant_tome_fusion_source_guids(tome_id)
-        # print("All guids for tomes {}: {}".format(tome_guid, all_guids_for_this_tome))
 
         foreign_opinions = []
         local_opinions = []
@@ -503,7 +501,7 @@ class MergeDB(basedb.BaseDB):
                 foreign_opinions += get_item_by_guid_fct(source, tome_data_guid)
             local_opinions += get_item_by_guid_fct(self.local_db, tome_data_guid)
 
-        logger.debug("{} Opinions: {}".format(item_name, str(foreign_opinions)))
+        logger.debug(u'{} Opinions: {}'.format(item_name, foreign_opinions))
         # merge bipolar, there might be opinions opposing the item<->tome link
         new_items_dict = merge_items_bipolar(local_opinions, foreign_opinions, group_fun=lambda x: x[item_key])
 

@@ -31,19 +31,19 @@ def do_print_stats(args, db):
     print "\nmerge.db contains:"
     print "=================="
     for key in merge_stats:
-        print "{1} {0}.".format(key, merge_stats[key])
+        print u'{1} {0}.'.format(key, merge_stats[key])
 
     local_stats = db().get_local_statistics()
     print "\nlocal.db contains:"
     print "=================="
     for key in local_stats:
-        print "{1} {0}.".format(key, local_stats[key])
+        print u'{1} {0}.'.format(key, local_stats[key])
 
 
 def do_add_friend(args, db):
     friend_name = args.friend_name
     db().add_friend(friend_name)
-    print "Friend {} added".format(friend_name)
+    print u'Friend {} added'.format(friend_name)
 
 
 def do_remove_friend(args, db):
@@ -56,7 +56,7 @@ def do_remove_friend(args, db):
 
     db().remove_friend(friend_id)
 
-    print "Friend {} removed".format(friend_name)
+    print u'Friend {} removed'.format(friend_name)
 
 
 def do_list_friends(args, db):
@@ -108,13 +108,13 @@ def do_service_fetch_updates(args, db):
 
     com_service = pydb.pyrosetup.comservice()
     job_id = com_service.fetch_updates(friend_id)
-    print "Update started, job id is {}".format(job_id)
+    print u'Update started, job id is {}'.format(job_id)
 
 
 def do_service_list_jobs(args, db):
     com_service = pydb.pyrosetup.comservice()
     number = com_service.get_number_of_running_jobs()
-    print "{} jobs running".format(number)
+    print u'{} jobs running'.format(number)
 
     job_infos = com_service.get_job_list()
     print "ID  Name                      Friend            Running  Current Phase    Progress"
@@ -125,9 +125,9 @@ def do_service_list_jobs(args, db):
 
         progress = "Unknown"
         if items_to_do >= 0:
-            progress = "{}/{}".format(items_done, items_to_do)
+            progress = u'{}/{}'.format(items_done, items_to_do)
 
-        print "{:<3} {:<25} {:<17} {:<7} {:<16} {}".format(job_id, job_info['name'], friend['name'],
+        print u'{:<3} {:<25} {:<17} {:<7} {:<16} {}'.format(job_id, job_info['name'], friend['name'],
                                                            job_info['is_running'], job_info['current_phase'], progress)
 
 
@@ -324,12 +324,12 @@ def do_answer_file_list(args, db):
     if not found:
         os.rmdir(target_dir)
 
-    print "%d files found" % found
+    print u'{} files found'.format(found)
 
 
 def do_import_file_store(args, db):
     def insert_files(file_list):
-        print "Inserting {} files".format(len(file_list))
+        print u'Inserting {} files'.format(len(file_list))
         result = pydb.pyrosetup.fileserver().add_files_from_local_disk(file_list)
         succeeded_imports = 0
         failed_imports = 0
@@ -338,7 +338,7 @@ def do_import_file_store(args, db):
                 succeeded_imports += 1
             else:
                 failed_imports += 1
-                print "Error while importing {}".format(fn)
+                print u'Error while importing {}'.format(fn)
         return succeeded_imports, failed_imports
 
     source_dir = os.path.abspath(args.source_directory)
@@ -352,7 +352,7 @@ def do_import_file_store(args, db):
     for root, subfolders, files in os.walk(source_dir):
         files.sort()
         subfolders.sort()
-        print 'adding %d files from %s' % (len(files), root)
+        print u'adding {} files from {}'.format(len(files), root)
         for filename in files:
             file_hash, extension = os.path.splitext(filename)
 
@@ -375,10 +375,10 @@ def do_import_file_store(args, db):
         success_imports += succeeded
         errors += failed
 
-    print "Successfully imported {} files.".format(success_imports)
+    print u'Successfully imported {} files.'.format(success_imports)
 
     if errors:
-        print "There have been {} errors while importing.".format(errors)
+        print u'There have been {} errors while importing.'.format(errors)
         return False
     return True
 
@@ -388,7 +388,7 @@ def do_fetch_updates(args, db):
     friend_name = args.friend_name
     friend = main_db.get_friend_by_name(friend_name)
     if not friend:
-        print >> sys.stderr, "No friend by that name, check your spelling or create a new friend using add_friend"
+        print >> sys.stderr, 'No friend by that name, check your spelling or create a new friend using add_friend'
         return False
     friend_id = friend['id']
 
@@ -506,7 +506,7 @@ def do_unlock_comm_data(args, db):
     try:
         cds.unlock(password)
     except Exception as e:
-        print >> sys.stderr, "Unable to unlock comm data, error was {}".format(e.message)
+        print >> sys.stderr, u'Unable to unlock comm data, error was {}'.format(e.message)
         sys.exit(-1)
 
 

@@ -147,11 +147,11 @@ def get_metadata_from_opf_string(opf_content):
     try:
         root = defused_etree.fromstring(opf_content)
     except:
-        logger.error("Unable to parse opf xml")
+        logger.error('Unable to parse opf xml')
         return result
 
     for main_element in root:
-        logger.debug("looking at main element {}".format(main_element.tag))
+        logger.debug(u'looking at main element {}'.format(main_element.tag))
 
         if not re.match(".*metadata$", main_element.tag):
             continue
@@ -179,7 +179,7 @@ def get_metadata_from_opf_string(opf_content):
                 if publication_year is not None:
                     result['publication_year'] = publication_year
             else:
-                logger.debug("Found unsupported tag {} => {}".format(metadata_tag.tag, text))
+                logger.debug(u'Found unsupported tag {} => {}'.format(metadata_tag.tag, text))
 
     return result
 

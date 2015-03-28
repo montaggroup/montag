@@ -9,6 +9,7 @@ def prepare_web2py():
     sys.path.append(os.path.realpath(web2py_path))
     os.chdir(web2py_path)
 
+
 def build_request(controller_name, function_name):
     env = _prepare_environment(controller_name)
     return Web2pyRequest(env, controller_name, function_name)
@@ -43,7 +44,7 @@ class Web2pyRequest():
             self.execute()
 
         for key, value in self.result.iteritems():
-            print "{}: {}".format(key, value)
+            print u'{}: {}'.format(key, value)
 
     def render_result(self):
         if self.result is None:

@@ -92,13 +92,13 @@ class WhooshIndex:
         writer.commit()
 
     def search_tomes(self, query_text):
-        logger.info("Searching for '{}'".format(query_text))
-        parser = QueryParser("any_field", self.index.schema)
+        logger.info(u'Searching for "{}"'.format(query_text))
+        parser = QueryParser('any_field', self.index.schema)
         my_query = parser.parse(query_text)
         with self.index.searcher() as searcher:
             results = list(searcher.search(my_query, limit=MAX_NUMBER_OF_SEARCH_RESULTS))
             merge_db_ids = [r['merge_db_id'] for r in results]
-            logger.info("Found {} results".format(len(merge_db_ids)))
+            logger.info(u'Found {} results'.format(len(merge_db_ids)))
             return merge_db_ids
 
 
