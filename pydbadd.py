@@ -9,12 +9,13 @@ import re
 
 import pydb.opf
 
+
 def read_metadata(filepath):
     base, extension = os.path.splitext(filepath)
     metadata_path = base + '.opf'
     if not os.path.exists(metadata_path):
-        dir, file = os.path.split(filepath)
-        metadata_path = os.path.join(dir, 'metadata.opf')
+        dir_name, file_name = os.path.split(filepath)
+        metadata_path = os.path.join(dir_name, 'metadata.opf')
         if not os.path.exists(metadata_path):
             raise Exception('No metadata file found')
 
@@ -39,8 +40,8 @@ def title_split(title):
     return title, subtitle, edition
 
 
-def add_file(filepath, fidelity, tome_type, delete_source):
-    print "Adding", repr(filepath)
+def add_file(db, filepath, fidelity, tome_type, delete_source):
+    print u"Adding {}".format(filepath)
     filepath = os.path.abspath(filepath)
     metadata = read_metadata(filepath)
 
@@ -48,15 +49,15 @@ def add_file(filepath, fidelity, tome_type, delete_source):
 
     title, subtitle, edition = title_split(metadata.title)
     # print 'tome cands: ',tome_candidates
-    print "Metadata tags: {}".format(metadata.tags)
+    print u'Metadata tags: {}'.format(metadata.tags)
     tome_id = db.find_or_create_tome(title, metadata.language, author_ids,
                                      subtitle, tome_type=tome_type,
                                      fidelity=fidelity, edition=edition,
                                      publication_year=metadata.publication_year,
                                      tags_values=metadata.tags)
 
-
-    # \todo the file might already be linked to another tome, that ain't generic or completely different - we should handle that  
+    # \todo the file might already be linked to another tome, that ain't generic or completely different
+    # we should handle that
     base, extension = os.path.splitext(filepath)
     extension = extension[1:]  # remove period
 
@@ -69,18 +70,17 @@ def add_file(filepath, fidelity, tome_type, delete_source):
         print u"Unable to add file '{}' to db - check whether it might be defective".format(filepath)
 
 
-if __name__ == "__main__":
+def main():
     sys.excepthook = Pyro4.util.excepthook
 
     parser = argparse.ArgumentParser(description='Adds a tome to the database.')
-    # parser.add_argument('--ignore-opf','-i', help='Ignore any metadata.opf file found in the same directory', action=store_true, default=False)
     parser.add_argument('--non-fiction', '-n', dest='tome_type', help='Sets the tome type to non-ficton',
                         action='store_const', const='nonfiction')
     parser.add_argument('--fiction', '-f', dest='tome_type', help='Sets the tome-type to fiction', action='store_const',
                         const='fiction')
     parser.add_argument('--fidelity',
-                        help='The fidelity value of all components that will be added, ranging from -100 to 100', type=int,
-                        default='50')
+                        help='The fidelity value of all components that will be added, ranging from -100 to 100',
+                        type=int, default='50')
     parser.add_argument('--delete', '-d', help="Delete source file after successful import", action="store_true",
                         default=False)
 
@@ -96,8 +96,6 @@ if __name__ == "__main__":
         print >> sys.stderr, "Unable to talk to server, is it running?`"
         sys.exit(-1)
 
-
-
     tome_type = TomeType.Unknown
     if args.tome_type == 'nonfiction':
         tome_type = TomeType.NonFiction
@@ -109,7 +107,11 @@ if __name__ == "__main__":
     for filepath in args.filepaths:
         filepath = unicode(filepath.decode(sys.stdin.encoding))  # decode stuff coming in from command line
 
-        add_file(filepath, args.fidelity, tome_type, args.delete)
+        add_file(db, filepath, args.fidelity, tome_type, args.delete)
+
+
+if __name__ == "__main__":
+    main()
 
 
 

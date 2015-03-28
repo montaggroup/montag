@@ -198,10 +198,3 @@ if __name__ == "__main__":
         return 0
 
     clear_metadata_from_file('in.mobi', 'out.mobi', "This is title")
-#    sha256sum = hashlib.sha256(open('in.mobi', 'rb').read()).hexdigest()
-#    print "sha256(in)={}".format(sha256sum)
-#    sha256sum = hashlib.sha256(open('out.mobi', 'rb').read()).hexdigest()
-#    print "sha256(out)={}".format(sha256sum)
-
-    #print get_metadata(file('in.mobi', 'rb'))
-#    sys.exit(main())
