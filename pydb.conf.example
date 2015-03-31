@@ -1,5 +1,6 @@
 [common]
 enable_covers=True
+ignore_rate_limit_in_lan=True
 
 [comserver]
 port=1234

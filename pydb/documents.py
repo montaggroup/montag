@@ -24,9 +24,9 @@ def prepare_tome_document(original_tome_doc, local_db):
     """ returns a new tome document with many corrections and checks applied """
     tome_doc = copy.deepcopy(original_tome_doc)
     if 'prepared' in tome_doc:
-        raise ValueError("Tome document already prepared: {}".format(tome_doc))
+        raise ValueError(u'Tome document already prepared: {}'.format(tome_doc))
     if 'guid' not in tome_doc:
-        raise ValueError("Tome document did not contain a guid: {}".format(tome_doc))
+        raise ValueError(u'Tome document did not contain a guid: {}'.format(tome_doc))
     # it's not a deleted tome
     tome_guid = tome_doc['guid']
     if 'title' in tome_doc:
@@ -81,9 +81,9 @@ def prepare_author_document(original_author_doc):
     """ returns a new author document with many corrections and checks applied """
     author_doc = copy.deepcopy(original_author_doc)
     if 'prepared' in author_doc:
-        raise ValueError("Author document already prepared: {}".format(author_doc))
+        raise ValueError(u'Author document already prepared: {}'.format(author_doc))
     if 'guid' not in author_doc:
-        raise ValueError("Author document did not contain a guid: {}".format(author_doc))
+        raise ValueError(u'Author document did not contain a guid: {}'.format(author_doc))
 
     # it's not a deleted author
     guid = author_doc['guid']
@@ -104,61 +104,6 @@ def _wrap_language(lan):
         return langs[lan]
 
     return lan
-
-
-def overlay_document(merge_doc, local_doc):
-    if merge_doc is None:
-        return None
-
-    if local_doc is None:
-        return merge_doc
-
-    if 'tags' in local_doc:
-        new_items = overlay_local_items(merge_doc['tags'], local_doc['tags'], 'tag_value')
-        merge_doc['tags'] = new_items
-
-    if 'authors' in local_doc:
-        new_items = overlay_local_items(merge_doc['authors'], local_doc['authors'], 'guid')
-        merge_doc['authors'] = new_items
-
-    if 'files' in local_doc:
-        new_items = overlay_local_items(merge_doc['files'], local_doc['files'], 'hash')
-        merge_doc['files'] = new_items
-
-    if 'synopses' in local_doc:
-        new_items = overlay_local_items(merge_doc['synopses'], local_doc['synopses'], 'guid')
-        merge_doc['synopses'] = new_items
-
-    return merge_doc
-
-
-def overlay_local_items(mergedb_items, localdb_items, key_name):
-    local_items_by_key = _list_to_dict(localdb_items, key_name)
-
-    overlaid_items = []
-    for merge_item in mergedb_items:
-        item_id = merge_item[key_name]
-        if item_id in local_items_by_key:
-            local_item = local_items_by_key[item_id]
-            local_fidelity = local_item['fidelity']
-            merge_fidelity = merge_item['fidelity']
-            if abs(local_fidelity) > abs(merge_fidelity) or local_fidelity * merge_fidelity < 0:
-                new_item = copy.deepcopy(local_item)
-                if 'id' in merge_item:
-                    new_item['id'] = merge_item['id']
-                if 'detail' in merge_item:
-                    detail = merge_item['detail']
-                    if 'id' in detail:
-                        new_item['detail']['id'] = detail['id']
-
-                overlaid_items.append(new_item)
-            else:
-                overlaid_items.append(merge_item)
-        else:
-            overlaid_items.append(merge_item)
-
-    return overlaid_items
-
 
 def document_export_filter(items, ignore_fidelity_filter):
     return [_without_ids_and_mod_date(item) for item in items

@@ -38,10 +38,19 @@ def get_int_option(section, name, default):
 def enable_covers():
     return get_boolean_option('common', 'enable_covers', True)
 
-_has_ebook_convert = False
+def ignore_rate_limit_in_lan():
+    return get_boolean_option('common', 'ignore_rate_limit_in_lan', True)
+
+
+_has_ebook_convert = None
 
 
 def has_ebook_convert():
+    global _has_ebook_convert
+
+    if _has_ebook_convert is None:
+        _has_ebook_convert = os.path.exists("/usr/bin/ebook-convert")
+
     return _has_ebook_convert
 
 
@@ -65,10 +74,3 @@ def enable_web_auth():
     return get_boolean_option('web', 'enable_auth', False)
 
 
-def _load():
-    global _has_ebook_convert
-    if os.path.exists("/usr/bin/ebook-convert"):
-        _has_ebook_convert = True
-
-
-_load()

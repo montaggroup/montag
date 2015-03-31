@@ -1,46 +1,71 @@
 # coding: utf8
+if False:
+    from ide_fake import *
+
+
 import time
 import re
 
 
 def author_link(author_detail_info):
-    result=A(author_detail_info['name'], _class="author_link", _href=URL( 'default', 'view_author', args=[author_detail_info['guid']] ))
+    result = A(author_detail_info['name'],
+               _class="author_link",
+               _href=URL('default', 'view_author',
+               args=[author_detail_info['guid']]))
     return result
+
 
 def _concat_link_list(link_list):
-    if not link_list: return ""
-    result=link_list[0]
+    if not link_list:
+        return ""
+    result = link_list[0]
     for link in link_list[1:]:
-        result=CAT(result,", ",link)
+        result = CAT(result, ", ", link)
     return result
 
+
 def authors_links(author_link_infos):
-    links=[ author_link(author_link_info['detail']) for author_link_info in relevant_items(author_link_infos) ]
+    links = [author_link(author_link_info['detail']) for author_link_info in relevant_items(author_link_infos)]
     return _concat_link_list(links)
 
+
+def author_list(author_link_infos):
+    items = [author_link_info['detail']['name'] for author_link_info in relevant_items(author_link_infos)]
+    return _concat_link_list(items)
+
+
 def search_link(text, query, class_="search_link"):
-    return A(text, _class=class_, _href=URL( 'default', 'tomesearch', vars={ 'query': query.encode('utf-8'), '_formname':'search', 'principal_language': '', 'tome_type':'Z'}))
+    return A(text, _class=class_, _href=URL('default', 'tomesearch',
+                                            vars={'query': db_str_to_form(query),
+                                                  '_formname': 'search',
+                                                  'principal_language': '',
+                                                  'tome_type': 'Z'}))
+
 
 def tag_link(tag_text):
-    search_text = re.sub(" *[0-9]+$","",tag_text)
-    return search_link(tag_text,u'tag:"{}"*'.format(search_text), class_="tag_link")
+    search_text = re.sub(" *[0-9]+$", "", tag_text)
+    return search_link(tag_text, u'tag:"{}"*'.format(search_text), class_="tag_link")
+
 
 def title_by_authors_link(title_text, author_link_infos):
-    search_title_text = re.sub("Preceded by ","",title_text)
-    search_title_text = re.sub("Followed by ","",search_title_text)
-    search_authors_text = ''.join([ u'author:"{}"'.format(author_link_info['detail']['name']) for author_link_info in relevant_items(author_link_infos) ])
+    search_title_text = re.sub("Preceded by ", "", title_text)
+    search_title_text = re.sub("Followed by ", "", search_title_text)
+    search_authors_text = ''.join([u'author:"{}"'.format(author_link_info['detail']['name'])
+                                   for author_link_info in relevant_items(author_link_infos)])
     search_text = u'title:"{}"'.format(search_title_text) + " " + search_authors_text
-    return search_link(title_text,search_text, class_="tag_link")
+    return search_link(title_text, search_text, class_="tag_link")
+
 
 def tome_tag_links(tome_info):
     links = []
     for tag in tome_info['tags']:
         if tag['fidelity'] > cfg_tags_minimum_display_fidelity:
-            if re.search("Preceded by ",tag['tag_value']) or re.search("Followed by ",tag['tag_value']):
-                links.append( title_by_authors_link( tag['tag_value'], tome_info['authors'] ) )
+            if re.search("Preceded by ", tag['tag_value']) or re.search("Followed by ", tag['tag_value']):
+                links.append(title_by_authors_link(tag['tag_value'], tome_info['authors']))
             else:
                 links.append( tag_link(tag['tag_value']) )
     return _concat_link_list(links)
+
 
 def tome_link(tome_info):
     import pydb.title
@@ -49,19 +74,23 @@ def tome_link(tome_info):
     result=A(title_text, _class="tome_link", _href=URL( 'default', 'view_tome', args=[tome_info['guid']] ))
     return result
 
+
 def short_synopsis(tome, synopsis):
     synopsis_text = short_synopsis_content(synopsis)
     return A(synopsis_text, _class="synopsis_link", _href=URL( 'default', 'view_tome', args=[tome['guid']], anchor="synopsis" ))
 
+
 def short_synopsis_content(synopsis):
     synopsis_text = synopsis['content'][:100]+" ..." if len( synopsis['content'] ) > 100 else synopsis['content']
     return synopsis_text
+
 
 def human_readble_time(unixtime): 
 # <!--2014-01-18T12:34Z-->
     if not unixtime:
         return "Never"
     return time.strftime('%Y-%m-%dT%H:%MZ',time.gmtime(unixtime))
+
 
 def human_readble_time_elapsed_since(unixtime): 
     if not unixtime:

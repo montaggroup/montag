@@ -116,13 +116,12 @@ if __name__ == "__main__":
         # print 'completed:\n'
         # print fulltext
 
-        #metadata = get_metadata(infilestream)
-        #print metadata
+        # metadata = get_metadata(infilestream)
+        # print metadata
 
-        #outs = file("out.pdf", "w+b")
-        #clear_metadata(infilestream, outs)
+        # outs = file("out.pdf", "w+b")
+        # clear_metadata(infilestream, outs)
 
         return 0
 
     sys.exit(main())
-    

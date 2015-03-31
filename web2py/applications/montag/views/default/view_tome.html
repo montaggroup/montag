@@ -8,11 +8,8 @@ Tome not found in database.
         <span class="tome_info_block"> {{=tome_link(tome)}} by&nbsp;{{=authors_links(tome['authors'])}}
          <span class="edit"> {{ =A("edit", _id='edit_tome', _href=URL( 'edit_tome',args=[tome['guid']] )) }} </span>
         </span><br>
-        {{ if tome['edition']: }} {{ =tome['edition'] }}, {{pass}}
-        {{ if tome['publication_year']: }} {{ =tome['publication_year'] }} {{pass}}
-        <br>
-        {{=tome['principal_language']}} {{=pydb.tome_type_text(tome['type'])}} — {{=int(tome['fidelity'])}}/100
-        {{ if tome['tags']: }} — {{ =tome_tag_links(tome)}}{{pass}}<br>
+        {{show_tome_edition_tags_block(tome)}}
+
 
         {{ if tome['synopses']: }}
             {{ relevant_synopsis = sorted(tome['synopses'], key=itemgetter('fidelity'), reverse=True)[0] }}
@@ -50,12 +47,11 @@ Tome not found in database.
 {{ pass }}
 
 
-<script>
+<script type="text/javascript">
 $(document).keydown(function(e) {
     if(e.keyCode === 69) { //e
         e.stopPropagation();
-        var target_link=$("#edit_tome")[0]
-        target_link.click()
+        $("#edit_tome")[0].click(); 
     }
 });
 </script>

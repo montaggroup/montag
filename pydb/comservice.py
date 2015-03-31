@@ -44,7 +44,7 @@ class Job():
             self.process.terminate()
 
     def __str__(self):
-        return "'{}': {}".format(self.name, self.friend_id)
+        return u'"{}": {}'.format(self.name, self.friend_id)
 
     def __repr__(self):
         return str(self)

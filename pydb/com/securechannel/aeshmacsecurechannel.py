@@ -150,8 +150,8 @@ class AesHmacSecureChannel():
 
                 auth = calc_hmac(preshared_secret_kex_hmac, self.nonce_a + message[:64])
                 if auth == message[64:]:
-                    logger.info("Friend {} authenticated".format(friend["name"]))
-                    self._change_state("established")
+                    logger.info(u'Friend {} authenticated'.format(friend['name']))
+                    self._change_state('established')
                     self.nonce_b = message[:64]
                     self.lower_layer.set_max_data_length(0)
                     self.preshared_secret_kex_cipher = preshared_secret_kex_cipher
@@ -195,6 +195,6 @@ class AesHmacSecureChannel():
         self.session_cipher_outgoing = pydb.crypto.AesCtr(session_secret_cipher_outgoing)
         self.session_cipher_incoming = pydb.crypto.AesCtr(session_secret_cipher_incoming)
 
-        logger.info("Established@%s session_cipher_secret: {}... ".format(
-            self.role, session_secret_cipher.encode("hex_codec")[:4]))
+        logger.info(u'Established@{} session_cipher_secret: {}... '.format(
+            self.role, session_secret_cipher.encode('hex_codec')[:4]))
 

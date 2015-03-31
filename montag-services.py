@@ -1,6 +1,6 @@
 #!/usr/bin/env python2.7
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 import argparse
 import sys
@@ -26,11 +26,11 @@ def do_start_services(args):
         if services_status[name]['status'] == 'not running':
             print 'starting service {}, log {}'.format(name, services.logfile_path(name))
             try:
-                services.start(name)
+                services.start(name, log_level=args.log_level)
                 if 'pydbserver' in name:  # allow service to start up
                     _wait_for_db_ping_ok()
-            except EnvironmentError:
-                print 'could not start service %s' % name
+            except EnvironmentError as e:
+                print 'Could not start service {}: {}'.format(name, e)
                 sys.exit(1)
 
 
@@ -42,8 +42,8 @@ def _wait_for_db_ping_ok():
     while not db_ok and tries < 500:
         try:
             if db.ping() == 'pong':
-               db_ok = True
-               break
+                db_ok = True
+                break
         except Pyro4.errors.CommunicationError:
             pass
 
@@ -53,14 +53,8 @@ def _wait_for_db_ping_ok():
     return db_ok
 
 def do_stop_services(args):
-    services_status = services.get_current_services_status()
-    for name in services.names[::-1]:
-        if services_status[name]['status'] != 'not running':
-            print 'stopping service {}'.format(name)
-            try:
-                services.stop(services_status[name]['process'])
-            except Exception:
-                print 'could not stop service %s' % name
+    services.stop_all_ignoring_exceptions(verbose=True)
+
 
 
 def do_restart_services(args):

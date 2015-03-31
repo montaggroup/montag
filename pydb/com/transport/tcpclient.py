@@ -1,6 +1,6 @@
 from twisted.internet.protocol import Factory
 from twisted.internet.endpoints import TCP4ClientEndpoint
-from tcptransportprotocol import TcpTransportProtocol
+from tcptransportprotocol import buildTcpTransportProtocol
 import logging
 
 logger = logging.getLogger('tcpclient')
@@ -54,5 +54,6 @@ class ProtocolFactory(Factory):
 
     # noinspection PyUnusedLocal
     def buildProtocol(self, addr):
-        return TcpTransportProtocol(self.upper_layer, self.comservice, self.target_bytes_per_second)
+        host = addr.host
+        return buildTcpTransportProtocol(self.upper_layer, self.comservice, self.target_bytes_per_second, addr.host)
 

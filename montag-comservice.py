@@ -1,21 +1,19 @@
 #!/usr/bin/env python2.7
 import logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 import Pyro4
 import pydb.comservice
 
 import argparse
 import multiprocessing
-from twisted.python import log
 
 import pydb.config
+import pydb.logconfig
 
 pydb.config.read_config()
-
-observer = log.PythonLoggingObserver()
-observer.start()
+pydb.logconfig.catch_twisted_log_messages()
 
 if __name__ == "__main__":
     multiprocessing.freeze_support()
@@ -24,12 +22,16 @@ if __name__ == "__main__":
     cs = pydb.comservice.build()
 
     parser = argparse.ArgumentParser(description='Runs the communication client service')
+    parser.add_argument('--basepath', '-b', dest='basepath', help='Sets the basepath for the server', action='store')
     parser.add_argument('--name', '-n', dest='pyro_name', help='Sets the Pyro4 name for the server', action='store',
                         default="comservice")
     parser.add_argument('--port', '-p', dest='pyro_port', help='Sets the Pyro4 port for the server', action='store',
                         default=4513, type=int)
+    pydb.logconfig.add_log_level_to_parser(parser)
 
     args = parser.parse_args()
+
+    pydb.logconfig.set_log_level(args.loglevel)
 
     print "Pyro port: %s" % (args.pyro_port)
     daemon = Pyro4.Daemon(port=args.pyro_port)  # make a Pyro daemon

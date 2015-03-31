@@ -1,22 +1,30 @@
 #!/usr/bin/env python2.7
 
 import logging
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 from twisted.internet import reactor
 from pydb.com.server import Server
 import pydb.config as config
-from twisted.python import log
+import argparse
 
 import pydb.config
+import pydb.logconfig
 
-pydb.config.read_config()
+if __name__ == "__main__":
+    pydb.config.read_config()
+    pydb.logconfig.catch_twisted_log_messages()
 
-observer = log.PythonLoggingObserver()
-observer.start()
+    parser = argparse.ArgumentParser(description='Runs the communication server')
+    parser.add_argument('--basepath', '-b', dest='basepath', help='Sets the basepath for the server', action='store')
+    pydb.logconfig.add_log_level_to_parser(parser)
 
-s = Server(tcp_port_number=config.comserver_port(),
-           upload_rate_limit_kbps=config.upload_rate_limit_kbytes_per_second())
+    args = parser.parse_args()
 
-reactor.run()
+    pydb.logconfig.set_log_level(args.loglevel)
+
+    s = Server(tcp_port_number=config.comserver_port(),
+               upload_rate_limit_kbps=config.upload_rate_limit_kbytes_per_second())
+
+    reactor.run()
 

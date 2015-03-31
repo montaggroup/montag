@@ -9,37 +9,41 @@ from whoosh import analysis
 
 logger = logging.getLogger('whoosh_index')
 
-MaxNumberOfSearchResults = 500
+MAX_NUMBER_OF_SEARCH_RESULTS = 500
 
+def build(db_dir):
+    if not os.path.exists(db_dir):
+        os.makedirs(db_dir)
+
+    index_dir = os.path.join(db_dir, "whoosh")
+
+    if os.path.exists(index_dir):
+        index = open_dir(index_dir)
+    else:
+        all_words_ana = analysis.StandardAnalyzer(stoplist=None, minsize=0)
+
+        schema = Schema(
+            any_field=TEXT(analyzer=all_words_ana),
+            title=TEXT(analyzer=all_words_ana),
+            subtitle=TEXT(analyzer=all_words_ana),
+            author=TEXT(analyzer=all_words_ana),
+            edition=TEXT(analyzer=all_words_ana),
+            principal_language=TEXT(analyzer=all_words_ana),
+            publication_year=NUMERIC(),
+            tag=KEYWORD(commas=True, scorable=True, lowercase=True),
+            guid=ID(stored=True, unique=True),
+            merge_db_id=NUMERIC(stored=True),
+            type=NUMERIC()
+        )
+
+        os.mkdir(index_dir)
+        index = create_in(index_dir, schema)
+
+    return WhooshIndex(index)
 
 class WhooshIndex:
-    def __init__(self, db_dir):
-        if not os.path.exists(db_dir):
-            os.mkdir(db_dir)
-        self.index_dir = os.path.join(db_dir, "whoosh")
-        # logger.info("Whoosh index located in %s" % self.index_dir)
-
-        if os.path.exists(self.index_dir):
-            self.index = open_dir(self.index_dir)
-        else:
-            all_words_ana = analysis.StandardAnalyzer(stoplist=None, minsize=0)
-
-            schema = Schema(
-                any_field=TEXT(analyzer=all_words_ana),
-                title=TEXT(analyzer=all_words_ana),
-                subtitle=TEXT(analyzer=all_words_ana),
-                author=TEXT(analyzer=all_words_ana),
-                edition=TEXT(analyzer=all_words_ana),
-                principal_language=TEXT(analyzer=all_words_ana),
-                publication_year=NUMERIC(),
-                tag=KEYWORD(commas=True, scorable=True, lowercase=True),
-                guid=ID(stored=True, unique=True),
-                merge_db_id=NUMERIC(stored=True),
-                type=NUMERIC()
-            )
-
-            os.mkdir(self.index_dir)
-            self.index = create_in(self.index_dir, schema)
+    def __init__(self, whoosh_index):
+        self.index = whoosh_index
 
     def add_enriched_tomes(self, enriched_tomes):
         if not enriched_tomes:
@@ -72,9 +76,9 @@ class WhooshIndex:
                                    guid=tome['guid'],
                                    merge_db_id=tome['id'],
                                    type=tome['type'])
-        logger.info("Committing writer")
+        logger.debug("Committing writer")
         writer.commit(MERGE_CUSTOM)
-        logger.info("Commit done")
+        logger.debug("Commit done")
 
     def remove_tomes(self, tome_guids):
         if not tome_guids:
@@ -88,13 +92,13 @@ class WhooshIndex:
         writer.commit()
 
     def search_tomes(self, query_text):
-        logger.info("Searching for '%s'" % query_text)
-        parser = QueryParser("any_field", self.index.schema)
+        logger.info(u'Searching for "{}"'.format(query_text))
+        parser = QueryParser('any_field', self.index.schema)
         my_query = parser.parse(query_text)
         with self.index.searcher() as searcher:
-            results = list(searcher.search(my_query, limit=MaxNumberOfSearchResults))
+            results = list(searcher.search(my_query, limit=MAX_NUMBER_OF_SEARCH_RESULTS))
             merge_db_ids = [r['merge_db_id'] for r in results]
-            logger.info("Found %d results" % len(merge_db_ids))
+            logger.info(u'Found {} results'.format(len(merge_db_ids)))
             return merge_db_ids
 
 
@@ -113,13 +117,17 @@ def MERGE_CUSTOM(writer, segments):
     sorted_segment_list = sorted(segments, key=lambda s: s.doc_count_all())
     total_docs = 0
 
+    log_stats = False
+
     merge_point_found = False
     for i, seg in enumerate(sorted_segment_list):
         count = seg.doc_count_all()
         if count > 0:
             total_docs += count
 
-        logger.debug("{}: {}/{}, fib {}".format(i, count, total_docs, fib(i+5)))
+        if log_stats:
+            logger.debug("{}: {}/{}, fib {}".format(i, count, total_docs, fib(i+5)))
+
         if merge_point_found:
             unchanged_segments.append(seg)
         else:

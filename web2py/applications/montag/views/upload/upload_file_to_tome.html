@@ -1,24 +1,14 @@
 {{extend 'layout.html'}}
+{{include 'upload/upload_snippets.html'}}
 
 {{if tome is None: }}
 No such tome
 {{else:}}
-<h2>
-    Upload file to {{=tome['title']}}
-</h2>
+<h1 class="first_on_page">Upload file for {{=tome_link(tome)}}</h1>
 
 {{=form}}
 
-<script type="text/javascript">
-Dropzone.options.dropzoneForm = {
-  init: function() {
-    this.on("success", function(file, reply) { window.location=reply; });
-  },
-  previewsContainer: false   
-};
-
-</script>
-
+{{add_dropzone_form('dropzoneForm')}}
 
 {{pass}}
 

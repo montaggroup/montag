@@ -26,25 +26,30 @@ def db_path(db_dir, db_name):
     return os.path.join(db_dir, db_name + ".db")
 
 
-def build(db_dir, schema_path, enable_db_sync=True):
+def build(db_dir, schema_dir, enable_db_sync=True):
+    if not os.path.exists(db_dir):
+        os.makedirs(db_dir)
+
     foreign_db_dir = os.path.join(db_dir, "foreign")
     if not os.path.exists(foreign_db_dir):
         os.makedirs(foreign_db_dir)
 
-    local_db = LocalDB(db_path(db_dir, "local"), schema_path, enable_db_sync)
-    merge_db = MergeDB(db_path(db_dir, "merge"), schema_path, enable_db_sync=False)
+    local_db = LocalDB(db_path(db_dir, "local"), schema_dir, enable_db_sync)
+    merge_db = MergeDB(db_path(db_dir, "merge"), schema_dir, local_db=local_db, enable_db_sync=False)
     merge_db.add_source(local_db)
-    friends_db = FriendsDB(db_path(db_dir, "friends"), schema_path)
+    friends_db = FriendsDB(db_path(db_dir, "friends"), schema_dir)
 
     def build_foreign_db(friend_id):
         foreign_db_path = db_path(db_dir, os.path.join("foreign", str(friend_id)))
-        foreign_db = ForeignDB(foreign_db_path, schema_path, friend_id, enable_db_sync=enable_db_sync)
+        foreign_db = ForeignDB(foreign_db_path, schema_dir, friend_id, enable_db_sync=enable_db_sync)
         return foreign_db
 
     index_server = pyrosetup.indexserver()
 
     db = MainDB(local_db, friends_db, merge_db, build_foreign_db, index_server)
     db.load_foreign_dbs()
+
+    merge_db.recalculate_if_neccessary()
 
     logger.info("DBs initialized")
     return db
@@ -62,7 +67,7 @@ class MainDB:
         self.build_foreign_db = build_foreign_db
 
     def _add_foreign_db(self, friend_id):
-        logger.info("Loading foreign db for friend %d" % friend_id)
+        logger.info("Loading foreign db for friend {}".format(friend_id))
 
         db = self.build_foreign_db(friend_id)
         self.foreign_dbs[friend_id] = db
@@ -135,6 +140,10 @@ class MainDB:
         """ finds a author by name or pseudonym """
         return self.merge_db.find_authors(author_name)
 
+    def find_authors_with_same_name_key(self, author_name):
+        """ finds a author by name key or pseudonym name key"""
+        return self.merge_db.find_authors_with_same_name_key(author_name)
+
     def get_tome_file(self, tome_id, file_hash):
         """ returns a tome file link entry or None if not found"""
         return self.merge_db.get_tome_file(tome_id, file_hash)
@@ -170,19 +179,22 @@ class MainDB:
         """ returns a tome from the merge table identified by guid """
         return self.merge_db.get_tome_by_guid(tome_guid)
 
-    def get_tome_document(self, tome_id, ignore_fidelity_filter=False):
-        tome = self.get_tome(tome_id)
-        if tome is None:
-            return None
-        return self.get_tome_document_by_guid(tome['guid'], ignore_fidelity_filter)
-
     def get_tome_document_by_guid(self, tome_guid, ignore_fidelity_filter=False,
-                                  include_author_detail=False, keep_id=False):
+                                  include_author_detail=False, keep_id=False, include_local_file_info=False):
         """ returns the full tome document (including files, tags..) for a given tome identified by id
             a tome document may be empty (only guid, no title key) if the fidelity is below the relevance threshold
         """
-        return self.merge_db.get_tome_document_by_guid(tome_guid, ignore_fidelity_filter,
-                                                       include_author_detail=include_author_detail, keep_id=keep_id)
+        result = self.merge_db.get_tome_document_by_guid(tome_guid, ignore_fidelity_filter,
+                                                         include_author_detail=include_author_detail,
+                                                         keep_id=keep_id)
+        if 'title' not in result:  # document was deleted
+            return result
+
+        if include_local_file_info:
+            for file_info in result['files']:
+                self._add_local_file_info(file_info)
+
+        return result
 
     def get_local_tome_document_by_guid(self, tome_guid, ignore_fidelity_filter=False, include_author_detail=False):
         """ returns the local tome document (including files, tags..) for a given tome identified by id
@@ -190,33 +202,6 @@ class MainDB:
         """
         return self.local_db.get_tome_document_by_guid(tome_guid, ignore_fidelity_filter,
                                                        include_author_detail=include_author_detail)
-
-    def get_tome_document_with_local_overlay_by_guid(self, tome_guid,
-                                                     ignore_fidelity_filter=False,
-                                                     include_local_file_info=False,
-                                                     include_author_detail=False):
-        """ returns the full tome document (including files, tags..) for a given tome identified by id
-            a tome document may be empty (only guid, no title key) if the fidelity is below the relevance threshold.
-            After getting the full tome document, entries which have a local entry will be replaced if their fidelity
-            is of larger magnitude.
-            The result will also contain the tome id
-        """
-        
-        merge_tome = self.get_tome_document_by_guid(tome_guid, ignore_fidelity_filter,
-                                                    include_author_detail=include_author_detail, keep_id=True)
-        if 'title' not in merge_tome:
-            return merge_tome                                                    
-                                                    
-        local_tome = self.get_local_tome_document_by_guid(tome_guid, ignore_fidelity_filter,
-                                                          include_author_detail=include_author_detail)
-
-        result = documents.overlay_document(merge_tome, local_tome)
-
-        if include_local_file_info:
-            for file_info in result['files']:
-                self._add_local_file_info(file_info)
-        
-        return result
 
     def get_latest_tome_related_change(self, tome_guid):
         """ returns the id of the friend (or 0 for "local"), the date of the latest change
@@ -301,6 +286,24 @@ class MainDB:
 
         return result
 
+    def get_debug_info_for_author_by_guid(self, author_guid):
+        """ returns author documents for all databases (local, merge, all foreign) to improve network debugging
+        """
+        merge_doc = self.merge_db.get_author_document_by_guid(author_guid, ignore_fidelity_filter=True)
+        local_doc = self.local_db.get_author_document_by_guid(author_guid, ignore_fidelity_filter=True)
+
+        friends_docs = {}
+        for friend_id, foreign_db in self.foreign_dbs.iteritems():
+            friends_docs[friend_id] = foreign_db.get_author_document_by_guid(author_guid, ignore_fidelity_filter=True)
+
+        result = {
+            'merge_doc': merge_doc,
+            'local_doc': local_doc,
+            'friends': friends_docs
+        }
+
+        return result
+
     def get_author(self, author_id):
         """ returns a author from the merge table identified by id """
         return self.merge_db.get_author(author_id)
@@ -321,19 +324,6 @@ class MainDB:
         """
         return self.local_db.get_author_document_by_guid(author_guid, ignore_fidelity_filter)
 
-    def get_author_document_with_local_overlay_by_guid(self, author_guid, ignore_fidelity_filter=False):
-        """ returns the full author document for a given tome identified by id
-            an author document may be empty (only guid, no name key) if the fidelity is below the relevance threshold.
-            After getting the full author document, entries which have a local entry will be replaced if their fidelity
-            is of larger magnitude
-        """
-        merge_author = self.get_author_document_by_guid(author_guid, ignore_fidelity_filter, keep_id=True)
-        local_author = self.get_local_author_document_by_guid(author_guid, ignore_fidelity_filter)
-        
-        result = documents.overlay_document(merge_author, local_author)
-        
-        return result
-
     def document_modification_date_by_guid(self, doc_type, guid):
         return self.merge_db.document_modification_date_by_guid(doc_type, guid)
 
@@ -347,6 +337,8 @@ class MainDB:
         """ adds a new author, generating a guid, returns the id of the author """
         if not fidelity:
             fidelity = self.default_add_fidelity
+
+        name = name.strip()
 
         if not guid:
             guid = self.generate_guid()
@@ -396,12 +388,19 @@ class MainDB:
 
     def add_tome(self, title, principal_language, author_ids, guid=None, publication_year=None, edition=None,
                  subtitle=None, tome_type=TomeType.Unknown, fidelity=None, tags_values=None):
-        """ adds a new tome, generating a guid. returns a tome_id
+        """ adds a new tome, generating a guid. returns a merge db tome_id or none if tome had not enough fidelity
+            to be added to merge db
             is_fiction: None => unknown, True => fiction, False=>non_fiction
         """
         logging.debug("Called add_tome")
 
-        if not fidelity:
+        title = title.strip()
+        if subtitle is not None:
+            subtitle = subtitle.strip()
+        if edition is not None:
+            edition = edition.strip()
+
+        if fidelity is None:
             fidelity = self.default_add_fidelity
 
         # prepare the local information about the author
@@ -431,10 +430,9 @@ class MainDB:
                 self.merge_db.request_tome_tag_update(guid)
 
         tome = self.merge_db.get_tome_by_guid(guid)
-
-        self._update_search_index()
-
-        return tome['id']
+        if tome:
+            self._update_search_index()
+            return tome['id']
 
     def _apply_file_hash_translation(self, source_hash, target_hash):
         """ goes through all databases making sure that all instances of source_hash
@@ -497,7 +495,7 @@ class MainDB:
                     tome_id = f['tome_id']
                     self.local_db.remove_file_link(tome_id, f['hash'])
                     tome = self.local_db.get_tome(tome_id)
-                    logger.info("Removing file {} from tome {}".format(f['hash'], tome['title']))
+                    logger.info(u'Removing file {} from tome {}'.format(f['hash'], tome['title']))
                     self.merge_db.request_tome_file_update(tome['guid'])
                     count += 1
         return count
@@ -509,10 +507,7 @@ class MainDB:
         local_db_tome_id = self._merge_db_tome_id_to_local_db_tome_id(tome_id)
         local_db_author_id = self._merge_db_author_id_to_local_db_author_id(author_id)
 
-        cur = self.local_db.con.cursor()
-        cur.execute("INSERT OR IGNORE INTO tomes_authors "
-                    "(tome_id, author_id, author_order, fidelity, last_modification_date) VALUES(?,?,?,?,?)",
-                    (local_db_tome_id, local_db_author_id, author_order, fidelity, time.time()))
+        self.local_db.add_tome_author_link(local_db_tome_id, local_db_author_id, author_order, fidelity)
 
         merge_db_tome = self.merge_db.get_tome(tome_id)
         tome_guid = merge_db_tome['guid']
@@ -716,6 +711,9 @@ class MainDB:
         """
         return self.merge_db.get_author_fusion_target_guid(source_author_guid)
 
+    def recalculate_tome_merge_db_entry(self, tome_guid):
+        self.merge_db.request_complete_tome_update(tome_guid, include_fusion_source_update=True)
+
     def rebuild_merge_db(self):
         with Transaction(self.merge_db):
             logger.info("Deleting old merge db contents")
@@ -864,19 +862,17 @@ class MainDB:
     # using e.g. a tome title
     def find_or_create_author(self, author_name, fidelity):
         """ returns a merge db author id """
+        author_name = author_name.strip()
         author_candidates = self.find_authors(author_name)
 
         if len(author_candidates) == 1:  # we have only one candidate, use it
             return author_candidates[0]['id']
 
-        if len(author_candidates) == 0:  # no candidates, create it
-            author_id = self.add_author(author_name, fidelity=fidelity)
-            return author_id
-
-        # more than one author, find/create the generic one
-        for author in author_candidates:
-            if author['date_of_birth'] is None and author['date_of_death'] is None:
-                return author['id']
+        if len(author_candidates) > 1:
+            # more than one author, find/create the generic one
+            for author in author_candidates:
+                if author['date_of_birth'] is None and author['date_of_death'] is None:
+                    return author['id']
 
         # create it
         return self.add_author(author_name, fidelity=fidelity)
@@ -887,33 +883,46 @@ class MainDB:
         author_ids = [self.find_or_create_author(author_name, fidelity) for author_name in author_names]
         return author_ids
 
-    def find_or_create_tome(self, title, language, author_ids, subtitle, tome_type, fidelity, publication_year=None,
-                            tags_values=None):
+    def find_or_create_tome(self, title, language, author_ids, subtitle, tome_type, fidelity, 
+                            edition=None, publication_year=None, tags_values=None):
+
+        title = title.strip()
+        if subtitle is not None:
+            subtitle = subtitle.strip()
+        if edition is not None:
+            edition = edition.strip()
+
+        def filter_tomes(candidates, field_name, value_to_find, strict=False):
+            if value_to_find is None and not strict:
+                return candidates
+            value_to_find = unicode(value_to_find)
+            return filter(lambda t: unicode(t[field_name]) == value_to_find, candidates)
+
         tome_candidates = self.find_tomes_by_title(title, language, author_ids, subtitle)
+        tome_candidates = filter_tomes(tome_candidates, 'edition', edition)
+        tome_candidates = filter_tomes(tome_candidates, 'publication_year', publication_year)
 
         if len(tome_candidates) == 1:  # one tome, use it
             return tome_candidates[0]['id']
 
-        if len(tome_candidates) > 1:  # more than one tome candidate
+        if len(tome_candidates) > 1:  # multiple candidates left, try to filter more strict
+                tome_candidates = filter_tomes(tome_candidates, 'edition', edition, strict=True)
 
-            if publication_year:
-                # find the one matching publication year and having empty edition
-                for tome_fields in tome_candidates:
-                    if tome_fields['edition'] is None and tome_fields['publication_year'] == publication_year:
-                        return tome_fields['id']
+                if len(tome_candidates) == 1:  # one tome now left, use it
+                    return tome_candidates[0]['id']
 
-                # now search for all matching the pub year
-                for tome_fields in tome_candidates:
-                    if tome_fields['publication_year'] == publication_year:
-                        return tome_fields['id']
+        if len(tome_candidates) > 1:  # multiple candidates left, try to filter more strict
+                tome_candidates = filter_tomes(tome_candidates, 'publication_year', publication_year, strict=True)
 
-            # find/create the generic one
-            for tome_fields in tome_candidates:
-                if tome_fields['edition'] is None and tome_fields['publication_year'] is None:
-                    return tome_fields['id']
+                if len(tome_candidates) == 1:  # one tome now left, use it
+                    return tome_candidates[0]['id']
+
+        if len(tome_candidates) > 1:  # multiple candidates left, choose one based on guid
+            tome_candidates.sort(key=lambda t: t['guid'])
+            return tome_candidates[0]['id']
 
         return self.add_tome(title, language, author_ids, subtitle=subtitle, fidelity=fidelity, tome_type=tome_type,
-                             publication_year=publication_year, tags_values=tags_values)
+                             edition=edition, publication_year=publication_year, tags_values=tags_values)
 
     def get_tome_fidelities(self, tome_id):
         """ returns a tuple (effective_fidelity, local_fidelity, min_foreign_fidelity, max_foreign_fidelity) of
@@ -998,7 +1007,6 @@ class MainDB:
 
         new_tome_doc = self.get_tome_document_by_guid(target_guid)
 
-
         if data_tome != target_tome:  # copy data from data tome over
             for key, value in data_tome.iteritems():
                 if key in new_tome_doc:
@@ -1009,7 +1017,6 @@ class MainDB:
         required_fidelity_2 = self.calculate_required_tome_fidelity(target_tome['id'])
         new_tome_doc['fidelity'] = max(required_fidelity_1, required_fidelity_2)  # we are not less certain than before
         new_tome_doc['fusion_sources'].append({'source_guid': source_guid, 'fidelity': Default_Manual_Fidelity})
-
 
         self.load_own_tome_document(new_tome_doc)
 
@@ -1033,14 +1040,17 @@ class MainDB:
                     if key.lower() not in ("guid"):
                         new_author_doc[key] = data_author[key]
 
-
         required_fidelity_1 = self.calculate_required_author_fidelity(source_author['id'])
         required_fidelity_2 = self.calculate_required_author_fidelity(target_author['id'])
-        new_author_doc['fidelity'] = max(required_fidelity_1, required_fidelity_2)  # we are not less certain than before
-        new_author_doc['fusion_sources'].append({'source_guid': source_guid, 'fidelity': Default_Manual_Fidelity})
 
+        # we are not less certain than before
+        new_author_doc['fidelity'] = max(required_fidelity_1, required_fidelity_2)
+
+        new_author_doc['fusion_sources'].append(
+            {'source_guid': source_guid, 'fidelity': Default_Manual_Fidelity})
 
         self.load_own_author_document(new_author_doc)
+
 
 def _effective_friend_fidelity(friend_fidelity, specific_friend_deduction=Friend_Fidelity_Deduction):
     f = friend_fidelity

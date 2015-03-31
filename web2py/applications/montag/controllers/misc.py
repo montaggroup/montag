@@ -1,8 +1,6 @@
 # coding: utf8
-# try something like
-
-@auth.requires_login()
-def index(): return dict(message="hello from misc.py")
+if False:
+    from web2py.applications.montag.models.ide_fake import *
 
 
 @auth.requires_login()

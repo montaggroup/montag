@@ -1,8 +1,11 @@
+if False:
+    from web2py.applications.montag.models.ide_fake import *
+
 def _select_author_merge_partner_form(first_author):
-    form = SQLFORM.factory(
-        Field('query',requires=IS_NOT_EMPTY(), default=db_str_to_form(first_author['name']), label="Search for"),
-        submit_button='Search',
-        _method = 'GET')
+    form = SQLFORM.factory(Field('query',requires=IS_NOT_EMPTY(), default=db_str_to_form(first_author['name']),
+                                 label="Search for"),
+                           submit_button='Search',
+                           _method='GET')
     return form
 
 
@@ -23,30 +26,32 @@ def select_author_merge_partner():
     
     response.title = "Select Merge Target - Montag"
 
-    if search_form.validate(formname = 'search', session = None, request_vars=request.vars, message_onsuccess='', keepvalues=True):
-        author_to_search_for = search_form.vars['query'].decode('utf-8')
-        retval['query'] = search_form.vars['query']
+    if search_form.validate(formname = 'search', session = None, request_vars=request.vars, message_onsuccess='',
+                            keepvalues=True):
+        author_to_search_for = read_form_field(search_form, 'query')
+        retval['query'] = read_form_field(search_form,'query')
     else:
         author_to_search_for = first_author['name']
         retval['query'] = author_to_search_for
 
     if len(author_to_search_for) > 0:
-        if author_to_search_for[0]!='%':
-            author_to_search_for='%'+author_to_search_for
-        if author_to_search_for[-1]!='%':
-            author_to_search_for=author_to_search_for+'%'
+        if author_to_search_for[0] != '%':
+            author_to_search_for= '%' +author_to_search_for
+        if author_to_search_for[-1] != '%':
+            author_to_search_for = author_to_search_for + '%'
 
     page_number = 0
             
     if 'page' in request.vars:
         page_number = int(request.vars.page)
             
-    _pass_paged_author_query_results_to_view(author_to_search_for, retval, page_number)
+    pass_paged_author_query_results_to_view(author_to_search_for, retval, page_number)
 
     retval['form'] = search_form
     retval['request'] = request
 
     return retval
+
 
 def _fetch_tomes_by_author(author_id):
     tomes = pdb.get_tomes_by_author(author_id)
@@ -55,7 +60,8 @@ def _fetch_tomes_by_author(author_id):
     tomelist = []
     for tome in tomes:
         if tome['author_link_fidelity'] >= pydb.network_params.Min_Relevant_Fidelity:
-            tome = pdb.get_tome_document_with_local_overlay_by_guid(tome['guid'], include_local_file_info = True, include_author_detail=True)
+            tome = pdb.get_tome_document_by_guid(tome['guid'], keep_id=True,
+                                                 include_local_file_info = True, include_author_detail=True)
             tomelist.append(tome)
     return tomelist
 
@@ -95,20 +101,21 @@ def execute_merge_authors():
     else:
         pdb.fuse_authors(first_author_guid, target_guid=second_author_guid)
 
-    redirect(URL('default','view_author', args=(first_author_guid)))
+    redirect(URL('default','view_author', args=first_author_guid))
 
 def _select_tome_merge_partner_form(first_tome):
-    form = SQLFORM.factory(
-        Field('query',requires=IS_NOT_EMPTY(), default=db_str_to_form(first_tome['title']), label="Search for"),
-        submit_button='Search',
-        _method = 'GET')
+    form = SQLFORM.factory(Field('query', requires=IS_NOT_EMPTY(),
+                                 default=db_str_to_form(first_tome['title']), label="Search for"),
+                           submit_button='Search',
+                           _method='GET')
     return form
 
 
 @auth.requires_login()
 def select_tome_merge_partner():
     first_tome_guid = request.args[0]
-    first_tome = pdb.get_tome_by_guid(first_tome_guid)
+    first_tome = pdb.get_tome_document_by_guid(first_tome_guid, keep_id=True,
+                                               include_local_file_info=False, include_author_detail=True)
     if first_tome is None:
         session.flash = "Tome not found"
         redirect(URL('default', 'tomesearch'))
@@ -124,15 +131,15 @@ def select_tome_merge_partner():
     page_number = 0
     
     if search_form.validate(formname = 'search', session = None, request_vars=request.vars, message_onsuccess='', keepvalues=True):
-        search_query = _build_search_query(search_form)
+        search_query = build_search_query(search_form)
         if 'page' in request.vars:
             page_number = int(request.vars.page)
-        retval['query'] = search_form.vars['query'].decode('utf-8')
+        retval['query'] = read_form_field(search_form, 'query')
     else:
         search_query = first_tome['title']
         retval['query'] = search_query
         
-    _pass_paged_query_results_to_view(search_query, retval, page_number)
+    pass_paged_query_results_to_view(search_query, retval, page_number)
 
     retval['form'] = search_form
     retval['request'] = request
@@ -144,10 +151,12 @@ def select_tome_merge_partner():
 @auth.requires_login()
 def confirm_merge_tomes():
     first_tome_guid = request.args[0]
-    first_tome = pdb.get_tome_document_with_local_overlay_by_guid(first_tome_guid, include_local_file_info=True, include_author_detail=True)
+    first_tome = pdb.get_tome_document_by_guid(first_tome_guid, keep_id=True,
+                                               include_local_file_info=True, include_author_detail=True)
 
     second_tome_guid = request.args[1]
-    second_tome = pdb.get_tome_document_with_local_overlay_by_guid(second_tome_guid, include_local_file_info=True, include_author_detail=True)
+    second_tome = pdb.get_tome_document_by_guid(second_tome_guid, keep_id=True,
+                                                include_local_file_info=True, include_author_detail=True)
     
     if second_tome is None:
         session.flash = "Tome not found"

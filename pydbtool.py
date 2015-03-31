@@ -23,25 +23,27 @@ sys.excepthook = Pyro4.util.excepthook
 json_indent = 4
 json_separators = (',', ': ')
 
+INSERT_BATCH_SIZE = 50
+
 
 def do_print_stats(args, db):
     merge_stats = db().get_merge_statistics()
     print "\nmerge.db contains:"
     print "=================="
     for key in merge_stats:
-        print "{1} {0}.".format(key, merge_stats[key])
+        print u'{1} {0}.'.format(key, merge_stats[key])
 
     local_stats = db().get_local_statistics()
     print "\nlocal.db contains:"
     print "=================="
     for key in local_stats:
-        print "{1} {0}.".format(key, local_stats[key])
+        print u'{1} {0}.'.format(key, local_stats[key])
 
 
 def do_add_friend(args, db):
     friend_name = args.friend_name
     db().add_friend(friend_name)
-    print "Friend {} added".format(friend_name)
+    print u'Friend {} added'.format(friend_name)
 
 
 def do_remove_friend(args, db):
@@ -54,7 +56,7 @@ def do_remove_friend(args, db):
 
     db().remove_friend(friend_id)
 
-    print "Friend {} removed".format(friend_name)
+    print u'Friend {} removed'.format(friend_name)
 
 
 def do_list_friends(args, db):
@@ -106,13 +108,13 @@ def do_service_fetch_updates(args, db):
 
     com_service = pydb.pyrosetup.comservice()
     job_id = com_service.fetch_updates(friend_id)
-    print "Update started, job is is {}".format(job_id)
+    print u'Update started, job id is {}'.format(job_id)
 
 
 def do_service_list_jobs(args, db):
     com_service = pydb.pyrosetup.comservice()
     number = com_service.get_number_of_running_jobs()
-    print "{} jobs running".format(number)
+    print u'{} jobs running'.format(number)
 
     job_infos = com_service.get_job_list()
     print "ID  Name                      Friend            Running  Current Phase    Progress"
@@ -123,9 +125,9 @@ def do_service_list_jobs(args, db):
 
         progress = "Unknown"
         if items_to_do >= 0:
-            progress = "{}/{}".format(items_done, items_to_do)
+            progress = u'{}/{}'.format(items_done, items_to_do)
 
-        print "{:<3} {:<25} {:<17} {:<7} {:<16} {}".format(job_id, job_info['name'], friend['name'],
+        print u'{:<3} {:<25} {:<17} {:<7} {:<16} {}'.format(job_id, job_info['name'], friend['name'],
                                                            job_info['is_running'], job_info['current_phase'], progress)
 
 
@@ -205,7 +207,7 @@ def let_user_edit_document(doc, always_discard=False, detect_unchanged=True):
         doc_file.write(text_content)
 
     while True:
-        rc = subprocess.call(["editor", filename])
+        subprocess.call(["editor", filename])
 
         try:
             with open(filename) as doc_file:
@@ -229,7 +231,7 @@ def do_edit_author(args, db):
     else:
         doc = db().get_author_document_by_guid(args.guid, args.ignore_fidelity_filter)
     edited_doc = let_user_edit_document(doc, detect_unchanged=not args.load_local)
-    if not edited_doc is None:
+    if edited_doc is not None:
         db().load_own_author_document(edited_doc)
 
 
@@ -237,10 +239,10 @@ def do_edit_tome(args, db):
     if args.load_local:
         doc = db().get_local_tome_document_by_guid(args.guid, args.ignore_fidelity_filter)
     else:
-        doc = db().get_tome_document_with_local_overlay_by_guid(args.guid, args.ignore_fidelity_filter)
+        doc = db().get_tome_document_by_guid(args.guid, args.ignore_fidelity_filter)
 
     edited_doc = let_user_edit_document(doc, detect_unchanged=not args.load_local)
-    if not edited_doc is None:
+    if edited_doc is not None:
         db().load_own_tome_document(edited_doc)
 
 
@@ -250,6 +252,12 @@ def do_merge_db_tome_update(args, db):
 
 def do_show_tome_debug_info(args, db):
     doc = db().get_debug_info_for_tome_by_guid(args.guid)
+
+    print json.dumps(doc, indent=json_indent, separators=json_separators)
+
+
+def do_show_author_debug_info(args, db):
+    doc = db().get_debug_info_for_author_by_guid(args.guid)
 
     print json.dumps(doc, indent=json_indent, separators=json_separators)
 
@@ -316,24 +324,22 @@ def do_answer_file_list(args, db):
     if not found:
         os.rmdir(target_dir)
 
-    print "%d files found" % found
+    print u'{} files found'.format(found)
 
 
 def do_import_file_store(args, db):
     def insert_files(file_list):
-        print "Inserting {} files".format(len(file_list))
+        print u'Inserting {} files'.format(len(file_list))
         result = pydb.pyrosetup.fileserver().add_files_from_local_disk(file_list)
-        succ = 0
-        failed = 0
+        succeeded_imports = 0
+        failed_imports = 0
         for fn, file_result in result.iteritems():
             if file_result:
-                succ += 1
+                succeeded_imports += 1
             else:
-                failed += 1
-                print "Error while importing {}".format(fn)
-        return succ, failed
-
-    INSERT_BATCH_SIZE = 50
+                failed_imports += 1
+                print u'Error while importing {}'.format(fn)
+        return succeeded_imports, failed_imports
 
     source_dir = os.path.abspath(args.source_directory)
     success_imports = 0
@@ -346,7 +352,7 @@ def do_import_file_store(args, db):
     for root, subfolders, files in os.walk(source_dir):
         files.sort()
         subfolders.sort()
-        print 'adding %d files from %s' % (len(files), root)
+        print u'adding {} files from {}'.format(len(files), root)
         for filename in files:
             file_hash, extension = os.path.splitext(filename)
 
@@ -369,10 +375,10 @@ def do_import_file_store(args, db):
         success_imports += succeeded
         errors += failed
 
-    print "Successfully imported {} files.".format(success_imports)
+    print u'Successfully imported {} files.'.format(success_imports)
 
     if errors:
-        print "There have been {} errors while importing.".format(errors)
+        print u'There have been {} errors while importing.'.format(errors)
         return False
     return True
 
@@ -382,7 +388,7 @@ def do_fetch_updates(args, db):
     friend_name = args.friend_name
     friend = main_db.get_friend_by_name(friend_name)
     if not friend:
-        print >> sys.stderr, "No friend by that name, check your spelling or create a new friend using add_friend"
+        print >> sys.stderr, 'No friend by that name, check your spelling or create a new friend using add_friend'
         return False
     friend_id = friend['id']
 
@@ -406,6 +412,8 @@ def do_check_databases(args, db):
 def do_fix_databases(args, db):
     db().fix_databases()
 
+def do_recalculate_tome_merge_db_entry(args, db):
+    db().recalculate_tome_merge_db_entry(args.tome_guid)
 
 def do_rebuild_merge_db(args, db):
     print "Do not forget to rebuild the search index after this command completed."
@@ -498,7 +506,7 @@ def do_unlock_comm_data(args, db):
     try:
         cds.unlock(password)
     except Exception as e:
-        print >> sys.stderr, "Unable to unlock comm data, error was {}".format(e.message)
+        print >> sys.stderr, u'Unable to unlock comm data, error was {}'.format(e.message)
         sys.exit(-1)
 
 
@@ -565,6 +573,11 @@ parser_edit_tome.set_defaults(func=do_edit_tome)
 parser_show_tome_debug_info = subparsers.add_parser('show_tome_debug_info', help='shows debugging info about a tome')
 parser_show_tome_debug_info.add_argument('guid', help='tome guid to show')
 parser_show_tome_debug_info.set_defaults(func=do_show_tome_debug_info)
+
+parser_show_author_debug_info = subparsers.add_parser('show_author_debug_info', help='shows debugging info about a author')
+parser_show_author_debug_info.add_argument('guid', help='author guid to show')
+parser_show_author_debug_info.set_defaults(func=do_show_author_debug_info)
+
 
 parser_merge_db_tome_update = subparsers.add_parser('merge_db_tome_update',
                                                     help='Triggers an update of the merge db info for a given tome. Should not be necessary to call at all.')
@@ -668,38 +681,44 @@ parser_service_cancel_job = subparsers.add_parser('service_cancel_job',
 parser_service_cancel_job.add_argument('id', help='job id')
 parser_service_cancel_job.set_defaults(func=do_service_cancel_job)
 
-parser.check_database = subparsers.add_parser('check_databases', help='instructs the server to check the databases')
-parser.check_database.set_defaults(func=do_check_databases)
+parser_check_database = subparsers.add_parser('check_databases', help='instructs the server to check the databases')
+parser_check_database.set_defaults(func=do_check_databases)
 
-parser.check_database = subparsers.add_parser('fix_databases',
+parser_check_database = subparsers.add_parser('fix_databases',
                                               help='instructs the server to try to fix some database inconsistencies by rebuilding the affected parts of merge db')
-parser.check_database.set_defaults(func=do_fix_databases)
+parser_check_database.set_defaults(func=do_fix_databases)
 
-parser.rebuild_merge_db = subparsers.add_parser('rebuild_merge_db', help='instructs the server to rebuild the merge db'
+parser_recalculate_tome_merge_db_entry = subparsers.add_parser('recalculate_tome_merge_db_entry', help='instructs the server to recalculate the merge db entry for a given tome. '
+                                                                                                       'Should not be required for normal operation.')
+parser_recalculate_tome_merge_db_entry.add_argument('tome_guid', help='tome guid')
+parser_recalculate_tome_merge_db_entry.set_defaults(func=do_recalculate_tome_merge_db_entry)
+
+
+parser_rebuild_merge_db = subparsers.add_parser('rebuild_merge_db', help='instructs the server to rebuild the merge db'
                                                                          'using the local source databases')
-parser.rebuild_merge_db.set_defaults(func=do_rebuild_merge_db)
+parser_rebuild_merge_db.set_defaults(func=do_rebuild_merge_db)
 
-parser.encrypt_comm_data = subparsers.add_parser('encrypt_comm_data',
+parser_encrypt_comm_data = subparsers.add_parser('encrypt_comm_data',
                                                  help='instructs the server to encrypt comm data information. Will ask for a password on the console.')
-parser.encrypt_comm_data.set_defaults(func=do_encrypt_comm_data)
+parser_encrypt_comm_data.set_defaults(func=do_encrypt_comm_data)
 
-parser.unlock_comm_data = subparsers.add_parser('unlock_comm_data',
+parser_unlock_comm_data = subparsers.add_parser('unlock_comm_data',
                                                 help='instructs the server to unlock encrypted comm data information for use by the services. Will ask for a password on the console')
-parser.unlock_comm_data.set_defaults(func=do_unlock_comm_data)
+parser_unlock_comm_data.set_defaults(func=do_unlock_comm_data)
 
-parser.comm_data_status = subparsers.add_parser('show_comm_data_status',
+parser_comm_data_status = subparsers.add_parser('show_comm_data_status',
                                                 help='Shows the status of comm data encryption / locking')
-parser.comm_data_status.set_defaults(func=do_show_comm_data_status)
+parser_comm_data_status.set_defaults(func=do_show_comm_data_status)
 
-parser.disk_usage = subparsers.add_parser('show_disk_usage', help='Shows the disk usage of the file store')
-parser.disk_usage.set_defaults(func=do_show_disk_usage)
+parser_disk_usage = subparsers.add_parser('show_disk_usage', help='Shows the disk usage of the file store')
+parser_disk_usage.set_defaults(func=do_show_disk_usage)
 
-parser.remove_local_tome_links_to_missing_files = \
+parser_remove_local_tome_links_to_missing_files = \
     subparsers.add_parser('remove_local_tome_links_to_missing_files',
                           help='removes tome<->file link info from the local source database '
                                'for all files which are not locally stored at the moment. '
                                'useful for removing ghost file links. Do not use if you have a metadata-only node')
-parser.remove_local_tome_links_to_missing_files.set_defaults(func=do_remove_local_tome_links_to_missing_files)
+parser_remove_local_tome_links_to_missing_files.set_defaults(func=do_remove_local_tome_links_to_missing_files)
 
 parser_create_satellite = subparsers.add_parser('create_satellite',
                                                 help='Creates a satellite db for starting a friend\'s db')
@@ -707,9 +726,9 @@ parser_create_satellite.add_argument('target_dir', help='target directory for sa
 parser_create_satellite.set_defaults(func=do_create_satellite)
 
 parser_re_strip_file = subparsers.add_parser('re_strip_file',
-                                                help='Commands the file server to try again to strip metadata '
-                                                     'of a file in the file store. Used usually after an '
-                                                     'change of the strip code.')
+                                             help='Commands the file server to try again to strip metadata '
+                                                  'of a file in the file store. Used usually after an '
+                                                  'change of the strip code.')
 parser_re_strip_file.add_argument('file_hash', help='hash of the file to strip again')
 parser_re_strip_file.add_argument('file_extension', help='extension of the file to strip again')
 

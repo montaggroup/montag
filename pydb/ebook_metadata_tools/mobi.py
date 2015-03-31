@@ -28,6 +28,8 @@ class Sectionizer:
     def __init__(self, stream):
         self.f = stream
         header = self.f.read(78)
+        if(len(header)) < 78:
+            raise ValueError("Mobi header too small.")
         self.rawheader = header
         self.identifier = header[0x3C:0x3C + 8]
         self.num_sections, = struct.unpack_from('>L', header, 74)
@@ -196,10 +198,3 @@ if __name__ == "__main__":
         return 0
 
     clear_metadata_from_file('in.mobi', 'out.mobi', "This is title")
-#    sha256sum = hashlib.sha256(open('in.mobi', 'rb').read()).hexdigest()
-#    print "sha256(in)={}".format(sha256sum)
-#    sha256sum = hashlib.sha256(open('out.mobi', 'rb').read()).hexdigest()
-#    print "sha256(out)={}".format(sha256sum)
-
-    #print get_metadata(file('in.mobi', 'rb'))
-#    sys.exit(main())

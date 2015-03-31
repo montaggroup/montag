@@ -75,6 +75,9 @@
   <link rel="stylesheet" href="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/themes/base/jquery-ui.css" type="text/css" media="all" />
   <script src="http://ajax.googleapis.com/ajax/libs/jqueryui/1.8.16/jquery-ui.min.js" type="text/javascript"></script>
   uncomment to load jquery-ui //-->
+
+  <script src="{{=URL('static','js/tooltipsy/tooltipsy.min.js')}}"></script>
+
 </head>
 <body>
   <div class="wrapper"><!-- for sticky footer -->
@@ -159,5 +162,11 @@
     <script src="{{=URL('static','js/dd_belatedpng.js')}}"></script>
     <script> DD_belatedPNG.fix('img, .png_bg'); //fix any <img> or .png_bg background-images </script>
     <![endif]-->
+
+
+
+<script type="text/javascript">
+$('.tooltip_trigger').tooltipsy({offset: [-1, -1]});
+</script>
 </body>
 </html>

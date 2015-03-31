@@ -1,9 +1,7 @@
 # coding: utf8
-# try something like
+if False:
+    from web2py.applications.montag.models.ide_fake import *
 
-
-@auth.requires_login()
-def index(): return dict(message="hello from jobs.py")
 
 def _friend_name(friend_id):
     friend = pdb.get_friend(friend_id)

@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+if False:
+    from ide_fake import *
+
 
 response.title = ' '.join(word.capitalize() for word in request.application.split('_'))
 response.subtitle = T('customize me!')
