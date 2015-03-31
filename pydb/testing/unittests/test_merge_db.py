@@ -189,10 +189,10 @@ class TestItemWithBestOpinionUnipolar(unittest.TestCase):
 
 class TestItemWithBestOpinionBipolar(unittest.TestCase):
     def setUp(self):
-        self.item_a = {'fidelity': 30, 'text': 'a'}
+        self.item_a = {'fidelity': 30, 'text': 'a', 'last_modification_date': 1}
         self.item_b = {'fidelity': 40, 'text': 'a'}
         self.item_c = {'fidelity': -10, 'text': 'a'}
-        self.item_d = {'fidelity': -50, 'text': 'a'}
+        self.item_d = {'fidelity': -50, 'text': 'a', 'last_modification_date': 4}
 
         self.result = None
 
@@ -218,22 +218,22 @@ class TestItemWithBestOpinionBipolar(unittest.TestCase):
         self.given(mergedb.BipolarGroup(local_opinions=[self.item_a], all_opinions=[self.item_a, self.item_c]))
         self.expect(30)
 
-    def test_using_two_local_items_with_second_one_negative_the_positive_one_will_win(self):
+    def test_using_two_local_items_the_newer_one_will_win(self):
         local_ops = [self.item_a,  self.item_d]
         self.given(mergedb.BipolarGroup(local_opinions=local_ops, all_opinions=local_ops))
-        self.expect(30)
+        self.expect(-50)
 
-    def test_using_two_local_items_with_first_one_negative_the_positive_one_will_win(self):
+    def test_using_two_local_items_the_newer_one_will_win_different_order(self):
         local_ops = [self.item_d,  self.item_a]
         self.given(mergedb.BipolarGroup(local_opinions=local_ops, all_opinions=local_ops))
-        self.expect(30)
+        self.expect(-50)
 
 
 class TestMergeItemsBipolar(unittest.TestCase):
     def setUp(self):
-        self.item_a = {'fidelity': 30, 'text': 'a'}
-        self.item_a_neg = {'fidelity': -5, 'text': 'a'}
-        self.item_b = {'fidelity': 40, 'text': 'b'}
+        self.item_a = {'fidelity': 30, 'text': 'a', 'last_modification_date': 1}
+        self.item_a_neg = {'fidelity': -5, 'text': 'a', 'last_modification_date': 2}
+        self.item_b = {'fidelity': 40, 'text': 'b', 'last_modification_date': 3}
 
     def test_having_only_one_item_returns_that(self):
         result = mergedb.merge_items_bipolar([], [self.item_a], lambda x: x['text'])
@@ -256,8 +256,8 @@ class TestExtractAuthoritativeLocalOpinion(unittest.TestCase):
     def setUp(self):
         self.item_a = {'fidelity': 30, 'text': 'a'}
         self.item_b = {'fidelity': 40, 'text': 'a'}
-        self.item_c = {'fidelity': -30, 'text': 'a'}
-        self.item_d = {'fidelity': -40, 'text': 'a'}
+        self.item_c = {'fidelity': -30, 'text': 'a', 'last_modification_date': 10}
+        self.item_d = {'fidelity': -40, 'text': 'a', 'last_modification_date': 2}
 
     def given(self, local_opinions):
         self.result = mergedb.extract_authoritative_local_opinion(local_opinions)
@@ -273,9 +273,9 @@ class TestExtractAuthoritativeLocalOpinion(unittest.TestCase):
         self.given([self.item_a])
         self.expect(self.item_a)
 
-    def test_list_with_two_negative_entries_returns_the_stronger_one(self):
+    def test_list_with_two_negative_entries_returns_the_newer_one(self):
         self.given([self.item_c, self.item_d])
-        self.expect(self.item_d)
+        self.expect(self.item_c)
 
 
 if __name__ == '__main__':
