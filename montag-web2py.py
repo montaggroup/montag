@@ -5,7 +5,7 @@ logging.basicConfig(level=logging.INFO)
 import argparse
 import os
 import sys
-from pydb.executionenvironment import using_py2exe
+from pydb.servers.executionenvironment import using_py2exe
 import pydb.config
 import pydb.logconfig
 

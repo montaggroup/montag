@@ -1,10 +1,12 @@
-import friendsdb
 import os
+import json
+import base64
+
+from pydb.databases import friendsdb
 import pbkdf2
 import com.securechannel.aeshmac_common
 import crypto
-import json
-import base64
+
 
 _canary_clear_text = "birdie"
 _canary_friend_id = -1  # should not clash with an existing friend id

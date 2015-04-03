@@ -1,14 +1,16 @@
-import pydb
-import pydb.basedb
 import time
 import logging
+
+import pydb
+import pydb.databases.basedb
+
 
 logger = logging.getLogger('localdb')
 
 
-class LocalDB(pydb.basedb.BaseDB):
+class LocalDB(pydb.databases.basedb.BaseDB):
     def __init__(self, db_file_path, schema_dir, enable_db_sync):
-        pydb.basedb.BaseDB.__init__(self, db_file_path, schema_dir, init_sql_file="db-schema-local.sql",
+        pydb.databases.basedb.BaseDB.__init__(self, db_file_path, schema_dir, init_sql_file="db-schema-local.sql",
                                     enable_db_sync=enable_db_sync)
 
         # print "Local DB inititalized"

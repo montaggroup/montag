@@ -20,7 +20,7 @@ def base_args_to_start_service(service_executable):
     if not using_py2exe():
         start_args.append(python_binary_to_use_for_scripts())
 
-    services_dir = os.path.join(os.path.dirname(__file__), '..')
+    services_dir = os.path.join(os.path.dirname(__file__), '..', '..')
     service_dir = os.path.relpath(services_dir)
 
     if service_dir == '.':  # ./ makes the ps output less nice

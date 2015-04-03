@@ -1,6 +1,6 @@
 import os
 import logging
-import file_store
+from pydb import file_store
 import cStringIO
 
 logger = logging.getLogger('fileserver')

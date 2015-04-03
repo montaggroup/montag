@@ -1,6 +1,6 @@
 import unittest
 
-import pydb.localdb as localdb
+import pydb.databases.localdb as localdb
 import pydb.testing.unittests
 
 

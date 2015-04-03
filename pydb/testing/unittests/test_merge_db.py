@@ -1,8 +1,9 @@
 import unittest
 import logging
+
 logging.basicConfig()
 
-import pydb.mergedb as mergedb
+import pydb.databases.mergedb as mergedb
 from pydb import FileType
 import pydb.testing.unittests
 

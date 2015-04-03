@@ -6,8 +6,8 @@ logging.basicConfig(level=logging.INFO)
 import Pyro4
 import argparse
 import time
-from pydb.executionenvironment import determine_database_directory, get_schema_dir
-import pydb.indexserver
+from pydb.servers.executionenvironment import determine_database_directory, get_schema_dir
+import pydb.servers.indexserver
 import pydb.config
 import pydb.logconfig
 
@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     db_dir = determine_database_directory(args.basepath)
     pydb.config.read_config()
-    index_server = pydb.indexserver.build(db_dir, schema_dir=get_schema_dir())
+    index_server = pydb.servers.indexserver.build(db_dir, schema_dir=get_schema_dir())
     index_server.start()
 
     daemon = Pyro4.Daemon(port=args.pyro_port)  # make a Pyro daemon

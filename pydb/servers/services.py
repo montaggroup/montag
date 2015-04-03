@@ -1,8 +1,11 @@
 import tempfile
 import os
 import getpass
-import pydb.executionenvironment as executionenvironment
+
 import psutil
+
+import pydb.servers.executionenvironment as executionenvironment
+
 
 # configuration options
 

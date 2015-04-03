@@ -3,12 +3,15 @@ import sys
 import os
 import time
 import tempfile
+
 import mock
+
 from pydb.testing.test_data import get_book_path
+
 
 sys.path.append(os.getcwd())
 
-import pydb.fileserver
+import pydb.servers.fileserver
 
 import logging
 
@@ -30,7 +33,7 @@ class TestFileAddPerformance(unittest.TestCase):
         for i in xrange(10):
             pydb_base_dir = tempfile.mkdtemp('pydb_file_add_performance')
             pydbserver = mock.MagicMock()
-            self.file_server = pydb.fileserver.build(os.path.join(pydb_base_dir, 'filestore'), pydbserver)
+            self.file_server = pydb.servers.fileserver.build(os.path.join(pydb_base_dir, 'filestore'), pydbserver)
             time.sleep(0.5)
 
             script_path = os.path.dirname(__file__)

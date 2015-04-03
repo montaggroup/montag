@@ -4,7 +4,7 @@ import time
 import re
 
 import databases
-import network_params
+from pydb import network_params
 import pydb
 from pydb.documents import document_export_filter
 import sqlitedb

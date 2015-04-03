@@ -1,10 +1,12 @@
 import threading
 import os
-from pydb import mergedb
-from network_params import relevant_items, relevant_links
-import whooshindex
 import json
 import logging
+
+from pydb.databases import mergedb
+from network_params import relevant_items, relevant_links
+import whooshindex
+
 
 # not a hard boundary, index server will try to keep update batches around this size
 TARGET_INDEXING_BATCH_SIZE = 10000

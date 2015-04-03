@@ -1,14 +1,16 @@
-import pydb.names
-import network_params
 import time
 from collections import defaultdict, namedtuple
 import logging
+import copy
+
+import pydb.names
+from pydb import network_params
 import databases
 import pydb
-import copy
 import sqlitedb
-import basedb
-from basedb import data_fields_equal
+from pydb.databases import basedb
+from pydb.databases.basedb import data_fields_equal
+
 
 logger = logging.getLogger('mergedb')
 
@@ -332,7 +334,7 @@ class MergeDB(basedb.BaseDB):
         # b) dangerous => loop possibility
         item_name = "author_fusion"
         item_key = "source_guid"
-        get_item_by_guid = pydb.basedb.BaseDB.get_author_fusion_sources_by_author_guid
+        get_item_by_guid = pydb.databases.basedb.BaseDB.get_author_fusion_sources_by_author_guid
         replace_item = self._replace_author_fusion_source
 
         self._request_author_related_item_update(author_guid, item_name, item_key, get_item_by_guid, replace_item)
@@ -443,7 +445,7 @@ class MergeDB(basedb.BaseDB):
         else:
             item_name = "file"
             item_key = "hash"
-            get_item_by_guid = pydb.basedb.BaseDB.get_tome_files_by_tome_guid
+            get_item_by_guid = pydb.databases.basedb.BaseDB.get_tome_files_by_tome_guid
             replace_item = self._replace_tome_file
 
             self._request_tome_related_item_update(tome_guid, item_name, item_key, get_item_by_guid, replace_item)
@@ -455,7 +457,7 @@ class MergeDB(basedb.BaseDB):
         else:
             item_name = "tag"
             item_key = "tag_value"
-            get_item_by_guid = pydb.basedb.BaseDB.get_tome_tags_by_tome_guid
+            get_item_by_guid = pydb.databases.basedb.BaseDB.get_tome_tags_by_tome_guid
             replace_item = self._replace_tome_tag
 
             self._request_tome_related_item_update(tome_guid, item_name, item_key, get_item_by_guid, replace_item)
@@ -467,7 +469,7 @@ class MergeDB(basedb.BaseDB):
         else:
             item_name = "synopsis"
             item_key = "guid"
-            get_item_by_guid = pydb.basedb.BaseDB.get_tome_synopses_by_tome_guid
+            get_item_by_guid = pydb.databases.basedb.BaseDB.get_tome_synopses_by_tome_guid
             replace_item = self._replace_tome_synopsis
 
             self._request_tome_related_item_update(tome_guid, item_name, item_key, get_item_by_guid, replace_item)
@@ -477,7 +479,7 @@ class MergeDB(basedb.BaseDB):
         # b) dangerous => loop possibility
         item_name = "tome_fusion"
         item_key = "source_guid"
-        get_item_by_guid = pydb.basedb.BaseDB.get_tome_fusion_sources_by_tome_guid
+        get_item_by_guid = pydb.databases.basedb.BaseDB.get_tome_fusion_sources_by_tome_guid
         replace_item = self._replace_tome_fusion_source
 
         self._request_tome_related_item_update(tome_guid, item_name, item_key, get_item_by_guid, replace_item)

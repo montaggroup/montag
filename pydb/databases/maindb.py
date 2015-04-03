@@ -4,19 +4,20 @@ import time
 import traceback
 import logging
 import sqlite3 as sqlite
+from contextlib import contextmanager
+
 import Pyro4
 
 from mergedb import MergeDB
-from localdb import LocalDB
-from friendsdb import FriendsDB
-from foreigndb import ForeignDB
+from pydb.databases.localdb import LocalDB
+from pydb.databases.friendsdb import FriendsDB
+from pydb.databases.foreigndb import ForeignDB
 from pydb import FileType, TomeType, pyrosetup
 from sqlitedb import Transaction
-from contextlib import contextmanager
-from network_params import *
-import documents
+from pydb import network_params
+from pydb import documents
 import databases
-import config
+from pydb import config
 
 
 logger = logging.getLogger('database')
@@ -127,7 +128,7 @@ class MainDB:
     def get_best_relevant_cover_available(self, tome_id):
         covers = self.merge_db.get_tome_files(tome_id, FileType.Cover)
         for cover in covers:
-            if cover['fidelity'] >= Min_Relevant_Fidelity:
+            if cover['fidelity'] >= network_params.Min_Relevant_Fidelity:
                 local_file = self.local_db.get_local_file_by_hash(cover['hash'])
                 if local_file:
                     return cover
@@ -1016,8 +1017,7 @@ class MainDB:
         required_fidelity_1 = self.calculate_required_tome_fidelity(source_tome['id'])
         required_fidelity_2 = self.calculate_required_tome_fidelity(target_tome['id'])
         new_tome_doc['fidelity'] = max(required_fidelity_1, required_fidelity_2)  # we are not less certain than before
-        new_tome_doc['fusion_sources'].append({'source_guid': source_guid, 'fidelity': Default_Manual_Fidelity})
-
+        new_tome_doc['fusion_sources'].append({'source_guid': source_guid, 'fidelity': network_params.Default_Manual_Fidelity})
         self.load_own_tome_document(new_tome_doc)
 
     def fuse_authors(self, source_guid, target_guid):
@@ -1047,12 +1047,12 @@ class MainDB:
         new_author_doc['fidelity'] = max(required_fidelity_1, required_fidelity_2)
 
         new_author_doc['fusion_sources'].append(
-            {'source_guid': source_guid, 'fidelity': Default_Manual_Fidelity})
+            {'source_guid': source_guid, 'fidelity': network_params.Default_Manual_Fidelity})
 
         self.load_own_author_document(new_author_doc)
 
 
-def _effective_friend_fidelity(friend_fidelity, specific_friend_deduction=Friend_Fidelity_Deduction):
+def _effective_friend_fidelity(friend_fidelity, specific_friend_deduction=network_params.Friend_Fidelity_Deduction):
     f = friend_fidelity
     f = min(f, 100)
     f = max(f, -100)
@@ -1066,11 +1066,11 @@ def _effective_friend_fidelity(friend_fidelity, specific_friend_deduction=Friend
 def _auto_create_fidelity(merge_db_fidelity):
     f = merge_db_fidelity
 
-    if f > Fidelity_Deduction_Auto_Create:
-        return f - Fidelity_Deduction_Auto_Create
+    if f > network_params.Fidelity_Deduction_Auto_Create:
+        return f - network_params.Fidelity_Deduction_Auto_Create
 
-    if f < -Fidelity_Deduction_Auto_Create:
-        return f + Fidelity_Deduction_Auto_Create
+    if f < -network_params.Fidelity_Deduction_Auto_Create:
+        return f + network_params.Fidelity_Deduction_Auto_Create
 
     return 0
 

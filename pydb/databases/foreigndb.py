@@ -1,13 +1,15 @@
-import pydb.basedb
 import logging
+
+import pydb.databases.basedb
+
 
 logger = logging.getLogger('foreigndb')
 
 
-class ForeignDB(pydb.basedb.BaseDB):
+class ForeignDB(pydb.databases.basedb.BaseDB):
     def __init__(self, db_file_path, schema_dir, friend_id, enable_db_sync):
     
-        pydb.basedb.BaseDB.__init__(self, db_file_path, schema_dir,
+        pydb.databases.basedb.BaseDB.__init__(self, db_file_path, schema_dir,
                                     init_sql_file="db-schema-foreign.sql", enable_db_sync=enable_db_sync)
         logger.info("Foreign DB for friend {} initialized".format(friend_id))
 
