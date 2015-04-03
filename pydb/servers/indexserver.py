@@ -1,5 +1,5 @@
-import whooshindex
-import indexthread
+from pydb import whooshindex
+from pydb import indexthread
 import os
 import logging
 
