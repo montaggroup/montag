@@ -128,7 +128,7 @@ class MainDB:
     def get_best_relevant_cover_available(self, tome_id):
         covers = self.merge_db.get_tome_files(tome_id, FileType.Cover)
         for cover in covers:
-            if cover['fidelity'] >= Min_Relevant_Fidelity:
+            if cover['fidelity'] >= network_params.Min_Relevant_Fidelity:
                 local_file = self.local_db.get_local_file_by_hash(cover['hash'])
                 if local_file:
                     return cover
@@ -1017,8 +1017,7 @@ class MainDB:
         required_fidelity_1 = self.calculate_required_tome_fidelity(source_tome['id'])
         required_fidelity_2 = self.calculate_required_tome_fidelity(target_tome['id'])
         new_tome_doc['fidelity'] = max(required_fidelity_1, required_fidelity_2)  # we are not less certain than before
-        new_tome_doc['fusion_sources'].append({'source_guid': source_guid, 'fidelity': Default_Manual_Fidelity})
-
+        new_tome_doc['fusion_sources'].append({'source_guid': source_guid, 'fidelity': network_params.Default_Manual_Fidelity})
         self.load_own_tome_document(new_tome_doc)
 
     def fuse_authors(self, source_guid, target_guid):
@@ -1048,7 +1047,7 @@ class MainDB:
         new_author_doc['fidelity'] = max(required_fidelity_1, required_fidelity_2)
 
         new_author_doc['fusion_sources'].append(
-            {'source_guid': source_guid, 'fidelity': Default_Manual_Fidelity})
+            {'source_guid': source_guid, 'fidelity': network_params.Default_Manual_Fidelity})
 
         self.load_own_author_document(new_author_doc)
 

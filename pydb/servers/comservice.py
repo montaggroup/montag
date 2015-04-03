@@ -119,7 +119,7 @@ class ComService():
                            'friend_id': job.friend_id,
                            'is_running': job.is_running(),
                            'start_time': job.start_time,
-                           'current_phase': com.strategies.strategy_phase_name(job.current_phase.value)})
+                           'current_phase': strategies.strategy_phase_name(job.current_phase.value)})
         return result
         
     def get_number_of_running_jobs(self):
@@ -153,7 +153,7 @@ class ComService():
 
         self.last_job_id += 1
         self.jobs[self.last_job_id] = job
-        job.current_phase.value = com.strategies.strategy_phase_id('incoming_connection')
+        job.current_phase.value = strategies.strategy_phase_id('incoming_connection')
         return self.last_job_id
 
     def unregister_job(self, job_id):
@@ -196,18 +196,18 @@ def exec_fetch_updates(friend_id, current_phase_store, progress_array):
         raise ValueError("No friend by that id found")
 
     friend_comm_data = comm_data_store.get_comm_data(friend_id)
-    cc = com.client.ComClient(db, friend_id, friend_comm_data, com_service)
+    cc = client.ComClient(db, friend_id, friend_comm_data, com_service)
 
     file_server = pyrosetup.fileserver()
 
-    strategy = com.master_strategy.construct_master_client_strategy(db, com_service, file_server)
+    strategy = master_strategy.construct_master_client_strategy(db, com_service, file_server)
 
     def update_progress(current_phase, progress_arg_1, progress_arg_2):
         current_phase_store.value = current_phase
         progress_array[0] = progress_arg_1
         progress_array[1] = progress_arg_2
 
-    update_progress(com.strategies.strategy_phase_id('connecting'), 0, 0)
+    update_progress(strategies.strategy_phase_id('connecting'), 0, 0)
     strategy.set_progress_callback(update_progress)
 
     cc.connect_and_execute(strategy)
