@@ -5,7 +5,7 @@ import mock
 import pydb.databases.maindb as main_db
 
 
-class TestMainDb(unittest.TestCase):
+class TestMainSetup(unittest.TestCase):
     def setUp(self):
 
         local_db = mock.MagicMock()
@@ -19,5 +19,12 @@ class TestMainDb(unittest.TestCase):
     def testPing(self):
         self.assertEqual(self.main_db.ping(), 'pong')
 
+class TestMainDbAutoCreateFidelity(unittest.TestCase):
+    def test_auto_create_fidelity_of_positive_source_fidelity_is_smaller_than_source(self):
+        self.assertLess(main_db._auto_create_fidelity(50), 50)
+
+
 if __name__ == '__main__':
     unittest.main()
+
+
