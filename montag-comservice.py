@@ -4,7 +4,7 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 import Pyro4
-import pydb.comservice
+import pydb.servers.comservice
 
 import argparse
 import multiprocessing
@@ -19,7 +19,7 @@ if __name__ == "__main__":
     multiprocessing.freeze_support()
     import pydb.pyrosetup
 
-    cs = pydb.comservice.build()
+    cs = pydb.servers.comservice.build()
 
     parser = argparse.ArgumentParser(description='Runs the communication client service')
     parser.add_argument('--basepath', '-b', dest='basepath', help='Sets the basepath for the server', action='store')

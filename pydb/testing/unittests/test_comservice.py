@@ -1,6 +1,6 @@
 import unittest
 
-import pydb.comservice as comservice
+import pydb.servers.comservice as comservice
 
 
 class test_comservice_build(unittest.TestCase):

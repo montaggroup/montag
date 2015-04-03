@@ -7,8 +7,8 @@ import logging
 
 logging.basicConfig(level=logging.WARNING)
 
-import pydb.fileserver
-import pydb.maindb
+import pydb.servers.fileserver
+import pydb.databases.maindb
 import pydb.testing
 from pydb.testing.test_data import get_book_path
 
@@ -21,10 +21,10 @@ class TestFileServer(unittest.TestCase):
         script_path = os.path.dirname(__file__)
 
         pydb_base_dir = tempfile.mkdtemp('test_file_server')
-        pydbserver = pydb.maindb.build(os.path.join(pydb_base_dir, 'db'),
+        pydbserver = pydb.databases.maindb.build(os.path.join(pydb_base_dir, 'db'),
                                        pydb.testing.guess_schema_dir())
 
-        self.file_server = pydb.fileserver.build(os.path.join(pydb_base_dir, 'filestore'), pydbserver)
+        self.file_server = pydb.servers.fileserver.build(os.path.join(pydb_base_dir, 'filestore'), pydbserver)
         print "filestore is in ", os.path.join(pydb_base_dir, 'filestore')
         time.sleep(0.5)
 

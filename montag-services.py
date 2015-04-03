@@ -1,10 +1,11 @@
 #!/usr/bin/env python2.7
 import logging
+
 logging.basicConfig(level=logging.INFO)
 
 import argparse
 import sys
-import pydb.services as services
+import pydb.servers.services as services
 import time
 import pydb.pyrosetup
 import Pyro4

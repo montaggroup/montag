@@ -4,11 +4,11 @@ import logging
 logging.basicConfig(level=logging.INFO)
 
 import Pyro4
-import pydb.fileserver
+import pydb.servers.fileserver
 import argparse
 import os
 import time
-from pydb.executionenvironment import get_main_dir
+from pydb.servers.executionenvironment import get_main_dir
 import pydb.commdatastore
 import pydb.pyrosetup
 import pydb.config
@@ -47,7 +47,7 @@ if __name__ == "__main__":
     logger.info('### logging started at %s local time. ###', time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime()))
 
     store_dir = determine_file_store_dir(args.basepath)
-    file_server = pydb.fileserver.build(store_dir, pydb.pyrosetup.pydbserver())
+    file_server = pydb.servers.fileserver.build(store_dir, pydb.pyrosetup.pydbserver())
 
     daemon = Pyro4.Daemon(port=args.pyro_port)
 

@@ -1,8 +1,8 @@
 import unittest
 import copy
 
-import pydb.basedb as basedb
-import pydb.mergedb as mergedb
+import pydb.databases.basedb as basedb
+import pydb.databases.mergedb as mergedb
 import pydb.testing.unittests
 from pydb import TomeType
 

@@ -1,10 +1,10 @@
-import pydb.services
+import pydb.servers.services
 
 def start_services():
-    pydb.services.stop_all_ignoring_exceptions()
-    pydb.services.start(pydb.services.service_name('pydbserver'))
-    pydb.services.start(pydb.services.service_name('indexserver'))
+    pydb.servers.services.stop_all_ignoring_exceptions()
+    pydb.servers.services.start(pydb.servers.services.service_name('pydbserver'))
+    pydb.servers.services.start(pydb.servers.services.service_name('indexserver'))
 
 
 def stop_services():
-    pydb.services.stop_all_ignoring_exceptions()
+    pydb.servers.services.stop_all_ignoring_exceptions()
