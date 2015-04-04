@@ -10,6 +10,7 @@ import mock
 
 logger = logging.getLogger('testing.helpers')
 
+
 def build_main_db_memory_only(schema_dir):
     """ builds a database with all subdatabases in memory """
     local_db = pydb.localdb.LocalDB(":memory:", schema_dir, enable_db_sync=False)
