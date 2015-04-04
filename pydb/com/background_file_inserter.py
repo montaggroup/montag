@@ -15,8 +15,7 @@ class BackgroundFileInserter():
 
         if self.insert_process.is_alive():
             logger.debug("Insert process still alive, waiting for process end")
-
-        self.insert_process.join()
+            self.insert_process.join()
         self.insert_process = None
         logger.debug("No more file inserts running")
 
