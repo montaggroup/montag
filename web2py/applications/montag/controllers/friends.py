@@ -49,7 +49,6 @@ def _friend_edit_form(friend, comm_data):
             if key != 'secret':
                 values[key] = db_str_to_form(value)
 
-    print values
     form = SQLFORM.factory(
         Field('name', requires=IS_NOT_EMPTY(), default=db_str_to_form(friend['name']),
               comment=TOOLTIP('Enter something to tell your friends apart.')),
