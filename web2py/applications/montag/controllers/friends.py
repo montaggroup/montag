@@ -35,36 +35,39 @@ def list_friends():
 
 
 def _friend_edit_form(friend, comm_data):
-    current_values = {
+    values = {
         'hostname': '',
         'port': '1234',
         'secret': '*' * 6,
-        'confirm_secret': '-' * 6
+        'confirm_secret': '-' * 6,
+        'type': 'tcp_aes',
+        'can_connect_to': friend['can_connect_to'] == 1
     }
 
     if comm_data:
         for key, value in comm_data.iteritems():
             if key != 'secret':
-                current_values[key] = db_str_to_form(value)
+                values[key] = db_str_to_form(value)
 
+    print values
     form = SQLFORM.factory(
         Field('name', requires=IS_NOT_EMPTY(), default=db_str_to_form(friend['name']),
               comment=TOOLTIP('Enter something to tell your friends apart.')),
-        Field('can_connect_to', type='boolean', default=friend['can_connect_to'] == 1,
-              comment=TOOLTIP('If you enable this, Montag will try to connect to this friend '
-                              'if you press the button "Update All".')),
-        Field('hostname', requires=IS_NOT_EMPTY(), default='',
-              comment=TOOLTIP('Please enter the IP-address or internet host name of your friend')),
-        Field('port', requires=IS_INT_IN_RANGE(1024, 65535, error_message='invalid port'), default='1234',
-              comment=TOOLTIP('Please enter the (TCP) port number your friend has made his/her Montag '
-                              'instance available under.')),
         Field('secret', 'password', requires=IS_STRONG(min=8, special=0, upper=0), default='*'*6,
               comment=TOOLTIP('Please enter a reasonably long password (10+ characters) and share it '
                               'with your friend. It will be used to identify each other and allow your '
                               'friend to sync.')),
         Field('confirm_secret', 'password', requires=IS_EQUAL_TO(request.vars.secret,
               error_message='secrets do not match'), default='-'*6),
-        Field('type', default='tcp_aes', comment=TOOLTIP('Connection type. Currently only "tcp_aes" is supported.'))
+        Field('can_connect_to', type='boolean', default=values['can_connect_to'],
+              comment=TOOLTIP('If you enable this, Montag will try to connect to this friend '
+                              'if you press the button "Update All".')),
+        Field('hostname', requires=IS_NOT_EMPTY(), default=values['hostname'],
+              comment=TOOLTIP('Please enter the IP-address or internet host name of your friend')),
+        Field('port', requires=IS_INT_IN_RANGE(1024, 65535, error_message='invalid port'), default=values['port'],
+              comment=TOOLTIP('Please enter the (TCP) port number your friend has made his/her Montag '
+                              'instance available under.')),
+        Field('type', default=values['type'], comment=TOOLTIP('Connection type. Currently only "tcp_aes" is supported.'))
     )
     return form
 
