@@ -1,5 +1,4 @@
 import sqlite3 as sqlite
-import os
 import logging
 import json
 import sqlitedb
