@@ -1,5 +1,5 @@
 from twisted.internet.protocol import Factory
-from tcptransportprotocol import buildTcpTransportProtocol
+from tcptransportprotocol import build_tcp_transport_protocol
 
 
 class TcpServer(Factory):
@@ -10,10 +10,10 @@ class TcpServer(Factory):
         self.comservice = comservice
 
     # noinspection PyUnusedLocal
-    def buildProtocol(self, addr):
+    def build_protocol(self, address):
         upper_layer = self.stack_build_function()
-        lowest_layer = buildTcpTransportProtocol(upper_layer, self.comservice,
-                                                 self.upload_rate_limit_kbytes_per_second, addr.host)
+        lowest_layer = build_tcp_transport_protocol(upper_layer, self.comservice,
+                                                    self.upload_rate_limit_kbytes_per_second, address.host)
         upper_layer.set_lower_layer(lowest_layer)
         return lowest_layer
 

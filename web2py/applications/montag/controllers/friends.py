@@ -17,9 +17,9 @@ def list_friends():
 
     friends = pdb.get_friends()
     update_infos = [pdb.get_friend_last_query_dates(friend['id']) for friend in friends]
-    friends_by_id={}
+    friends_by_id = {}
     for friend in friends:
-        friend['jobs']=[]
+        friend['jobs'] = []
         friend_id = int(friend['id'])
         friends_by_id[friend_id]=friend
     try:
@@ -30,49 +30,60 @@ def list_friends():
     except Pyro4.errors.CommunicationError:
         pass
 
-    return {'friends': friends, 'update_infos': update_infos, 'is_locking_active': is_locking_active, 'is_locked': is_locked }
+    return {'friends': friends, 'update_infos': update_infos, 'is_locking_active': is_locking_active,
+            'is_locked': is_locked }
 
 
 def _friend_edit_form(friend, comm_data):
     fields = [
-        Field('name',requires=IS_NOT_EMPTY(), default=db_str_to_form(friend['name'])),
-        Field('can_connect_to', type='boolean', default=friend['can_connect_to']==1)
+        Field('name', requires=IS_NOT_EMPTY(), default=db_str_to_form(friend['name'])),
+        Field('can_connect_to', type='boolean', default=friend['can_connect_to'] == 1)
     ]
     
     if comm_data:
         for key in comm_data.keys():
             if key == 'secret':
                 fields.append(Field(key, 'password', requires=IS_STRONG(min=8, special=0, upper=0), default='*'*6))
-                fields.append(Field('confirm_secret', 'password', requires=IS_EQUAL_TO(request.vars.secret,
-                                   error_message='secrets do not match'), default='-'*6))
+                fields.append(Field('confirm_secret', 'password',
+                                    requires=IS_EQUAL_TO(request.vars.secret, error_message='secrets do not match'),
+                                    default='-'*6))
             elif key == 'port':
-                fields.append(Field('port', requires=IS_INT_IN_RANGE(1024, 65535, error_message='invalid port'), default=db_str_to_form(comm_data[key])))
+                fields.append(Field('port', requires=IS_INT_IN_RANGE(1024, 65535, error_message='invalid port'),
+                                    default=db_str_to_form(comm_data[key])))
             else:
                 fields.append(Field(key, default=db_str_to_form(comm_data[key])))
     else:
         fields.append(Field('type', default='tcp_aes'))
-        fields.append(Field('port', requires=IS_INT_IN_RANGE(1024, 65535, error_message='invalid port'), default='1234'))
+        fields.append(Field('port', requires=IS_INT_IN_RANGE(1024, 65535, error_message='invalid port'),
+                            default='1234'))
         fields.append(Field('hostname', requires=IS_NOT_EMPTY(), default=''))
         fields.append(Field('secret', 'password', requires=IS_STRONG(min=8, special=0, upper=0), default='*'*6))
-        fields.append(Field('confirm_secret', 'password', requires=IS_EQUAL_TO(request.vars.secret,
-                             error_message='secrets do not match'), default='-'*6))
+        fields.append(Field('confirm_secret', 'password',
+                            requires=IS_EQUAL_TO(request.vars.secret, error_message='secrets do not match'),
+                            default='-'*6))
+
     form = SQLFORM.factory(*fields)
     return form
 
 
 def _friend_add_form():
-    form = SQLFORM.factory(Field('name', requires=IS_NOT_EMPTY()),
-                           submit_button='Save')
+    form = SQLFORM.factory(Field('name', requires=IS_NOT_EMPTY()), submit_button='Save')
+
     return form
+
 
 def _load_comm_data(friend_id):
     cds = pyrosetup.comm_data_store()
     comm_data = cds.get_comm_data(friend_id)
+
     if comm_data is None:
         comm_data = dict()
+
     if comm_data and not comm_data.has_key('secret'):
         comm_data['secret'] = ''
+
     return comm_data
+
 
 def _load_friend(friend_id):
     friend = pdb.get_friend(friend_id)
@@ -120,8 +131,8 @@ def edit_friend():
 
 
 def _friend_remove_form():
-    form = SQLFORM.factory(
-    )
+    form = SQLFORM.factory()
+
     return form
 
 
@@ -140,6 +151,7 @@ def remove_friend():
 
     elif form.errors:
         response.flash = 'form  has errors'
+
     return dict(form=form, friend=friend)
 
 
@@ -147,6 +159,7 @@ def remove_friend():
 def add_friend():
     form = _friend_add_form()
     response.title = 'Add friend'
+
     if form.process(keepvalues=True).accepted:
         friend_id = pdb.add_friend(read_form_field(form, 'name'))
         response.flash = 'Added new friend'
@@ -154,6 +167,7 @@ def add_friend():
 
     elif form.errors:
         response.flash = 'form has errors'
+
     return dict(form=form)
 
 
@@ -173,6 +187,7 @@ def fetch_updates():
 def fetch_updates_all():
     com_service = pydb.pyrosetup.comservice()
     friends = pdb.get_friends()
+
     for friend in friends:
         try:
             if friend['can_connect_to']:
@@ -180,6 +195,7 @@ def fetch_updates_all():
         except ValueError:  # already running
             pass
     redirect('list_friends')
+
 
 def _unlock_comm_data_form():
     form = SQLFORM.factory(Field('unlock_password', 'password', requires=IS_NOT_EMPTY(), default=''),

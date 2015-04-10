@@ -38,14 +38,14 @@ class LocalLoopBackTransportProtocol():
 
     def lose_transport_channel(self, msg):
         logger.debug("LocalLoopBackTransportProtocol closing connection: {}".format(msg))
-        self.partner.connectionLost('Connection closed by peer')
+        self.partner.connection_lost('Connection closed by peer')
 
     def message_received(self, data=""):
         assert self.connected
         self.upper_layer.message_received(data)
 
     # noinspection PyPep8Naming
-    def connectionLost(self, reason):
+    def connection_lost(self, reason):
         self.upper_layer.transport_channel_lost(reason)
 
 

@@ -2,6 +2,7 @@
 if False:
     from web2py.applications.montag.models.ide_fake import *
 
+
 @auth.requires_login()
 def viewfile():
     tome_id = request.args[0]
@@ -11,8 +12,8 @@ def viewfile():
     extension=tome_file['file_extension']
     
     tome = pdb.get_tome(tome_id)
-    tome_doc = pdb.get_tome_document_by_guid(tome['guid'], keep_id=True,
-                                             include_local_file_info=True, include_author_detail=True)
+    tome_doc = pdb.get_tome_document_by_guid(tome['guid'], keep_id=True, include_local_file_info=True,
+                                             include_author_detail=True)
 
     return {'tome': tome_doc, 'tome_id': tome_id, 'extension': extension, 'file_hash': file_hash}
 
@@ -26,8 +27,7 @@ def viewpdf():
     extension=tome_file['file_extension']
 
     tome = pdb.get_tome(tome_id)
-    tome_doc = pdb.get_tome_document_by_guid(tome['guid'], keep_id=True,
-                                             include_local_file_info=True, include_author_detail=True)
-
+    tome_doc = pdb.get_tome_document_by_guid(tome['guid'], keep_id=True, include_local_file_info=True,
+                                             include_author_detail=True)
 
     return {'tome': tome_doc, 'tome_id': tome_id, 'extension': extension, 'file_hash': file_hash}

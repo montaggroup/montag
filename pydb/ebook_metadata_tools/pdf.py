@@ -7,13 +7,14 @@ import logging
 
 logger = logging.getLogger("ebook_metadata_tools.pdf")
 
+
 def extract_fulltext(source_stream):
     pdf = PyPDF2.PdfFileReader(source_stream)
     content = ""
 
     for i in range(0, pdf.getNumPages()):
-        extractedText = pdf.getPage(i).extractText()
-        content += extractedText + "\n"
+        extracted_text = pdf.getPage(i).extractText()
+        content += extracted_text + "\n"
 
     content = " ".join(content.replace("\xa0", " ").strip().split())
     return content.encode("ascii", "ignore")

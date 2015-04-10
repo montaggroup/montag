@@ -98,7 +98,6 @@ def set_cover_from_content():
         else:
             redirect(URL('default', 'view_tome', args=(tome['guid'])))
 
-
     return {'tome': tome, 'content_hash': content_hash, 'content_extension': content_extension, 'form': form}
 
 
@@ -125,12 +124,12 @@ def set_main_cover():
     file_size = pydb.pyrosetup.fileserver().get_local_file_size(file_hash)
 
     if form.process(keepvalues=True).accepted:
-        fidelity = read_form_field(form,'fidelity')
+        fidelity = read_form_field(form, 'fidelity')
         pdb.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Cover, fidelity)
 
         doc = pdb.get_tome_document_by_guid(tome['guid'])
-        other_files = filter( lambda x: x['hash']!=file_hash, doc['files'])
-        tome_file_doc = filter( lambda x: x['hash']==file_hash, doc['files'])[0]
+        other_files = filter(lambda x: x['hash'] != file_hash, doc['files'])
+        tome_file_doc = filter(lambda x: x['hash'] == file_hash, doc['files'])[0]
         tome_file_doc['fidelity'] = fidelity
 
         other_files.append(tome_file_doc)
@@ -140,6 +139,7 @@ def set_main_cover():
         redirect(URL('default', 'view_tome', args=(tome['guid'])))
 
     return {'tome': tome, 'file_hash': file_hash, 'file_extension': file_extension, 'form': form}
+
 
 def _stream_image(file_hash, extension):
     fp = pydb.pyrosetup.fileserver().get_local_file_path(file_hash)

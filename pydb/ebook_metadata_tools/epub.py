@@ -18,8 +18,8 @@ def _get_path_of_content_opf(zip_file):
     except KeyError:
         raise ValueError("Unable to find META-INF/container.xml in epub file")
     root = defused_etree.fromstring(ocf_metadata)
-    rootfiletag = root.find(".//*[@full-path]")
-    content_opf_path = rootfiletag.attrib['full-path']
+    root_file_tag = root.find(".//*[@full-path]")
+    content_opf_path = root_file_tag.attrib['full-path']
     # logger.debug("content file is at" % content_opf_path)
     return content_opf_path
 

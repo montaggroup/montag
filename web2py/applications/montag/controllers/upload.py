@@ -12,29 +12,28 @@ DEFAULT_ADD_FIDELITY = 60.0
 
 
 def _insert_file(file_stream, original_file_name):
-        (_, extension_with_dot) = os.path.splitext(original_file_name)
+    (_, extension_with_dot) = os.path.splitext(original_file_name)
 
-        (handle, file_path) = tempfile.mkstemp(suffix=extension_with_dot)
+    (handle, file_path) = tempfile.mkstemp(suffix=extension_with_dot)
 
-        with os.fdopen(handle, "wb") as f:
-            f.write(file_stream.read())
+    with os.fdopen(handle, "wb") as f:
+        f.write(file_stream.read())
 
-        file_server = pydb.pyrosetup.fileserver()
-        (file_id, file_hash, file_size) = file_server.add_file_from_local_disk(file_path, extension_with_dot[1:],
-                                                                               move_file=True)
+    file_server = pydb.pyrosetup.fileserver()
+    (file_id, file_hash, file_size) = file_server.add_file_from_local_disk(file_path, extension_with_dot[1:],
+                                                                           move_file=True)
 
-        return file_id, file_hash, file_size
+    return file_id, file_hash, file_size
 
 
 def _create_upload_form():
     form = FORM(TABLE(TR(TD(DIV(DIV('Drop File Here'), _class='dz-message'))),
                       TR(TD(' -- or --')),
-                      TR(TD(INPUT(_type='file',
-                                  _name='file',
-                                  requires=IS_NOT_EMPTY()))),
+                      TR(TD(INPUT(_type='file', _name='file', requires=IS_NOT_EMPTY()))),
                       TR(TD(INPUT(_type='submit', _value='Submit'))),
                       _class='upload_file'),
                 _class='dropzone', _id='dropzoneForm')
+
     return form
 
 
@@ -221,7 +220,7 @@ def upload_cover():
         f = request.vars.file
         is_dropzone = False
 
-        if isinstance(f, list):  # dropzone uploads result in lists
+        if isinstance(f, list):  # drop zone uploads result in lists
             f = f[1]
             is_dropzone = True
 

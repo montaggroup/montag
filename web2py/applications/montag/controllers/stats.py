@@ -2,6 +2,7 @@
 if False:
     from web2py.applications.montag.models.ide_fake import *
 
+
 @auth.requires_login()
 def show_stats():
     merge_stats = pdb.get_merge_statistics()

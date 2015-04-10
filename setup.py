@@ -8,7 +8,7 @@ sql_schemas = [('db-schemas', glob('db-schemas/*'))]
 data_files = []
 data_files += sql_schemas
 
-web2py_packages=[
+web2py_packages = [
     "SimpleXMLRPCServer",
     "htmllib",
     "HTMLParser",
@@ -26,8 +26,8 @@ setup(
 
     options={
         'py2exe': {
-            'includes' : ['zope.interface', 'psutil'],
-            'packages': ['pydb.config', 'pydb.maindb']+web2py_packages
+            'includes': ['zope.interface', 'psutil'],
+            'packages': ['pydb.config', 'pydb.maindb'] + web2py_packages
         }
     },
 
@@ -45,6 +45,4 @@ setup(
 
     requires=['Pyro4', 'mock', 'twisted', 'whoosh', 'PySide', 'lxml', 'ijson', 'Crypto', 'psutil', 'pycryptopp',
               'bitarray', 'PyPDF2', 'PIL', 'PIL']
- )
-
-
+)

@@ -11,8 +11,8 @@ def get_nonce_512():
 
 
 def calc_hmac(hmac_shared_secret, msg):
-    hmacgen = hmac.new(hmac_shared_secret, msg, hashlib.sha512)
-    return hmacgen.digest()
+    hmac_gen = hmac.new(hmac_shared_secret, msg, hashlib.sha512)
+    return hmac_gen.digest()
 
 
 def sha512d(msg):
@@ -24,8 +24,8 @@ def preshared_secrets(friend_data):
     return preshared_secrets_from_passphrase(friend_data['comm_data']['secret'])
 
 
-def preshared_secrets_from_passphrase(passphrase):
-    preshared_secret = sha512d(passphrase)
+def preshared_secrets_from_passphrase(pass_phrase):
+    preshared_secret = sha512d(pass_phrase)
     preshared_secret_kex_cipher = preshared_secret[:32]
     preshared_secret_kex_hmac = preshared_secret[32:]
 

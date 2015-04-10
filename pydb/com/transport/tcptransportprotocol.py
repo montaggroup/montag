@@ -20,7 +20,7 @@ NUMBER_OF_JOBS_UPDATE_INTERVAL_SECONDS = 2
 logger = logging.getLogger("tcptransportprotocol")
 
 
-def memsize():
+def memory_size():
     import gc
     import psutil
     import os
@@ -30,9 +30,9 @@ def memsize():
     return int(rss / 1024)
 
 
-def meminfo(msg):
+def memory_info(msg):
     if False:
-        logger.info('{} {}'.format(msg, memsize()))
+        logger.info('{} {}'.format(msg, memory_size()))
 
 
 def is_lan_address(host_address):
@@ -42,14 +42,16 @@ def is_lan_address(host_address):
     priv_20 = re.compile("^192\.168\.\d{1,3}.\d{1,3}$")
     priv_16 = re.compile("^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$")
 
-    return priv_lo.match(host_address) or priv_24.match(host_address) or priv_20.match(host_address) or priv_16.match(host_address)
+    return priv_lo.match(host_address) or priv_24.match(host_address) or priv_20.match(host_address) or \
+           priv_16.match(host_address)
 
 
-def buildTcpTransportProtocol(upper_layer, comserver, target_bytes_per_second, hostaddr):
-    if config.ignore_rate_limit_in_lan() and is_lan_address(hostaddr):
-        logger.debug("Disabling rate limiting for host {} in LAN".format(hostaddr))
+def build_tcp_transport_protocol(upper_layer, com_server, target_bytes_per_second, host_address):
+    if config.ignore_rate_limit_in_lan() and is_lan_address(host_address):
+        logger.debug("Disabling rate limiting for host {} in LAN".format(host_address))
         target_bytes_per_second = 1000000000
-    return TcpTransportProtocol(upper_layer, comserver, target_bytes_per_second)
+    return TcpTransportProtocol(upper_layer, com_server, target_bytes_per_second)
+
 
 class TcpTransportProtocol(Protocol):
     def __init__(self, upper_layer, comservice, target_bytes_per_second):
@@ -96,7 +98,7 @@ class TcpTransportProtocol(Protocol):
             len(self.chunks_to_transmit), len(self.queued_messages)))
         self.paused = False
         self._check_message_queue()
-        self.dataReceived()
+        self.data_received()
 
     # noinspection PyPep8Naming
     def stopProducing(self):
@@ -130,7 +132,7 @@ class TcpTransportProtocol(Protocol):
                 self.delay_active = True
                 reactor.callLater(chunk_delay, self._really_pump_message_queue)
         else:
-            self.dataReceived()
+            self.data_received()
 
     def send_message(self, msg):
         self.queued_messages.append(msg)
@@ -140,7 +142,7 @@ class TcpTransportProtocol(Protocol):
         logger.debug("TcpTransportProtocol closing connection: {}".format(msg))
         self.transport.loseConnection()
 
-    def connectionMade(self):
+    def connection_made(self):
         # register this class as a producer to allow the transport to tell us to pause
         self.transport.registerProducer(self, True)
 
@@ -149,7 +151,7 @@ class TcpTransportProtocol(Protocol):
 
         self.timeout = reactor.callLater(self.read_timeout, self.do_timeout)
 
-    def dataReceived(self, data=""):
+    def data_received(self, data=""):
         self.timeout.reset(self.read_timeout)
         self.data.extend(data)
         if self.max_data_length and len(self.data) > self.max_data_length:
@@ -179,9 +181,9 @@ class TcpTransportProtocol(Protocol):
                 self.state = WaitingForLength
                 msg = str(msg)
                 self.upper_layer.message_received(msg)
-                reactor.callLater(0, self.dataReceived)
+                reactor.callLater(0, self.data_received)
 
-    def connectionLost(self, reason):
+    def connection_lost(self, reason):
         self.upper_layer.transport_channel_lost(reason)
 
 

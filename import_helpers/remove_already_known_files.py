@@ -31,7 +31,7 @@ def remove_already_known_ebooks(path, dry_run=False):
     remove_count = 0
 
     def log_progress():
-        logger.info("%d/%d removed %0.1f %%" % (remove_count, check_count, remove_count * 100.0 / check_count ))
+        logger.info("%d/%d removed %0.1f %%" % (remove_count, check_count, remove_count * 100.0 / check_count))
 
     for dir_name, dirs, files in os.walk(path):
         for f in files:
@@ -39,16 +39,16 @@ def remove_already_known_ebooks(path, dry_run=False):
             if f_ext.lower() == '.opf':
                 continue
 
-            filepath = os.path.join(dir_name, f)
-            logger.debug("Checking {}".format(filepath))
+            file_path = os.path.join(dir_name, f)
+            logger.debug("Checking {}".format(file_path))
             check_count += 1
 
-            if already_known_book(filepath):
+            if already_known_book(file_path):
                 if dry_run:
-                    logger.info("Would remove {}".format(filepath))
+                    logger.info("Would remove {}".format(file_path))
                 else:
-                    logger.info("Removing {}".format(filepath))
-                    os.remove(filepath)
+                    logger.info("Removing {}".format(file_path))
+                    os.remove(file_path)
 
                 remove_count += 1
 

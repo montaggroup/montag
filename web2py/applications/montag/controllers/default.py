@@ -367,15 +367,11 @@ def _tome_edit_form(tome, required_tome_fidelity):
 
 
 def _tome_synopses_form(synopsis):
-    form = SQLFORM.factory(Field('content','text', default=db_str_to_form(synopsis['content'])),
+    form = SQLFORM.factory(Field('content', 'text', default=db_str_to_form(synopsis['content'])),
                            Field('fidelity', requires=FidelityValidator(), default=synopsis['fidelity']+0.1),
-                           hidden={'guid': synopsis['guid'],
-                                   '_formname':'edit_synopsis_{}'.format(synopsis['guid'])
-                           },
+                           hidden={'guid': synopsis['guid'], '_formname': 'edit_synopsis_{}'.format(synopsis['guid'])},
                            submit_button='Save')
     return form
-
-
 
 
 @auth.requires_login()
@@ -385,7 +381,7 @@ def add_synopsis_to_tome():
                                          include_local_file_info=True, include_author_detail=True)
     
     new_syn = {
-               'guid' : pdb.generate_guid(),
+               'guid': pdb.generate_guid(),
                'fidelity': pydb.network_params.Default_Manual_Fidelity,
                'content': ""
                }
@@ -412,8 +408,8 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
     title_text=pydb.title.coalesce_title(tome_doc['title'], tome_doc['subtitle'])
     response.title = u"Edit {} - Montag".format(title_text)
 
-    field_names=['title','subtitle','edition','principal_language','publication_year','tags','type','fidelity']
-    syn_field_names=['content','fidelity']
+    field_names = ['title', 'subtitle', 'edition', 'principal_language', 'publication_year', 'tags', 'type', 'fidelity']
+    syn_field_names = ['content', 'fidelity']
     
     tome_id = tome_doc['id']
     required_tome_fidelity = pdb.calculate_required_tome_fidelity(tome_id)
@@ -431,7 +427,7 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
         formname = u'edit_synopsis_{}'.format(synopsis_guid)
 
         for syn_idx, synform in enumerate(synforms):
-            if synform.process(session = None, formname=formname, keepvalues=True).accepted:
+            if synform.process(session=None, formname=formname, keepvalues=True).accepted:
                 if not synopsis_guid:
                     raise ValueError("No synopsis guid found")
                 
@@ -440,7 +436,7 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
                         synopsis_to_edit = synopsis
                         break
                 else:
-                    synopsis_to_edit = {'guid': synopsis_guid }
+                    synopsis_to_edit = {'guid': synopsis_guid}
                     tome_doc['synopses'].append(synopsis_to_edit)
     
                 for sf in syn_field_names:
@@ -454,32 +450,32 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
     if form.process(session=None, formname='edit_tome', keepvalues=True).accepted:
         for f in field_names:
             tome_doc[f] = read_form_field(form, f)
-        if not 'authors' in tome_doc:
-            tome_doc['authors']=[]
-        if not 'files' in tome_doc:
-            tome_doc['files']=[]
-        if not 'publication_year' in tome_doc:
-            tome_doc['publication_year']=None
-        elif tome_doc['publication_year']=='None':
-            tome_doc['publication_year']=None
+        if 'authors' not in tome_doc:
+            tome_doc['authors'] = []
+        if 'files' not in tome_doc:
+            tome_doc['files'] = []
+        if 'publication_year' not in tome_doc:
+            tome_doc['publication_year'] = None
+        elif tome_doc['publication_year'] == 'None':
+            tome_doc['publication_year'] = None
         pdb.load_own_tome_document(tome_doc)
         redirect(URL('view_tome', args=(tome_doc['guid'])))
 
     elif form.errors:
         response.flash = 'form has errors'
     
-    tome_doc['id']=tome_id
+    tome_doc['id'] = tome_id
     return dict(form=form, tome=tome_doc, tome_id=tome_id, synforms=synforms, required_fidelity=required_tome_fidelity)
 
 
 @auth.requires_login()
 def edit_tome_file_link():
-    tome_id=request.args[0]
-    file_hash=request.args[1]
-    tome=pdb.get_tome(tome_id)
+    tome_id = request.args[0]
+    file_hash = request.args[1]
+    tome = pdb.get_tome(tome_id)
 
-    files = pdb.get_tome_files( tome_id, include_local_file_info = True)
-    tome_files = filter( lambda x: x['hash']==file_hash, files)
+    files = pdb.get_tome_files(tome_id, include_local_file_info=True)
+    tome_files = filter(lambda x: x['hash'] == file_hash, files)
     tome_file = tome_files[0]
 
     form = SQLFORM.factory(Field('file_extension', default=db_str_to_form(tome_file['file_extension'])),
@@ -489,18 +485,18 @@ def edit_tome_file_link():
     title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
     response.title = u"Edit Files {} - Montag".format(title_text)
     
-    field_names=['file_extension','fidelity']
+    field_names = ['file_extension', 'fidelity']
 
     if form.process(keepvalues=True).accepted:
         doc = pdb.get_tome_document_by_guid(tome['guid'])
-        other_files = filter( lambda x: x['hash'] != file_hash, doc['files'])
-        tome_file_doc = filter( lambda x: x['hash'] == file_hash, doc['files'])[0]
+        other_files = filter(lambda x: x['hash'] != file_hash, doc['files'])
+        tome_file_doc = filter(lambda x: x['hash'] == file_hash, doc['files'])[0]
 
         for f in field_names:
             tome_file_doc[f] = read_form_field(form, f)
 
         other_files.append(tome_file_doc)
-        doc['files']=other_files    
+        doc['files'] = other_files
         pdb.load_own_tome_document(doc)
             
         response.flash = 'Stored new values'
@@ -545,10 +541,10 @@ def link_tome_to_file():
 
 @auth.requires_login()
 def edit_tome_author_link():
-    tome_id=request.args[0]
-    author_id=request.args[1]
+    tome_id = request.args[0]
+    author_id = request.args[1]
     
-    tome=pdb.get_tome(tome_id)
+    tome = pdb.get_tome(tome_id)
        
     tome_authors = pdb.get_tome_authors(tome_id)
     tome_author = None
@@ -558,6 +554,7 @@ def edit_tome_author_link():
     
     if tome_author is None:
         return dict(error="Tome and author not linked?", form=None, tome=tome, author=None, authors=tome_authors)
+
     author_guid = tome_author['guid']
     
     form = SQLFORM.factory(Field('order', default=tome_author['author_order']),

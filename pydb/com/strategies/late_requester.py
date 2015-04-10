@@ -45,7 +45,9 @@ class LateRequester(Strategy):
 
 
     def _start_file_requester(self):
-        self.more_file_requests_required = prepare_file_requester(self._main_db, self._file_requester, default_max_files_to_request)
+        self.more_file_requests_required = prepare_file_requester(self._main_db, self._file_requester,
+                                                                  default_max_files_to_request)
+
         self._file_requester.activate(self._session, self._friend_id,
                                       self.file_requester_completed, self.any_requester_failed)
 
