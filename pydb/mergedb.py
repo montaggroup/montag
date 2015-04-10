@@ -855,19 +855,7 @@ def extract_authoritative_local_opinion(local_opinions):
         return None
 
     if len(local_opinions) > 1:
-        def get_fidelity(x):
-            return x['fidelity']
-
-        positives = [o for o in local_opinions if o['fidelity'] > 0]
-        if positives:
-            # if we have a positive association, we want to have it win over the negative one
-            # so if one use removed an invalid author and the other user merged it with a valid one,
-            # we won't lose the valid association
-            result = max(positives, key=get_fidelity)
-        else:
-            # all are negative, use the strongest
-            result = min(local_opinions, key=get_fidelity)
-
+        result = max(local_opinions, key=lambda o: o['last_modification_date'])
         logger.warning(u"Local opinion group has more than 1 entry: {} - using {}".format(local_opinions, result))
         return result
 
