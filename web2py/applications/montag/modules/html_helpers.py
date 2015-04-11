@@ -5,6 +5,7 @@ if False:
 
 import time
 import re
+from web2py.applications.montag.modules.pydb_functions import db_str_to_form
 
 
 def author_link(author_detail_info):

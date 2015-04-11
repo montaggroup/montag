@@ -2,6 +2,8 @@
 if False:
     from web2py.applications.montag.models.ide_fake import *
 
+from web2py.applications.montag.modules.pydb_functions import db_str_to_form
+from web2py.applications.montag.modules.web2py_helpers import read_form_field
 
 def _select_author_merge_partner_form(first_author):
     form = SQLFORM.factory(Field('query', requires=IS_NOT_EMPTY(), default=db_str_to_form(first_author['name']),

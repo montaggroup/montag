@@ -6,7 +6,8 @@ import tempfile
 
 from pydb import ebook_metadata_tools, FileType, TomeType
 import pydb.pyrosetup
-
+from web2py.applications.montag.modules.pydb_functions import db_str_to_form
+from web2py.applications.montag.modules.web2py_helpers import read_form_field
 
 DEFAULT_ADD_FIDELITY = 60.0
 

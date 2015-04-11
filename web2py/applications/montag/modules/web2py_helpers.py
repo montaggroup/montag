@@ -1,5 +1,5 @@
 if False:
-    from ide_fake import *
+    from web2py.applications.montag.models.ide_fake import *
 
 
 def read_form_field(form, fieldname):

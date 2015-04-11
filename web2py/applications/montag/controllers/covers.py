@@ -7,8 +7,11 @@ import os
 import pydb.ebook_metadata_tools
 
 from pydb import FileType
-
-
+from pydb import network_params
+from web2py.applications.montag.modules.web2py_helpers import read_form_field
+from pydb import title
+from pydb import pyrosetup
+from pydb import ebook_metadata_tools
 
 @auth.requires_login()
 def edit_covers():
@@ -19,13 +22,13 @@ def edit_covers():
     tome = pdb.get_tome_document_by_guid(tome_guid, include_local_file_info=True,
                                          include_author_detail=True, keep_id=True)
 
-    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    title_text = title.coalesce_title(tome['title'], tome['subtitle'])
     response.title = u'Edit Cover for {} - Montag'.format(title_text)
 
     available_covers = []
     available_content = []
 
-    relevant_files = relevant_items(tome['files'])
+    relevant_files = network_params.relevant_items(tome['files'])
     relevant_local_files = filter(lambda f: f['has_local_copy'], relevant_files)
 
     for tome_file in relevant_local_files:
@@ -72,7 +75,7 @@ def set_cover_from_content():
     tome = pdb.get_tome(tome_id)
     form = _set_cover_from_content_form()
 
-    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    title_text = title.coalesce_title(tome['title'], tome['subtitle'])
     response.title = u'Set Cover for {} - Montag'.format(title_text)
 
     if form.process(keepvalues=True).accepted:
@@ -88,7 +91,7 @@ def set_cover_from_content():
         with os.fdopen(fd_cover, 'wb') as cover_file:
             cover_file.write(cover_contents.getvalue())
 
-        file_server = pydb.pyrosetup.fileserver()
+        file_server = pyrosetup.fileserver()
         (local_file_id, file_hash, file_size) = file_server.add_file_from_local_disk(path_cover, file_extension,
                                                                                      move_file = True)
         
@@ -118,10 +121,10 @@ def set_main_cover():
     tome = pdb.get_tome(tome_id)
     form = _set_main_cover_form()
     
-    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    title_text = title.coalesce_title(tome['title'], tome['subtitle'])
     response.title = u'Set Cover for {} - Montag'.format(title_text)
 
-    file_size = pydb.pyrosetup.fileserver().get_local_file_size(file_hash)
+    file_size = pyrosetup.fileserver().get_local_file_size(file_hash)
 
     if form.process(keepvalues=True).accepted:
         fidelity = read_form_field(form, 'fidelity')
@@ -142,7 +145,7 @@ def set_main_cover():
 
 
 def _stream_image(file_hash, extension):
-    fp = pydb.pyrosetup.fileserver().get_local_file_path(file_hash)
+    fp = pyrosetup.fileserver().get_local_file_path(file_hash)
     if fp is None:
         return
     plain_file = open(fp,'rb')
@@ -178,11 +181,11 @@ def _extract_image_from_content(file_hash, extension):
     """    
     session.forget(response)
 
-    fp = pydb.pyrosetup.fileserver().get_local_file_path(file_hash)
+    fp = pyrosetup.fileserver().get_local_file_path(file_hash)
     if fp is None:
         raise KeyError('File not in file store')
     with open(fp, 'rb') as source_file:
-        return pydb.ebook_metadata_tools.get_cover_image(source_file, extension)
+        return ebook_metadata_tools.get_cover_image(source_file, extension)
 
 
 def _stream_image_from_content(file_hash, extension):

@@ -1,29 +1,9 @@
 # coding: utf8
 if False:
-    from ide_fake import *
+    from web2py.applications.montag.models.ide_fake import *
 
-import Pyro4
-import os
-import sys
 import copy
-
-web2py_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
-pydb_dir = web2py_dir
-for i in range(0, 4):
-    pydb_dir, _ = os.path.split(pydb_dir)
-
-if not pydb_dir in sys.path:
-    sys.path.append(pydb_dir)
-
-import pydb
-import pydb.network_params
-from pydb.network_params import is_relevant, relevant_items
-import pydb.title
-import pydb.config
-import pydb.pyrosetup
-
-sys.excepthook = Pyro4.util.excepthook
-pdb = pydb.pyrosetup.pydbserver()
+import html_helpers
 
 cfg_tags_minimum_display_fidelity = 20.0
 
@@ -80,12 +60,9 @@ def progress_text(com_service, job_id, current_phase):
 def format_job_status(job_info):
     job_status = "completed" if not job_info['is_running'] else ""
     if job_info['current_phase'] != 'completed':
-        job_status += " " + nice_name(job_info['current_phase'])
+        job_status += " " + html_helpers.nice_name(job_info['current_phase'])
     job_status += " "+job_info['progress']
     return job_status
-
-
-response.breadcrumb_bar = request.function.replace('_', ' ').title()
 
 _friend_name_cache = {0: 'You'}
 

@@ -1,10 +1,9 @@
 # coding: utf8
 if False:
-    from ide_fake import *
-
-
-if False:
     from web2py.applications.montag.models.ide_fake import *
+
+from web2py.applications.montag.modules.pydb_functions import db_str_to_form
+
 
 class TagValidator:
     def __init__(self, format="a", error_message="b"):

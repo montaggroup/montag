@@ -1,5 +1,5 @@
 if False:
-    from ide_fake import *
+    from web2py.applications.montag.models.ide_fake import *
 
 import pydb
 import pydb.pyrosetup
