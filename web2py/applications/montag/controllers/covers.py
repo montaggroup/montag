@@ -94,7 +94,7 @@ def set_cover_from_content():
 
         file_server = pyrosetup.fileserver()
         (local_file_id, file_hash, file_size) = file_server.add_file_from_local_disk(path_cover, file_extension,
-                                                                                     move_file = True)
+                                                                                     move_file=True)
         
         pdb.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Cover, fidelity)
         if only_display_cover_afterwards:
@@ -149,7 +149,7 @@ def _stream_image(file_hash, extension):
     fp = pyrosetup.fileserver().get_local_file_path(file_hash)
     if fp is None:
         return
-    plain_file = open(fp,'rb')
+    plain_file = open(fp, 'rb')
 
     # \todo determine mime type and other image params
     # response.headers['Content-Type'] = 'image/jpeg'

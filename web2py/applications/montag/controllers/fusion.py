@@ -1,4 +1,4 @@
-
+# coding: utf8
 if False:
     from web2py.applications.montag.models.ide_fake import *
 
@@ -42,6 +42,7 @@ def select_author_merge_partner():
         retval['query'] = author_to_search_for
 
     if len(author_to_search_for) > 0:
+        # noinspection PyAugmentAssignment
         if author_to_search_for[0] != '%':
             author_to_search_for = '%' + author_to_search_for
         if author_to_search_for[-1] != '%':

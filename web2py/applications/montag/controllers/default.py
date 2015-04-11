@@ -346,7 +346,7 @@ def tomesearch():
 
 
 def _tome_edit_form(tome, required_tome_fidelity):
-    form = SQLFORM.factory(Field('title',requires=IS_NOT_EMPTY(), default=db_str_to_form(tome['title']),
+    form = SQLFORM.factory(Field('title', requires=IS_NOT_EMPTY(), default=db_str_to_form(tome['title']),
                                  comment=DIV(
                            TOOLTIP('Please enter the title of the book like it is written on the cover.'),
                            XML(r'<input type="button" value="Guess title case" onclick="title_case_field(&quot;no_table_title&quot;)">'),
@@ -357,9 +357,9 @@ def _tome_edit_form(tome, required_tome_fidelity):
                            Field('principal_language', default=db_str_to_form(tome['principal_language']),
                                  comment=TOOLTIP('Please use two letter ISO 639-1 codes (e.g. en for English).')),
                            Field('publication_year', default=db_str_to_form(tome['publication_year'])),
-                           Field('tags','text', default=tome['tags'], requires=TagValidator()),
+                           Field('tags', 'text', default=tome['tags'], requires=TagValidator()),
                            Field('type', default=tome['type'], widget=SQLFORM.widgets.radio.widget,
-                                 requires=IS_IN_SET({TomeType.Fiction:'fiction',TomeType.NonFiction:'non-fiction'})),
+                                 requires=IS_IN_SET({TomeType.Fiction: 'fiction', TomeType.NonFiction: 'non-fiction'})),
                            Field('fidelity', requires=FidelityValidator(), default=required_tome_fidelity,
                                  comment='Current Value: {}'.format(tome['fidelity'])),
                            submit_button='Save',
@@ -635,6 +635,7 @@ def more_actions():
 def index():
     redirect(URL('tomesearch'))
     return dict()
+
 
 def user():
     return dict(form=auth())

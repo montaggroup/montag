@@ -29,4 +29,4 @@ response.menu = [
     ]
 
 if pydb.config.enable_web_auth():
-    response.menu.append((T('Logout'), False,URL('default', 'user',args='logout'), []))
+    response.menu.append((T('Logout'), False, URL('default', 'user', args='logout'), []))

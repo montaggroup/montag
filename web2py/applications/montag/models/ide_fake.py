@@ -1,3 +1,4 @@
+# coding=utf-8
 """ this file exist to allow IDEs like wing or pycharm to find the references used in web2py controller code
 """
 

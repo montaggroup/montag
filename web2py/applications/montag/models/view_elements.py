@@ -73,6 +73,7 @@ def short_synopsis(tome, synopsis):
     return A(synopsis_text, _class="synopsis_link", _href=URL('default', 'view_tome', args=[tome['guid']],
                                                               anchor="synopsis"))
 
+
 def short_synopsis_content(synopsis):
     synopsis_text = synopsis['content'][:100]+" ..." if len(synopsis['content']) > 100 else synopsis['content']
     return synopsis_text
@@ -99,6 +100,7 @@ def format_bibliography_dates(author_info):
     return result
 
 
+# noinspection PyPep8Naming
 def TOOLTIP(text):
     tip = A(IMG(_src=URL('static', 'images/clker/grey_question_mark.png')), _class="tooltip_trigger", _title=text)
     return tip
