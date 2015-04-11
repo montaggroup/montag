@@ -11,13 +11,19 @@ Tome not found in database.
         {{show_tome_edition_tags_block(tome)}}
 
 
-        {{ if tome['synopses']: }}
-            {{ relevant_synopsis = sorted(tome['synopses'], key=itemgetter('fidelity'), reverse=True)[0] }}
-            <span class="synopsis" id="synopsis">
-            {{ if relevant_synopsis and relevant_synopsis['fidelity'] > cfg_tags_minimum_display_fidelity :}}
-                <pre>{{ =format_synopsis(relevant_synopsis) }}</pre> {{pass}} <br>
-            </span>
-        {{pass}}
+        <span class="synopsis">
+        {{ =short_synopsis(tome, best_synopsis) }} <br>
+        </span>
+    {{pass}}
+
+
+    {{relevant_synopses = list(network_params.relevant_items(tome['synopses']))
+    if relevant_synopses:
+        best_synopsis = sorted(relevant_synopses, key=itemgetter('fidelity'), reverse=True)[0] }}
+        <span class="synopsis" id="synopsis">
+        <pre>{{ =format_synopsis(best_synopsis) }}</pre> {{pass}} <br>
+        </span>
+    {{pass}}
     </div>
 
 

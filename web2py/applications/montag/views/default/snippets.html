@@ -1,6 +1,7 @@
 {{
 from pydb import FileType
 from pydb_helpers import html_helpers
+from pydb import network_params
 
 }}
 {{ tome_block_id = 1 }}
@@ -127,12 +128,11 @@ jQuery(document).ready(function(){
 
     {{show_tome_edition_tags_block(tome)}}
 
-    {{ if tome['synopses']: }}
-        {{ relevant_synopsis = sorted(tome['synopses'], key=itemgetter('fidelity'), reverse=True)[0] }}
+    {{relevant_synopses = list(network_params.relevant_items(tome['synopses']))
+    if relevant_synopses:
+        best_synopsis = sorted(relevant_synopses, key=itemgetter('fidelity'), reverse=True)[0] }}
         <span class="synopsis">
-        {{ if relevant_synopsis and relevant_synopsis['fidelity'] > cfg_tags_minimum_display_fidelity :}} 
-            {{ =short_synopsis(tome, relevant_synopsis) }} <br>
-        {{pass}} 
+        {{ =short_synopsis(tome, best_synopsis) }} <br>
         </span>
     {{pass}}
 
