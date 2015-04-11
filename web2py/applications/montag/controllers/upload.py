@@ -5,9 +5,10 @@ if False:
 import tempfile
 
 from pydb import ebook_metadata_tools, FileType, TomeType
-import pydb.pyrosetup
+from pydb import pyrosetup
+from pydb import title
 from web2py.applications.montag.modules.pydb_functions import db_str_to_form
-from web2py.applications.montag.modules.web2py_helpers import read_form_field
+from web2py.applications.montag.modules.web2py_helpers import read_form_field, TOOLTIP, create_error_page
 
 DEFAULT_ADD_FIDELITY = 60.0
 
@@ -20,7 +21,7 @@ def _insert_file(file_stream, original_file_name):
     with os.fdopen(handle, "wb") as f:
         f.write(file_stream.read())
 
-    file_server = pydb.pyrosetup.fileserver()
+    file_server = pyrosetup.fileserver()
     (file_id, file_hash, file_size) = file_server.add_file_from_local_disk(file_path, extension_with_dot[1:],
                                                                            move_file=True)
 
@@ -95,7 +96,7 @@ def upload_file_to_tome():
         response.flash = 'Tome not found'
         return dict(form=form, tome=None)
 
-    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    title_text = title.coalesce_title(tome['title'], tome['subtitle'])
     response.title = u"Upload File to {} - Montag".format(title_text)
 
     if form.accepts(request.vars):
@@ -211,7 +212,7 @@ def upload_cover():
         response.flash = 'Tome not found'
         return dict(form=None, tome=None)
 
-    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    title_text = title.coalesce_title(tome['title'], tome['subtitle'])
     response.title = u"Upload Cover for {} - Montag".format(title_text)
     response.enable_dropzone = True
 

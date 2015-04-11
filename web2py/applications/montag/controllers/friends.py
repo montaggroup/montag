@@ -2,15 +2,17 @@
 if False:
     from web2py.applications.montag.models.ide_fake import *
 
+import Pyro4.errors
 from pydb import pyrosetup
-from web2py.applications.montag.modules.pydb_functions import db_str_to_form
-from web2py.applications.montag.modules.web2py_helpers import read_form_field
+from web2py.applications.montag.modules.pydb_functions import db_str_to_form, add_job_infos_to_friends_dict
+from web2py.applications.montag.modules.web2py_helpers import read_form_field, TOOLTIP
+
 
 @auth.requires_login()
 def list_friends():
     response.title = 'Friends - Montag'
     
-    comm_data_store = pydb.pyrosetup.comm_data_store()
+    comm_data_store = pyrosetup.comm_data_store()
     is_locking_active = comm_data_store.is_locking_active()
     is_locked = False
     if is_locking_active:
@@ -22,9 +24,9 @@ def list_friends():
     for friend in friends:
         friend['jobs'] = []
         friend_id = int(friend['id'])
-        friends_by_id[friend_id]=friend
+        friends_by_id[friend_id] = friend
     try:
-        com_service = pydb.pyrosetup.comservice()
+        com_service = pyrosetup.comservice()
         jobs = com_service.get_job_list()
         add_job_infos_to_friends_dict(friends_by_id, com_service, jobs)
 
@@ -32,7 +34,7 @@ def list_friends():
         pass
 
     return {'friends': friends, 'update_infos': update_infos,
-            'is_locking_active': is_locking_active, 'is_locked': is_locked }
+            'is_locking_active': is_locking_active, 'is_locked': is_locked}
 
 
 def _friend_edit_form(friend, comm_data):
@@ -67,7 +69,8 @@ def _friend_edit_form(friend, comm_data):
         Field('port', requires=IS_INT_IN_RANGE(1024, 65535, error_message='invalid port'), default=values['port'],
               comment=TOOLTIP('Please enter the (TCP) port number your friend has made his/her Montag '
                               'instance available under.')),
-        Field('type', default=values['type'], comment=TOOLTIP('Connection type. Currently only "tcp_aes" is supported.'))
+        Field('type', default=values['type'],
+              comment=TOOLTIP('Connection type. Currently only "tcp_aes" is supported.'))
     )
     return form
 
@@ -84,7 +87,7 @@ def _load_comm_data(friend_id):
     if comm_data is None:
         comm_data = dict()
 
-    if comm_data and not comm_data.has_key('secret'):
+    if comm_data and 'secret' not in comm_data:
         comm_data['secret'] = ''
 
     return comm_data
@@ -179,7 +182,7 @@ def add_friend():
 @auth.requires_login()
 def fetch_updates():
     friend_id = request.args[0]
-    com_service = pydb.pyrosetup.comservice()
+    com_service = pyrosetup.comservice()
     try:
         com_service.fetch_updates(friend_id)
         redirect('../list_friends')
@@ -190,7 +193,7 @@ def fetch_updates():
 
 @auth.requires_login()
 def fetch_updates_all():
-    com_service = pydb.pyrosetup.comservice()
+    com_service = pyrosetup.comservice()
     friends = pdb.get_friends()
 
     for friend in friends:
@@ -218,7 +221,7 @@ def unlock_comm_data():
         try:
             cds.unlock(str(password))
             redirect('list_friends')
-        except KeyError as e:
+        except KeyError:
             response.flash = 'Invalid password'
 
     elif form.errors:
@@ -228,6 +231,6 @@ def unlock_comm_data():
 
 @auth.requires_login()
 def clear_completed_jobs():
-    com_service = pydb.pyrosetup.comservice()
+    com_service = pyrosetup.comservice()
     com_service.clean_jobs()
     redirect('list_friends')

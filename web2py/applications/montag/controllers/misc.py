@@ -5,5 +5,5 @@ if False:
 
 @auth.requires_login()
 def install_search_bar():
-    response.headers['Content-Type']='application/xml'
+    response.headers['Content-Type'] = 'application/xml'
     return {}

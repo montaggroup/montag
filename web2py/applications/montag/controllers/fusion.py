@@ -4,6 +4,9 @@ if False:
 
 from web2py.applications.montag.modules.pydb_functions import db_str_to_form
 from web2py.applications.montag.modules.web2py_helpers import read_form_field
+from web2py.applications.montag.modules import search_forms
+from pydb import network_params
+
 
 def _select_author_merge_partner_form(first_author):
     form = SQLFORM.factory(Field('query', requires=IS_NOT_EMPTY(), default=db_str_to_form(first_author['name']),
@@ -43,14 +46,14 @@ def select_author_merge_partner():
         if author_to_search_for[0] != '%':
             author_to_search_for = '%' + author_to_search_for
         if author_to_search_for[-1] != '%':
-            author_to_search_for = author_to_search_for + '%'
+            author_to_search_for += '%'
 
     page_number = 0
             
     if 'page' in request.vars:
         page_number = int(request.vars.page)
             
-    pass_paged_author_query_results_to_view(author_to_search_for, retval, page_number)
+    search_forms.pass_paged_author_query_results_to_view(author_to_search_for, retval, page_number)
 
     retval['form'] = search_form
     retval['request'] = request
@@ -64,7 +67,7 @@ def _fetch_tomes_by_author(author_id):
 
     tomelist = []
     for tome in tomes:
-        if tome['author_link_fidelity'] >= pydb.network_params.Min_Relevant_Fidelity:
+        if tome['author_link_fidelity'] >= network_params.Min_Relevant_Fidelity:
             tome = pdb.get_tome_document_by_guid(tome['guid'], keep_id=True, include_local_file_info=True,
                                                  include_author_detail=True)
             tomelist.append(tome)
@@ -83,7 +86,7 @@ def confirm_merge_authors():
     
     if second_author is None:
         session.flash = "Author not found"
-        redirect(URL('select_author_merge_partner', args=(first_author_guid)))
+        redirect(URL('select_author_merge_partner', args=first_author_guid))
         return
      
     response.title = "Confirm Merge - Montag"
@@ -98,7 +101,7 @@ def execute_merge_authors():
     second_author_guid = request.args[1]
 
     use_data_from_first = request.args[2]
-    if use_data_from_first.lower()=="false":
+    if use_data_from_first.lower() == "false":
         use_data_from_first = False
 
     if use_data_from_first:
@@ -106,7 +109,7 @@ def execute_merge_authors():
     else:
         pdb.fuse_authors(first_author_guid, target_guid=second_author_guid)
 
-    redirect(URL('default','view_author', args=first_author_guid))
+    redirect(URL('default', 'view_author', args=first_author_guid))
 
 
 def _select_tome_merge_partner_form(first_tome):
@@ -139,7 +142,7 @@ def select_tome_merge_partner():
     if search_form.validate(formname='search', session=None, request_vars=request.vars, message_onsuccess='',
                             keepvalues=True):
 
-        search_query = build_search_query(search_form)
+        search_query = search_forms.build_search_query(search_form)
         if 'page' in request.vars:
             page_number = int(request.vars.page)
         retval['query'] = read_form_field(search_form, 'query')
@@ -147,7 +150,7 @@ def select_tome_merge_partner():
         search_query = first_tome['title']
         retval['query'] = search_query
         
-    pass_paged_query_results_to_view(search_query, retval, page_number)
+    search_forms.pass_paged_query_results_to_view(search_query, retval, page_number)
 
     retval['form'] = search_form
     retval['request'] = request
@@ -167,7 +170,7 @@ def confirm_merge_tomes():
     
     if second_tome is None:
         session.flash = "Tome not found"
-        redirect(URL('select_tome_merge_partner', args=(first_tome_guid)))
+        redirect(URL('select_tome_merge_partner', args=first_tome_guid))
         return
 
     response.title = "Confirm Merge - Montag"
@@ -181,7 +184,7 @@ def execute_merge_tomes():
     second_tome_guid = request.args[1]
 
     use_data_from_first = request.args[2]
-    if use_data_from_first.lower()=="false":
+    if use_data_from_first.lower() == "false":
         use_data_from_first = False
 
     if use_data_from_first:
@@ -194,7 +197,7 @@ def execute_merge_tomes():
     try:
         pdb.fuse_tomes(source_guid, target_guid=target_guid)
     except KeyError:  # one or both tomes do not exit (anymore), do nothing as
-                      # the most probable cause is a merge that just happened
+        # the most probable cause is a merge that just happened
         pass
 
-    redirect(URL('default', 'view_tome', args=(first_tome_guid)))
+    redirect(URL('default', 'view_tome', args=first_tome_guid))
