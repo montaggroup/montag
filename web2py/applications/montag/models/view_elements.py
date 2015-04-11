@@ -2,7 +2,6 @@
 if False:
     from web2py.applications.montag.models.ide_fake import *
 
-import time
 import re
 from pydb_helpers import html_helpers
 from pydb import title
@@ -74,69 +73,23 @@ def short_synopsis(tome, synopsis):
     return A(synopsis_text, _class="synopsis_link", _href=URL('default', 'view_tome', args=[tome['guid']],
                                                               anchor="synopsis"))
 
-
 def short_synopsis_content(synopsis):
     synopsis_text = synopsis['content'][:100]+" ..." if len(synopsis['content']) > 100 else synopsis['content']
     return synopsis_text
 
 
-def render_synopsis(synopsis):
-    c = synopsis['content']
-
-    max_line_length = 100
-    min_line_length = 60
-
-    lines=[]
-    for l in c.split("\n"):
-       while len(l) > max_line_length:
-            pos = max_line_length-1
-            while l[pos] != " " and pos > min_line_length:
-                pos -= 1
-            if l[pos] != " ":
-                pos = max_line_length-1
-            k=l[0:pos+1]
-            l=l[pos+1:]
-            lines.append(k)
-       lines.append(l)
-    return '\n'.join(lines)
-
-
-def nice_name(name):
-    tn = name.replace("_"," ")
-    tn = tn[0].upper() + tn[1:]
-    return tn
-
-
-def nice_name_lcfirst(name):
-    tn = name.replace("_"," ")
-    return tn
-
-
-def nice_table_name(table_name):
-    tn = table_name.replace("_"," ")
-    # remove trailing s
-    tn = tn[:-1]
-    tn = tn[0].upper() + tn[1:]
-    return tn
-
-
-def string_or_empty( text ):
-    return unicode(text) if text is not None else ""
-
-
-def short_hash(full_hash):
-    return full_hash[:4]
+def format_synopsis(synopsis):
+    return html_helpers.wrap_lines(synopsis['content'], min_line_length=60, max_line_length=100)
 
 
 def format_bibliography_dates(author_info):
-    result = ""
     if author_info['date_of_birth']:
-        result = "Born "+author_info['date_of_birth']
+        result = "Born " + author_info['date_of_birth']
     else:
         result = "No date of birth provided yet"
 
     if author_info['date_of_death']:
-        result += ", died "+author_info['date_of_death']
+        result += ", died " + author_info['date_of_death']
     else:
         if author_info['date_of_birth']:
             result += ', no date of death provided yet.'
@@ -149,3 +102,8 @@ def format_bibliography_dates(author_info):
 def TOOLTIP(text):
     tip = A(IMG(_src=URL('static', 'images/clker/grey_question_mark.png')), _class="tooltip_trigger", _title=text)
     return tip
+
+
+def create_error_page(message):
+    response.view = 'error/error.html'
+    return {'message': message}

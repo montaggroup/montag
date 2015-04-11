@@ -2,8 +2,7 @@
 if False:
     from web2py.applications.montag.models.ide_fake import *
 
-from pydb_helpers.pydb_functions import db_str_to_form
-from pydb_helpers.web2py_helpers import read_form_field
+from pydb_helpers.pydb_functions import db_str_to_form, read_form_field
 from pydb_helpers import search_forms
 from pydb import network_params
 
@@ -53,7 +52,7 @@ def select_author_merge_partner():
     if 'page' in request.vars:
         page_number = int(request.vars.page)
             
-    search_forms.pass_paged_author_query_results_to_view(author_to_search_for, retval, page_number)
+    search_forms.pass_paged_author_query_results_to_view(pdb, author_to_search_for, retval, page_number)
 
     retval['form'] = search_form
     retval['request'] = request
@@ -150,7 +149,7 @@ def select_tome_merge_partner():
         search_query = first_tome['title']
         retval['query'] = search_query
         
-    search_forms.pass_paged_query_results_to_view(search_query, retval, page_number)
+    search_forms.pass_paged_query_results_to_view(pdb, search_query, retval, page_number)
 
     retval['form'] = search_form
     retval['request'] = request

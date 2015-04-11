@@ -1,9 +1,7 @@
 # coding: utf8
-if False:
-    from web2py.applications.montag.models.ide_fake import *
-
 import copy
 from pydb_helpers import html_helpers
+
 
 def db_str_to_form(a_string):
     if a_string is None:
@@ -11,7 +9,14 @@ def db_str_to_form(a_string):
     return unicode(a_string).encode('utf-8')
 
 
-def has_cover(tome_id):
+def read_form_field(form, fieldname):
+    val = form.vars[fieldname]
+    if isinstance(val, str):
+        val = val.decode('utf-8')
+    return val
+
+
+def has_cover(pdb, tome_id):
     tome_file = pdb.get_best_relevant_cover_available(tome_id)
     return tome_file is not None
 

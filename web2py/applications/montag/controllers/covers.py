@@ -8,7 +8,7 @@ import os
 import pydb.ebook_metadata_tools
 from pydb import FileType
 from pydb import network_params
-from pydb_helpers.web2py_helpers import read_form_field
+from pydb_helpers.pydb_functions import read_form_field
 from pydb import title
 from pydb import pyrosetup
 from pydb import ebook_metadata_tools

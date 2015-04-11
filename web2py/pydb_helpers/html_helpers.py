@@ -1,6 +1,6 @@
 # coding: utf8
-if False:
-    from web2py.applications.montag.models.ide_fake import *
+import time
+from gluon import *
 
 
 def concat_link_list(link_list):
@@ -12,8 +12,16 @@ def concat_link_list(link_list):
     return result
 
 
-def generate_download_filename(tome, file):
-    return u"{} ({}).{}".format(tome['title'], short_hash(file['hash']), file['file_extension'])
+def string_or_empty(text):
+    return unicode(text) if text is not None else ""
+
+
+def short_hash(full_hash):
+    return full_hash[:4]
+
+
+def generate_download_filename(tome, tome_file):
+    return u"{} ({}).{}".format(tome['title'], short_hash(tome_file['hash']), tome_file['file_extension'])
 
 
 def human_readable_time(unixtime):
@@ -28,7 +36,7 @@ def human_readable_time_elapsed_since(unixtime):
         return "Never"
 
     dt = time.time()-unixtime
-    if dt <2:
+    if dt < 2:
         return "Just now"
     if dt < 55:
         return "{} seconds ago".format(int((dt+5)/10)*10)
@@ -50,3 +58,37 @@ def human_readable_time_elapsed_since(unixtime):
         return "One day ago"
 
     return "{} days ago".format(int(dt+0.5))
+
+
+def nice_name(name):
+    tn = name.replace("_", " ")
+    tn = tn[0].upper() + tn[1:]
+    return tn
+
+
+def nice_name_lcfirst(name):
+    tn = name.replace("_", " ")
+    return tn
+
+
+def nice_table_name(table_name):
+    tn = table_name.replace("_", " ")
+    # remove trailing s
+    tn = tn[:-1]
+    tn = tn[0].upper() + tn[1:]
+    return tn
+
+def wrap_lines(text, min_line_length, max_line_length):
+    lines = []
+    for line in text.split("\n"):
+        while len(line) > max_line_length:
+            pos = max_line_length-1
+            while line[pos] != " " and pos > min_line_length:
+                pos -= 1
+            if line[pos] != " ":
+                pos = max_line_length-1
+            shortened_line = line[0:pos+1]
+            line = line[pos+1:]
+            lines.append(shortened_line)
+        lines.append(line)
+    return '\n'.join(lines)

@@ -5,6 +5,7 @@ if False:
 from pydb_helpers.pydb_functions import db_str_to_form
 from pydb import network_params
 
+
 class TagValidator:
     def __init__(self, format="a", error_message="b"):
         pass

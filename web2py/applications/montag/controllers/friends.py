@@ -5,8 +5,7 @@ if False:
 import Pyro4.errors
 
 from pydb import pyrosetup
-from pydb_helpers.pydb_functions import db_str_to_form, add_job_infos_to_friends_dict
-from pydb_helpers.web2py_helpers import read_form_field
+from pydb_helpers.pydb_functions import db_str_to_form, read_form_field, add_job_infos_to_friends_dict
 
 
 @auth.requires_login()

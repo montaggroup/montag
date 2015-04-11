@@ -1,6 +1,9 @@
-{{ from pydb import FileType }}
-{{ tome_block_id=1 }}
-{{ tome_synopsis_id=1 }}
+{{
+from pydb import FileType
+import pydb_helpers
+}}
+{{ tome_block_id = 1 }}
+{{ tome_synopsis_id = 1 }}
 {{ def next_tome_block_id(): 
     global tome_block_id
     tome_block_id+=1
@@ -8,7 +11,7 @@
 }}
 {{ def next_tome_synopsis_id(): 
     global tome_synopsis_id
-    tome_synopsis_id+=1
+    tome_synopsis_id += 1
     return tome_synopsis_id-1
 }}
 {{ from operator import itemgetter }}
@@ -67,7 +70,7 @@ jQuery(document).ready(function(){
 {{return}}
 
 {{def _show_tome_edition_line(tome):
-    edition_info_line = string_or_empty(tome['edition'])+" "+string_or_empty(tome['publication_year'])
+    edition_info_line = string_or_empty(tome['edition']) + " " + string_or_empty(tome['publication_year'])
     edition_info_line = edition_info_line.strip()
     if edition_info_line: }}
         <span>

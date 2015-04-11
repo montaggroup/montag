@@ -41,7 +41,7 @@ class NoAuth():
         return inner
 
 
-from gluon.tools import Auth, Crud, Service, PluginManager, prettydate
+from gluon.tools import Auth, Crud, Service, PluginManager
 import pydb.config
 
 if pydb.config.enable_web_auth():

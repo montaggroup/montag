@@ -14,7 +14,8 @@ Tome not found in database.
         {{ if tome['synopses']: }}
             {{ relevant_synopsis = sorted(tome['synopses'], key=itemgetter('fidelity'), reverse=True)[0] }}
             <span class="synopsis" id="synopsis">
-            {{ if relevant_synopsis and relevant_synopsis['fidelity'] > cfg_tags_minimum_display_fidelity :}} <pre>{{ =render_synopsis(relevant_synopsis) }}</pre> {{pass}} <br>
+            {{ if relevant_synopsis and relevant_synopsis['fidelity'] > cfg_tags_minimum_display_fidelity :}}
+                <pre>{{ =format_synopsis(relevant_synopsis) }}</pre> {{pass}} <br>
             </span>
         {{pass}}
     </div>
@@ -23,7 +24,7 @@ Tome not found in database.
     {{ if pydb.config.enable_covers(): }}
         <div class='tome_cover_container'>
             
-        {{ if has_cover(tome['id']): }} 
+        {{ if has_cover(pdb, tome['id']): }}
         <div class='large_cover'>
             <img src="{{=URL( 'covers', 'get_best_cover', args=[tome['id']]) }}" alt="Large Cover" />
         </div>

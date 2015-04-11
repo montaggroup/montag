@@ -7,8 +7,7 @@ import tempfile
 from pydb import ebook_metadata_tools, FileType, TomeType
 from pydb import pyrosetup
 from pydb import title
-from pydb_helpers.pydb_functions import db_str_to_form
-from pydb_helpers.web2py_helpers import read_form_field, TOOLTIP, create_error_page
+from pydb_helpers.pydb_functions import db_str_to_form, read_form_field
 
 DEFAULT_ADD_FIDELITY = 60.0
 
