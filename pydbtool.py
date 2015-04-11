@@ -25,27 +25,25 @@ json_separators = (',', ': ')
 
 INSERT_BATCH_SIZE = 50
 
-logger = logging.getLogger("pydbtool")
-
 
 def do_print_stats(args, db):
     merge_stats = db().get_merge_statistics()
-    logger.info("\nmerge.db contains:")
-    logger.info("==================")
+    print "\nmerge.db contains:"
+    print "=================="
     for key in merge_stats:
-        logger.info(u'{1} {0}.'.format(key, merge_stats[key]))
+        print u'{1} {0}.'.format(key, merge_stats[key])
 
     local_stats = db().get_local_statistics()
-    logger.info("\nlocal.db contains:")
-    logger.info("==================")
+    print "\nlocal.db contains:"
+    print "=================="
     for key in local_stats:
-        logger.info(u'{1} {0}.'.format(key, local_stats[key]))
+        print u'{1} {0}.'.format(key, local_stats[key])
 
 
 def do_add_friend(args, db):
     friend_name = args.friend_name
     db().add_friend(friend_name)
-    logger.info(u'Friend {} added'.format(friend_name))
+    print u'Friend {} added'.format(friend_name)
 
 
 def do_remove_friend(args, db):
@@ -58,18 +56,18 @@ def do_remove_friend(args, db):
 
     db().remove_friend(friend_id)
 
-    logger.info(u'Friend {} removed'.format(friend_name))
+    print u'Friend {} removed'.format(friend_name)
 
 
 def do_list_friends(args, db):
     friends = db().get_friends()
     for friend in friends:
-        logger.info(u"{}-3d {}-20s".format(friend['id'], friend['name']))
+        print "%-3d %-20s" % (friend['id'], friend['name'])
 
 
 def print_tome_details(tome_fields):
     title = pydb.title.coalesce_title(tome_fields['title'], tome_fields['subtitle'])
-    logger.info(title)
+    print title
     print "   " + "  ".join(
         ["%s: %s" % (k, v) for (k, v) in tome_fields.iteritems() if k != 'title' and k != 'subtitle' and v])
 
@@ -110,16 +108,16 @@ def do_service_fetch_updates(args, db):
 
     com_service = pydb.pyrosetup.comservice()
     job_id = com_service.fetch_updates(friend_id)
-    logger.info(u'Update started, job id is {}'.format(job_id))
+    print u'Update started, job id is {}'.format(job_id)
 
 
 def do_service_list_jobs(args, db):
     com_service = pydb.pyrosetup.comservice()
     number = com_service.get_number_of_running_jobs()
-    logger.info(u'{} jobs running'.format(number))
+    print u'{} jobs running'.format(number)
 
     job_infos = com_service.get_job_list()
-    logger.info("ID  Name                      Friend            Running  Current Phase    Progress")
+    print "ID  Name                      Friend            Running  Current Phase    Progress"
     for job_info in job_infos:
         job_id = job_info['id']
         friend = db().get_friend(job_info['friend_id'])
@@ -129,8 +127,8 @@ def do_service_list_jobs(args, db):
         if items_to_do >= 0:
             progress = u'{}/{}'.format(items_done, items_to_do)
 
-        logger.info(u'{:<3} {:<25} {:<17} {:<7} {:<16} {}'.format(job_id, job_info['name'], friend['name'],
-                    job_info['is_running'], job_info['current_phase'], progress))
+        print u'{:<3} {:<25} {:<17} {:<7} {:<16} {}'.format(job_id, job_info['name'], friend['name'],
+                                                           job_info['is_running'], job_info['current_phase'], progress)
 
 
 def do_service_cancel_job(args, db):
@@ -149,14 +147,14 @@ def do_import(args, db):
     with open(args.file_name) as import_file:
         author_docs = ijson.items(import_file, 'authors.item')
         for author_doc in author_docs:
-            logger.info(u"Author: {}".format(author_doc))
+            print "Author: ", author_doc
             # \todo do bulk insert
             db().load_author_documents_from_friend(friend_id, [author_doc])
 
     with open(args.file_name) as import_file:
         tome_docs = ijson.items(import_file, 'tomes.item')
         for tome_doc in tome_docs:
-            logger.info(u"Tome: {}".format(tome_doc))
+            print "Tome: ", tome_doc
             # \todo do bulk insert
             db().load_tome_documents_from_friend(friend_id, [tome_doc])
 
@@ -191,13 +189,13 @@ def do_import_self(args, db):
     with open(args.file_name) as import_file:
         author_docs = ijson.items(import_file, 'authors.item')
         for author_doc in author_docs:
-            logger.info(u"Author: {}".format(author_doc))
+            print "Author: ", author_doc
             db().load_own_author_document(author_doc)
 
     with open(args.file_name) as import_file:
         tome_docs = ijson.items(import_file, 'tomes.item')
         for tome_doc in tome_docs:
-            logger.info(u"Tome: ".format(tome_doc))
+            print "Tome: ", tome_doc
             db().load_own_tome_document(tome_doc)
 
 
@@ -215,15 +213,15 @@ def let_user_edit_document(doc, always_discard=False, detect_unchanged=True):
             with open(filename) as doc_file:
                 file_content = doc_file.read()
                 if always_discard or (file_content.strip() == text_content.strip() and detect_unchanged):
-                    logger.info("Document unchanged, aborting edit")
+                    print "Document unchanged, aborting edit"
                     return None
 
                 edited_doc = json.loads(file_content)
                 raw_input("Parsed successfully. Hit Enter to save, ctrl-c to abort... ")
-                logger.info("Saved.")
+                print "Saved."
                 return edited_doc
         except ValueError, e:
-            logger.info(u"Json error: {}".format(e))
+            print "Json error: ", e
             raw_input("Hit Enter to edit, ctrl-c to abort... ")
 
 
@@ -255,19 +253,19 @@ def do_merge_db_tome_update(args, db):
 def do_show_tome_debug_info(args, db):
     doc = db().get_debug_info_for_tome_by_guid(args.guid)
 
-    logger.info(u"{}".format(json.dumps(doc, indent=json_indent, separators=json_separators)))
+    print json.dumps(doc, indent=json_indent, separators=json_separators)
 
 
 def do_show_author_debug_info(args, db):
     doc = db().get_debug_info_for_author_by_guid(args.guid)
 
-    logger.info(u"{}".format(json.dumps(doc, indent=json_indent, separators=json_separators)))
+    print json.dumps(doc, indent=json_indent, separators=json_separators)
 
 
 def do_get_latest_tome_related_change(args, db):
     doc = db().get_latest_tome_related_change(args.guid)
 
-    logger.info(u"{}".format(json.dumps(doc, indent=json_indent, separators=json_separators)))
+    print json.dumps(doc, indent=json_indent, separators=json_separators)
 
 
 def do_export(args, db, outfile=sys.stdout):
@@ -331,7 +329,7 @@ def do_answer_file_list(args, db):
 
 def do_import_file_store(args, db):
     def insert_files(file_list):
-        logger.info(u'Inserting {} files'.format(len(file_list)))
+        print u'Inserting {} files'.format(len(file_list))
         result = pydb.pyrosetup.fileserver().add_files_from_local_disk(file_list)
         succeeded_imports = 0
         failed_imports = 0
@@ -340,7 +338,7 @@ def do_import_file_store(args, db):
                 succeeded_imports += 1
             else:
                 failed_imports += 1
-                logger.error(u'Error while importing {}'.format(fn))
+                print u'Error while importing {}'.format(fn)
         return succeeded_imports, failed_imports
 
     source_dir = os.path.abspath(args.source_directory)
@@ -354,7 +352,7 @@ def do_import_file_store(args, db):
     for root, sub_folders, files in os.walk(source_dir):
         files.sort()
         sub_folders.sort()
-        logger.info(u'Adding {} files from {}'.format(len(files), root))
+        print u'adding {} files from {}'.format(len(files), root)
         for filename in files:
             file_hash, extension = os.path.splitext(filename)
 
@@ -377,10 +375,10 @@ def do_import_file_store(args, db):
         success_imports += succeeded
         errors += failed
 
-    logger.info(u'Successfully imported {} files.'.format(success_imports))
+    print u'Successfully imported {} files.'.format(success_imports)
 
     if errors:
-        logger.error(u'There have been {} errors while importing.'.format(errors))
+        print u'There have been {} errors while importing.'.format(errors)
         return False
     return True
 

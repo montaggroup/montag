@@ -98,7 +98,7 @@ class TcpTransportProtocol(Protocol):
             len(self.chunks_to_transmit), len(self.queued_messages)))
         self.paused = False
         self._check_message_queue()
-        self.data_received()
+        self.dataReceived()
 
     # noinspection PyPep8Naming
     def stopProducing(self):
@@ -132,7 +132,7 @@ class TcpTransportProtocol(Protocol):
                 self.delay_active = True
                 reactor.callLater(chunk_delay, self._really_pump_message_queue)
         else:
-            self.data_received()
+            self.dataReceived()
 
     def send_message(self, msg):
         self.queued_messages.append(msg)
@@ -142,7 +142,7 @@ class TcpTransportProtocol(Protocol):
         logger.debug("TcpTransportProtocol closing connection: {}".format(msg))
         self.transport.loseConnection()
 
-    def connection_made(self):
+    def connectionMade(self):
         # register this class as a producer to allow the transport to tell us to pause
         self.transport.registerProducer(self, True)
 
@@ -151,7 +151,7 @@ class TcpTransportProtocol(Protocol):
 
         self.timeout = reactor.callLater(self.read_timeout, self.do_timeout)
 
-    def data_received(self, data=""):
+    def dataReceived(self, data=""):
         self.timeout.reset(self.read_timeout)
         self.data.extend(data)
         if self.max_data_length and len(self.data) > self.max_data_length:
@@ -181,9 +181,9 @@ class TcpTransportProtocol(Protocol):
                 self.state = WaitingForLength
                 msg = str(msg)
                 self.upper_layer.message_received(msg)
-                reactor.callLater(0, self.data_received)
+                reactor.callLater(0, self.dataReceived)
 
-    def connection_lost(self, reason):
+    def connectionLost(self, reason):
         self.upper_layer.transport_channel_lost(reason)
 
 

@@ -220,7 +220,7 @@ def upload_cover():
         f = request.vars.file
         is_dropzone = False
 
-        if isinstance(f, list):  # drop zone uploads result in lists
+        if isinstance(f, list):  # dropzone uploads result in lists
             f = f[1]
             is_dropzone = True
 

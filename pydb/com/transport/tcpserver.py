@@ -10,7 +10,7 @@ class TcpServer(Factory):
         self.comservice = comservice
 
     # noinspection PyUnusedLocal
-    def build_protocol(self, address):
+    def buildProtocol(self, address):
         upper_layer = self.stack_build_function()
         lowest_layer = build_tcp_transport_protocol(upper_layer, self.comservice,
                                                     self.upload_rate_limit_kbytes_per_second, address.host)
