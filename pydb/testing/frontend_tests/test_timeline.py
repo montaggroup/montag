@@ -13,7 +13,7 @@ class TestTimeLine(unittest.TestCase):
     def tearDown(self):
         service_helpers.stop_services()
 
-    def test_empty_timeline_returns_empty_list_and_view_renders(self):
+    def test_empty_timeline_returns_list_and_view_renders(self):
         res = self.timeline.execute()
         self.assertIn('tome_info', res)
 
