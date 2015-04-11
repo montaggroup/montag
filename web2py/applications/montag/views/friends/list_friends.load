@@ -1,3 +1,4 @@
+{{from pydb_helpers import pydb_functions}}
 {{ include 'default/snippets.html' }}
 <table class="friends">
     <tr>
@@ -32,7 +33,7 @@
         <tr>
             <td></td>
             <td class="job_info" colspan=3>{{ =html_helpers.human_readable_time_elapsed_since(job_info['start_time']) }}:
-                {{ = format_job_status(job_info) }}
+                {{ = pydb_functions.format_job_status(job_info) }}
         {{pass}}
     </tr>
     {{pass}}

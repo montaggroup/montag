@@ -1,3 +1,4 @@
+{{from pydb_helpers import pydb_functions}}
 {{extend 'layout.html'}}
 <table class="jobs">
     <tr>
@@ -23,7 +24,7 @@
         <td>{{ =job_info['name'] }} </td>
         <td>{{ =job_info['friend_name'] }} </td>
         <td>{{ =job_info['is_running'] }} </td>
-        <td>{{ =format_job_status(job_info) }}</td>
+        <td>{{ =pydb_functions.format_job_status(job_info) }}</td>
         <td>{{ if job_info['is_running']:
                     =A("Cancel", _class='button', _href=URL('cancel_job', args=[job_info['id']] ))
             else:
