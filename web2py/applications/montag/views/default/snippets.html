@@ -70,7 +70,7 @@ jQuery(document).ready(function(){
 {{return}}
 
 {{def _show_tome_edition_line(tome):
-    edition_info_line = string_or_empty(tome['edition']) + " " + string_or_empty(tome['publication_year'])
+    edition_info_line = html_helpers.string_or_empty(tome['edition']) + " " + html_helpers.string_or_empty(tome['publication_year'])
     edition_info_line = edition_info_line.strip()
     if edition_info_line: }}
         <span>

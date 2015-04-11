@@ -1,5 +1,6 @@
 {{
 import pydbhelpers
+import html_helpers
 }}
 
 {{ def print_check_results(dbname, problems):
@@ -47,7 +48,7 @@ for heading in headings: }}
             {{elif 'last_modification_date' in heading: }}
                {{=html_helpers.human_readable_time(item[heading])}}
             {{ else: }}
-                {{=string_or_empty(item[heading])}}
+                {{=html_helpers.string_or_empty(item[heading])}}
             {{ pass }}
         </td>
         {{pass}}

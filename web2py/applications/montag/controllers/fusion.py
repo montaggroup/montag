@@ -1,6 +1,6 @@
 # coding: utf8
 if False:
-    from web2py.applications.montag.models.ide_fake import *
+    from pydb_helpers.ide_fake import *
 
 from pydb_helpers.pydb_functions import db_str_to_form, read_form_field
 from pydb_helpers import search_forms

@@ -1,8 +1,9 @@
 # coding: utf8
 if False:
-    from web2py.applications.montag.models.ide_fake import *
+    from pydb_helpers.ide_fake import *
 
 import re
+
 from pydb_helpers import html_helpers
 from pydb import title
 

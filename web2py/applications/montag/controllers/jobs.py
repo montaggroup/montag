@@ -1,6 +1,6 @@
 # coding: utf8
 if False:
-    from web2py.applications.montag.models.ide_fake import *
+    from pydb_helpers.ide_fake import *
 
 from pydb import pyrosetup
 from pydb_helpers.pydb_functions import progress_text

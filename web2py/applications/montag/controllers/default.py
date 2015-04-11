@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 if False:
-    from web2py.applications.montag.models.ide_fake import *
+    from pydb_helpers.ide_fake import *
 
 import os
 import subprocess

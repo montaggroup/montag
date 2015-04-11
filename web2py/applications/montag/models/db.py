@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 if False:
-    from ide_fake import *
+    from pydb_helpers.ide_fake import *
 
 #########################################################################
 ## This scaffolding model makes your app work on Google App Engine too
