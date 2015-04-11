@@ -10,13 +10,6 @@ Tome not found in database.
         </span><br>
         {{show_tome_edition_tags_block(tome)}}
 
-
-        <span class="synopsis">
-        {{ =short_synopsis(tome, best_synopsis) }} <br>
-        </span>
-    {{pass}}
-
-
     {{relevant_synopses = list(network_params.relevant_items(tome['synopses']))
     if relevant_synopses:
         best_synopsis = sorted(relevant_synopses, key=itemgetter('fidelity'), reverse=True)[0] }}
