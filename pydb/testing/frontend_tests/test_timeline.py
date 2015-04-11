@@ -22,7 +22,7 @@ class TestTimeLine(unittest.TestCase):
         self.assertIn('tome_info', res)
 
         html = self.timeline.render_result()
-        self.assertIn('Timeline ', html)
+        self.assertIn('Timeline', html)
 
     def test_timeline_with_a_tome_having_a_file_returns_list_and_view_renders(self):
 
@@ -42,7 +42,7 @@ class TestTimeLine(unittest.TestCase):
         self.assertGreaterEqual(len(tome_info), 1)
 
         html = self.timeline.render_result()
-        self.assertIn('Timeline ', html)
+        self.assertIn('Timeline', html)
 
     def test_timeline_with_a_tome_having_two_tags_returns_list_and_view_renders(self):
         author_id = self.pdb.add_author('tagmaster')

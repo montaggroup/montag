@@ -1,3 +1,4 @@
+{{from pydb_helpers import pydb_functions}}
 {{extend 'layout.html'}}
 {{ include 'default/snippets.html' }}
 {{ if tome is None: }}
@@ -19,11 +20,10 @@ Tome not found in database.
     {{pass}}
     </div>
 
-
     {{ if pydb.config.enable_covers(): }}
         <div class='tome_cover_container'>
             
-        {{ if has_cover(pdb, tome['id']): }}
+        {{ if pydb_functions.has_cover(pdb, tome['id']): }}
         <div class='large_cover'>
             <img src="{{=URL( 'covers', 'get_best_cover', args=[tome['id']]) }}" alt="Large Cover" />
         </div>

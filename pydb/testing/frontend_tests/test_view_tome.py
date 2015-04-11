@@ -45,7 +45,7 @@ class TestViewTome(unittest.TestCase):
         self.assertEqual(result_author['detail']['name'], 'viewmaster')
 
         html = self.view_tome.render_result()
-        self.assertIn('viewmaster ', html)
+        self.assertIn('viewmaster', html)
 
 if __name__ == '__main__':
     unittest.main()
