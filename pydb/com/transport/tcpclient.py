@@ -54,7 +54,7 @@ class ProtocolFactory(Factory):
 
     # noinspection PyUnusedLocal
     def buildProtocol(self, address):
-        host = addr.host
+        host = address.host
         return build_tcp_transport_protocol(self.upper_layer, self.comservice, self.target_bytes_per_second,
                                             address.host)
 
