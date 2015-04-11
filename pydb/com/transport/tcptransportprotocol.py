@@ -54,6 +54,9 @@ def build_tcp_transport_protocol(upper_layer, com_server, target_bytes_per_secon
 
 
 class TcpTransportProtocol(Protocol):
+    """
+    note: some of the methods names here are not PEP8 as we are overwriting twisted methods
+    """
     def __init__(self, upper_layer, comservice, target_bytes_per_second):
         self.upper_layer = upper_layer
         self.data = bytearray()
