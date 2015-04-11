@@ -41,7 +41,7 @@ for heading in headings: }}
                     {{=A('Merge', _href=URL('fusion','select_author_merge_partner', args=item[heading]))}}
                 {{ pass }}
             {{elif 'last_modification_date' in heading: }}
-               {{=human_readble_time(item[heading])}}
+               {{=html_helpers.human_readable_time(item[heading])}}
             {{ else: }}
                 {{=string_or_empty(item[heading])}}
             {{ pass }}

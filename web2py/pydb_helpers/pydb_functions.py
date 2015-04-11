@@ -3,10 +3,7 @@ if False:
     from web2py.applications.montag.models.ide_fake import *
 
 import copy
-import html_helpers
-
-cfg_tags_minimum_display_fidelity = 20.0
-
+from pydb_helpers import html_helpers
 
 def db_str_to_form(a_string):
     if a_string is None:
@@ -74,7 +71,4 @@ def friend_name(friend_id):
 
     return _friend_name_cache[friend_id]
 
-
-def get_used_languages():
-    return pdb.get_used_languages()
 

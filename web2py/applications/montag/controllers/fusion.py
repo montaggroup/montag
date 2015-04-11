@@ -2,9 +2,9 @@
 if False:
     from web2py.applications.montag.models.ide_fake import *
 
-from web2py.applications.montag.modules.pydb_functions import db_str_to_form
-from web2py.applications.montag.modules.web2py_helpers import read_form_field
-from web2py.applications.montag.modules import search_forms
+from pydb_helpers.pydb_functions import db_str_to_form
+from pydb_helpers.web2py_helpers import read_form_field
+from pydb_helpers import search_forms
 from pydb import network_params
 
 

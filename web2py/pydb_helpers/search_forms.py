@@ -3,6 +3,8 @@ if False:
 
 import pydb
 import pydb.pyrosetup
+from gluon import *
+
 
 SEARCH_ITEMS_PER_PAGE = 20
 
@@ -38,8 +40,8 @@ def build_search_query(form):
     return generated_query
 
 
-def build_search_form():
-    lang_list = get_used_languages()
+def build_search_form(pdb):
+    lang_list = pdb.get_used_languages()
     lang_dict = {lang: lang for lang in lang_list}
     lang_dict[""] = "don't care"
     form = SQLFORM.factory(

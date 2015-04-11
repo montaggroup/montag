@@ -3,7 +3,7 @@ if False:
     from web2py.applications.montag.models.ide_fake import *
 
 from pydb import pyrosetup
-from web2py.applications.montag.modules.pydb_functions import progress_text
+from pydb_helpers.pydb_functions import progress_text
 
 
 def _friend_name(friend_id):

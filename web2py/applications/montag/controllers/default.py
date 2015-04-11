@@ -14,10 +14,10 @@ from pydb import title
 from pydb import pyrosetup
 from pydb import ebook_metadata_tools
 from pydb import network_params
-from web2py.applications.montag.modules.pydb_functions import db_str_to_form
-from web2py.applications.montag.modules.web2py_helpers import read_form_field, TOOLTIP
-from web2py.applications.montag.modules.html_helpers import generate_download_filename
-from web2py.applications.montag.modules import search_forms
+from pydb_helpers.pydb_functions import db_str_to_form
+from pydb_helpers import web2py_helpers
+from pydb_helpers.html_helpers import generate_download_filename
+from pydb_helpers import search_forms
 
 
 @auth.requires_login()
@@ -300,7 +300,7 @@ def edit_author():
     if form.process(keepvalues=True, session=None).accepted:
         field_names = ['name', 'date_of_birth', 'date_of_death', 'fidelity']
         for f in field_names:
-            author_doc[f] = read_form_field(form, f)
+            author_doc[f] = web2py_helpers.read_form_field(form, f)
 
         pdb.load_own_author_document(author_doc)
         author_doc = pdb.get_author_document_by_guid(author_guid, keep_id=True)
@@ -318,10 +318,10 @@ def _is_tome_or_author_guid(string):
 @auth.requires_login()
 def tomesearch():
     retval = {}
-    form = search_forms.build_search_form()
+    form = search_forms.build_search_form(pdb)
 
     if form.validate(formname='search', session=None, request_vars=request.vars, message_onsuccess='', keepvalues=True):
-        query = read_form_field(form, 'query').strip()
+        query = web2py_helpers.read_form_field(form, 'query').strip()
         if _is_tome_or_author_guid(query):
             tome = pdb.get_tome_by_guid(query)
             if tome is not None:
@@ -340,7 +340,7 @@ def tomesearch():
         search_forms.pass_paged_query_results_to_view(search_query, retval, page_number)
 
     retval['form'] = form
-    retval['query'] = read_form_field(form, 'query')
+    retval['query'] = web2py_helpers.read_form_field(form, 'query')
     retval['request'] = request
         
     return retval
@@ -442,7 +442,7 @@ def _edit_tome(tome_doc):
                     tome_doc['synopses'].append(synopsis_to_edit)
     
                 for sf in syn_field_names:
-                    synopsis_to_edit[sf] = read_form_field(synform, sf)
+                    synopsis_to_edit[sf] = web2py_helpers.read_form_field(synform, sf)
                 pdb.load_own_tome_document(tome_doc)
                 redirect(URL('edit_tome', args=(tome_doc['guid']), anchor='synopses'))
 
@@ -451,7 +451,7 @@ def _edit_tome(tome_doc):
     
     if form.process(session=None, formname='edit_tome', keepvalues=True).accepted:
         for f in field_names:
-            tome_doc[f] = read_form_field(form, f)
+            tome_doc[f] = web2py_helpers.read_form_field(form, f)
         if 'authors' not in tome_doc:
             tome_doc['authors'] = []
         if 'files' not in tome_doc:
@@ -495,7 +495,7 @@ def edit_tome_file_link():
         tome_file_doc = filter(lambda x: x['hash'] == file_hash, doc['files'])[0]
 
         for f in field_names:
-            tome_file_doc[f] = read_form_field(form, f)
+            tome_file_doc[f] = web2py_helpers.read_form_field(form, f)
 
         other_files.append(tome_file_doc)
         doc['files'] = other_files
@@ -523,9 +523,9 @@ def link_tome_to_file():
     
     if form.process(keepvalues=True).accepted:
     
-        file_hash = read_form_field(form, 'hash')
-        file_extension = read_form_field(form, 'file_extension')
-        fidelity = read_form_field(form, 'fidelity')
+        file_hash = web2py_helpers.read_form_field(form, 'hash')
+        file_extension = web2py_helpers.read_form_field(form, 'file_extension')
+        fidelity = web2py_helpers.read_form_field(form, 'fidelity')
         
         local_file_size = pyrosetup.fileserver().get_local_file_size(file_hash)
         
@@ -571,7 +571,7 @@ def edit_tome_author_link():
         tome_author_doc = filter(lambda x: x['guid'] == author_guid, doc['authors'])[0]
 
         for f in ('order', 'fidelity'):
-            tome_author_doc[f] = read_form_field(form, f)
+            tome_author_doc[f] = web2py_helpers.read_form_field(form, f)
 
         other_authors.append(tome_author_doc)
         doc['authors'] = other_authors
@@ -609,9 +609,9 @@ def link_tome_to_author():
 
     if form.process(keepvalues=True).accepted:
 
-        author_name = read_form_field(form, 'author_name')
-        fidelity = read_form_field(form, 'fidelity')
-        author_order = float(read_form_field(form, 'order'))
+        author_name = web2py_helpers.read_form_field(form, 'author_name')
+        fidelity = web2py_helpers.read_form_field(form, 'fidelity')
+        author_order = float(web2py_helpers.read_form_field(form, 'order'))
 
         author_ids = pdb.find_or_create_authors([author_name], fidelity)
         author_id = author_ids[0]

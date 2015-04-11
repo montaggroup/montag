@@ -3,9 +3,10 @@ if False:
     from web2py.applications.montag.models.ide_fake import *
 
 import Pyro4.errors
+
 from pydb import pyrosetup
-from web2py.applications.montag.modules.pydb_functions import db_str_to_form, add_job_infos_to_friends_dict
-from web2py.applications.montag.modules.web2py_helpers import read_form_field, TOOLTIP
+from pydb_helpers.pydb_functions import db_str_to_form, add_job_infos_to_friends_dict
+from pydb_helpers.web2py_helpers import read_form_field
 
 
 @auth.requires_login()
