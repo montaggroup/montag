@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 if False:
-    from ide_fake import *
+    from pydb_helpers.ide_fake import *
 
 #########################################################################
 ## This scaffolding model makes your app work on Google App Engine too
@@ -10,8 +10,6 @@ if False:
 ## if SSL/HTTPS is properly configured and you want all HTTP requests to
 ## be redirected to HTTPS, uncomment the line below:
 # request.requires_https()
-
-
 
 db = DAL('sqlite://storage.sqlite')
 
@@ -34,13 +32,16 @@ response.generic_patterns = ['*'] if request.is_local else []
 
 
 class NoAuth():
+    def __init__(self):
+        pass
+
     def requires_login(self):
         def inner(func):
             return func
         return inner
 
 
-from gluon.tools import Auth, Crud, Service, PluginManager, prettydate
+from gluon.tools import Auth, Crud, Service, PluginManager
 import pydb.config
 
 if pydb.config.enable_web_auth():
@@ -52,35 +53,3 @@ else:
     auth = NoAuth()
 
 crud, service, plugins = Crud(db), Service(), PluginManager()
-
-## create all tables needed by auth if not custom tables
-
-
-## configure email
-# mail=auth.settings.mailer
-#mail.settings.server = 'logging' or 'smtp.gmail.com:587'
-#mail.settings.sender = 'you@gmail.com'
-#mail.settings.login = 'username:password'
-
-## configure auth policy
-
-#auth.settings.registration_requires_verification = False
-#auth.settings.registration_requires_approval = False
-
-
-#########################################################################
-## Define your tables below (or better in another model file) for example
-##
-## >>> db.define_table('mytable',Field('myfield','string'))
-##
-## Fields can be 'string','text','password','integer','double','boolean'
-##       'date','time','datetime','blob','upload', 'reference TABLENAME'
-## There is an implicit 'id integer autoincrement' field
-## Consult manual for more options, validators, etc.
-##
-## More API examples for controllers:
-##
-## >>> db.mytable.insert(myfield='value')
-## >>> rows=db(db.mytable.myfield=='value').select(db.mytable.ALL)
-## >>> for row in rows: print row.id, row.myfield
-#########################################################################

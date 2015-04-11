@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 if False:
-    from ide_fake import *
+    from pydb_helpers.ide_fake import *
 
 
 response.title = ' '.join(word.capitalize() for word in request.application.split('_'))
@@ -29,4 +29,4 @@ response.menu = [
     ]
 
 if pydb.config.enable_web_auth():
-    response.menu.append((T('Logout'), False,URL('default', 'user',args='logout'), []))
+    response.menu.append((T('Logout'), False, URL('default', 'user', args='logout'), []))

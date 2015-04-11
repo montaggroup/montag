@@ -1,31 +1,6 @@
 # coding: utf8
-if False:
-    from ide_fake import *
-
-import Pyro4
-import os
-import sys
 import copy
-
-web2py_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)))
-pydb_dir = web2py_dir
-for i in range(0, 4):
-    pydb_dir, _ = os.path.split(pydb_dir)
-
-if not pydb_dir in sys.path:
-    sys.path.append(pydb_dir)
-
-import pydb
-import pydb.network_params
-from pydb.network_params import is_relevant, relevant_items
-import pydb.title
-import pydb.config
-import pydb.pyrosetup
-
-sys.excepthook = Pyro4.util.excepthook
-pdb = pydb.pyrosetup.pydbserver()
-
-cfg_tags_minimum_display_fidelity = 20.0
+from pydb_helpers import html_helpers
 
 
 def db_str_to_form(a_string):
@@ -34,7 +9,14 @@ def db_str_to_form(a_string):
     return unicode(a_string).encode('utf-8')
 
 
-def has_cover(tome_id):
+def read_form_field(form, fieldname):
+    val = form.vars[fieldname]
+    if isinstance(val, str):
+        val = val.decode('utf-8')
+    return val
+
+
+def has_cover(pdb, tome_id):
     tome_file = pdb.get_best_relevant_cover_available(tome_id)
     return tome_file is not None
 
@@ -80,12 +62,9 @@ def progress_text(com_service, job_id, current_phase):
 def format_job_status(job_info):
     job_status = "completed" if not job_info['is_running'] else ""
     if job_info['current_phase'] != 'completed':
-        job_status += " " + nice_name(job_info['current_phase'])
+        job_status += " " + html_helpers.nice_name(job_info['current_phase'])
     job_status += " "+job_info['progress']
     return job_status
-
-
-response.breadcrumb_bar = request.function.replace('_', ' ').title()
 
 _friend_name_cache = {0: 'You'}
 
@@ -97,7 +76,4 @@ def friend_name(friend_id):
 
     return _friend_name_cache[friend_id]
 
-
-def get_used_languages():
-    return pdb.get_used_languages()
 

@@ -1,11 +1,16 @@
-{{ def print_check_results(dbname, problems): 
+{{
+import pydbhelpers
+import html_helpers
+}}
+
+{{ def print_check_results(dbname, problems):
 errors = 0
 }}
-<h1 class="first_on_page"> {{=nice_name(dbname)}} </h1>
+<h1 class="first_on_page"> {{=pydb_helpers.nice_name(dbname)}} </h1>
 {{ for category, items in problems.iteritems(): }}
 {{if items: }}
 
-<h2 onclick="jQuery('#checkTb_{{=category}}').slideToggle(100)"> {{=len(items)}} {{=nice_name_lcfirst(category)}}  </h2>
+<h2 onclick="jQuery('#checkTb_{{=category}}').slideToggle(100)"> {{=len(items)}} {{=pydb_helpers.nice_name_lcfirst(category)}}  </h2>
 <table class='checkResult' id='checkTb_{{=category}}'>
 <tr>
 {{
@@ -23,7 +28,7 @@ if 'last_modification_date' in headings:
     headings.remove('last_modification_date')
 pass
 for heading in headings: }}
-    <th>{{=nice_name(heading)}}</th>
+    <th>{{=pydb_helpers.nice_name(heading)}}</th>
     {{pass}}
 </tr>
    
@@ -41,9 +46,9 @@ for heading in headings: }}
                     {{=A('Merge', _href=URL('fusion','select_author_merge_partner', args=item[heading]))}}
                 {{ pass }}
             {{elif 'last_modification_date' in heading: }}
-               {{=human_readble_time(item[heading])}}
+               {{=html_helpers.human_readable_time(item[heading])}}
             {{ else: }}
-                {{=string_or_empty(item[heading])}}
+                {{=html_helpers.string_or_empty(item[heading])}}
             {{ pass }}
         </td>
         {{pass}}

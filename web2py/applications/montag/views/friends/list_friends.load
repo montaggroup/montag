@@ -1,3 +1,4 @@
+{{from pydb_helpers import pydb_functions}}
 {{ include 'default/snippets.html' }}
 <table class="friends">
     <tr>
@@ -21,8 +22,8 @@
         {{ if is_secure_channel(request): }}
             <td>{{ if not is_locked: }}{{ =A("Edit", _class='edit', _href=URL( 'edit_friend.html',args=[friend['id']] )) }}{{pass}}</td>
         {{pass}}
-        <td>{{ =human_readble_time_elapsed_since(update_info[0]) }} </td>
-        <td>{{ =human_readble_time_elapsed_since(update_info[1]) }}</td>
+        <td>{{ =html_helpers.human_readable_time_elapsed_since(update_info[0]) }} </td>
+        <td>{{ =html_helpers.human_readable_time_elapsed_since(update_info[1]) }}</td>
   
         <td>{{ if not is_locked: }}{{ =A("Update", _class='button', _href=URL('fetch_updates',args=[friend['id']] )) }}{{pass}}</td>
     
@@ -31,8 +32,8 @@
     
         <tr>
             <td></td>
-            <td class="job_info" colspan=3>{{ =human_readble_time_elapsed_since(job_info['start_time']) }}:
-                {{ = format_job_status(job_info) }}
+            <td class="job_info" colspan=3>{{ =html_helpers.human_readable_time_elapsed_since(job_info['start_time']) }}:
+                {{ = pydb_functions.format_job_status(job_info) }}
         {{pass}}
     </tr>
     {{pass}}

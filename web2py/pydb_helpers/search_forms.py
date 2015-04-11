@@ -1,19 +1,18 @@
-if False:
-    from ide_fake import *
-
 import pydb
 import pydb.pyrosetup
+from gluon import *
+
 
 SEARCH_ITEMS_PER_PAGE = 20
 
 
-def pass_paged_query_results_to_view(query, view_dict, page_number):
+def pass_paged_query_results_to_view(pdb, query, view_dict, page_number):
     items_per_page = SEARCH_ITEMS_PER_PAGE
 
     page_start = page_number * items_per_page
     page_end = (page_number+1) * items_per_page
 
-    total_count, tomes = get_query_page(query, page_start, page_end)
+    total_count, tomes = get_query_page(pdb, query, page_start, page_end)
 
     page_end = page_start + len(tomes)
     view_dict['page'] = page_number
@@ -38,8 +37,8 @@ def build_search_query(form):
     return generated_query
 
 
-def build_search_form():
-    lang_list = get_used_languages()
+def build_search_form(pdb):
+    lang_list = pdb.get_used_languages()
     lang_dict = {lang: lang for lang in lang_list}
     lang_dict[""] = "don't care"
     form = SQLFORM.factory(
@@ -56,7 +55,7 @@ def build_search_form():
     return form
 
 
-def get_query_page(query, start_offset, end_offset):
+def get_query_page(pdb, query, start_offset, end_offset):
     index_server = pydb.pyrosetup.indexserver()
     result_tome_ids = index_server.search_tomes(query)
 
@@ -77,7 +76,23 @@ def get_query_page(query, start_offset, end_offset):
     return len(result_tome_ids), tomelist
 
 
-def get_author_query_page(query, start_offset, end_offset):
+def pass_paged_author_query_results_to_view(pdb, query, view_dict, page_number):
+    items_per_page = SEARCH_ITEMS_PER_PAGE
+
+    page_start = page_number * items_per_page
+    page_end = (page_number+1) * items_per_page
+
+    total_count, authors = get_author_query_page(pdb, query, page_start, page_end)
+
+    page_end = page_start+len(authors)
+    view_dict['page'] = page_number
+    view_dict['page_start'] = page_start
+    view_dict['page_end'] = page_end
+    view_dict['number_results_total'] = total_count
+    view_dict['author_info'] = authors
+
+
+def get_author_query_page(pdb, query, start_offset, end_offset):
     result_authors = pdb.find_authors(query) + pdb.find_authors_with_same_name_key(query)
 
     name_without_wildcards = query.replace('%', '').lower()
@@ -101,19 +116,3 @@ def get_author_query_page(query, start_offset, end_offset):
 
     authors_slice = authors[start_offset:end_offset]
     return len(authors), authors_slice
-
-
-def pass_paged_author_query_results_to_view(query, view_dict, page_number):
-    items_per_page = SEARCH_ITEMS_PER_PAGE
-
-    page_start = page_number * items_per_page
-    page_end = (page_number+1) * items_per_page
-
-    total_count, authors = get_author_query_page(query, page_start, page_end)
-
-    page_end = page_start+len(authors)
-    view_dict['page'] = page_number
-    view_dict['page_start'] = page_start
-    view_dict['page_end'] = page_end
-    view_dict['number_results_total'] = total_count
-    view_dict['author_info'] = authors

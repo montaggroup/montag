@@ -1,6 +1,11 @@
-{{ from pydb import FileType }}
-{{ tome_block_id=1 }}
-{{ tome_synopsis_id=1 }}
+{{
+from pydb import FileType
+from pydb_helpers import html_helpers
+from pydb import network_params
+
+}}
+{{ tome_block_id = 1 }}
+{{ tome_synopsis_id = 1 }}
 {{ def next_tome_block_id(): 
     global tome_block_id
     tome_block_id+=1
@@ -8,13 +13,13 @@
 }}
 {{ def next_tome_synopsis_id(): 
     global tome_synopsis_id
-    tome_synopsis_id+=1
+    tome_synopsis_id += 1
     return tome_synopsis_id-1
 }}
 {{ from operator import itemgetter }}
 {{
 def show_file_operation_links(tome, file):
-    =A(generate_download_filename(tome, file), _href=URL( 'default', 'getfile',args=[tome['id'],file['hash']]))
+    =A(html_helpers.generate_download_filename(tome, file), _href=URL( 'default', 'getfile',args=[tome['id'],file['hash']]))
     if pydb.config.has_ebook_convert():
         =' '
         =A('MOBI', _href=URL( 'default', 'getfile_as_mobi',args=[tome['id'],file['hash']] ))
@@ -33,7 +38,7 @@ pass
 {{def show_tome_file_block(tome, show_edit_button=True):}}
     <ul class="files" id="tome_file_block_{{=next_tome_block_id()}}" >
       {{
-        relevant_files = filter(lambda f: f['file_type']==pydb.FileType.Content and is_relevant(f), tome['files'])
+        relevant_files = filter(lambda f: f['file_type']==pydb.FileType.Content and network_params.is_relevant(f), tome['files'])
         for file in relevant_files:}}
       <li> 
       {{if 'has_local_copy' in file and file['has_local_copy']:
@@ -67,7 +72,7 @@ jQuery(document).ready(function(){
 {{return}}
 
 {{def _show_tome_edition_line(tome):
-    edition_info_line = string_or_empty(tome['edition'])+" "+string_or_empty(tome['publication_year'])
+    edition_info_line = html_helpers.string_or_empty(tome['edition']) + " " + html_helpers.string_or_empty(tome['publication_year'])
     edition_info_line = edition_info_line.strip()
     if edition_info_line: }}
         <span>
@@ -123,16 +128,15 @@ jQuery(document).ready(function(){
 
     {{show_tome_edition_tags_block(tome)}}
 
-    {{ if tome['synopses']: }}
-        {{ relevant_synopsis = sorted(tome['synopses'], key=itemgetter('fidelity'), reverse=True)[0] }}
+    {{relevant_synopses = list(network_params.relevant_items(tome['synopses']))
+    if relevant_synopses:
+        best_synopsis = sorted(relevant_synopses, key=itemgetter('fidelity'), reverse=True)[0] }}
         <span class="synopsis">
-        {{ if relevant_synopsis and relevant_synopsis['fidelity'] > cfg_tags_minimum_display_fidelity :}} 
-            {{ =short_synopsis(tome, relevant_synopsis) }} <br>
-        {{pass}} 
+        {{ =short_synopsis(tome, best_synopsis) }} <br>
         </span>
     {{pass}}
 
-    {{ relevant_files = filter(lambda f: f['file_type']==FileType.Content and is_relevant(f), tome['files'])}}
+    {{ relevant_files = filter(lambda f: f['file_type']==FileType.Content and network_params.is_relevant(f), tome['files'])}}
     {{if relevant_files: }}
         <span class='hide_show_button unselectable' onclick="jQuery('#tome_file_block_{{=tome_block_id}}').slideToggle(100)" > Show {{=len(relevant_files)}} File{{='' if len(relevant_files)==1 else 's'}} </span>
         <div class="clearfix"></div>

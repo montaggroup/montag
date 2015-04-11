@@ -1,10 +1,10 @@
 # coding: utf8
 if False:
-    from ide_fake import *
+    from pydb_helpers.ide_fake import *
 
+from pydb_helpers.pydb_functions import db_str_to_form
+from pydb import network_params
 
-if False:
-    from web2py.applications.montag.models.ide_fake import *
 
 class TagValidator:
     def __init__(self, format="a", error_message="b"):
@@ -18,7 +18,7 @@ class TagValidator:
         for line_index, line in enumerate(field_value.split("\n")):
             line = line.strip()
             if line:
-                fidelity = pydb.network_params.Default_Manual_Fidelity
+                fidelity = network_params.Default_Manual_Fidelity
                 value = line
                 if " " in line:
                     (fidelity_string, value_string) = line.split(" ", 1)

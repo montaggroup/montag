@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 if False:
-    from web2py.applications.montag.models.ide_fake import *
+    from pydb_helpers.ide_fake import *
 
 import os
 import subprocess
@@ -10,10 +10,13 @@ import json
 import re
 
 from pydb import FileType, TomeType
-import pydb.title
-import pydb.ebook_metadata_tools
-import pydb.pyrosetup
-import pydb.network_params
+from pydb import title
+from pydb import pyrosetup
+from pydb import ebook_metadata_tools
+from pydb import network_params
+from pydb_helpers.pydb_functions import db_str_to_form, read_form_field
+from pydb_helpers.html_helpers import generate_download_filename
+from pydb_helpers import search_forms
 
 
 @auth.requires_login()
@@ -23,7 +26,7 @@ def getfile():
 
     tome_file = pdb.get_tome_file(tome_id, file_hash)
 
-    fp = pydb.pyrosetup.fileserver().get_local_file_path(file_hash)
+    fp = pyrosetup.fileserver().get_local_file_path(file_hash)
     plain_file = open(fp, "rb")
 
     return _stream_tome_file(tome_id, tome_file, plain_file)
@@ -42,6 +45,7 @@ def getfile_as_epub():
     file_hash = request.args[1]
     return _get_converted_file(tome_id, file_hash, 'epub')
 
+
 @auth.requires_login()
 def getfile_as_pdf():
     tome_id = request.args[0]
@@ -52,15 +56,13 @@ def getfile_as_pdf():
 def _get_converted_file(tome_id, file_hash, target_extension):
     """ requires a calibre installation
     """
-    tome_id = request.args[0]
-    file_hash = request.args[1]
     session.forget(response)
 
     tome_file = pdb.get_tome_file(tome_id, file_hash)
     extension = tome_file['file_extension']
 
-    fp = pydb.pyrosetup.fileserver().get_local_file_path(file_hash)
-    with open(fp,"rb") as source_file:
+    fp = pyrosetup.fileserver().get_local_file_path(file_hash)
+    with open(fp, "rb") as source_file:
         if extension == target_extension:
             return _stream_tome_file(tome_id, tome_file, source_file)
         else:
@@ -78,7 +80,7 @@ def _convert_ebook(contents, source_extension, target_extension):
     # write into a temp file as to prevent ebook_convert from accessing the file store directly
     # this way we are sure that the file has the correct extension
     fd_orig, path_orig = tempfile.mkstemp('.' + source_extension)
-    with os.fdopen(fd_orig,'wb') as orig_file:
+    with os.fdopen(fd_orig, 'wb') as orig_file:
         orig_file.write(contents)
 
     fd_target, path_converted = tempfile.mkstemp('.'+target_extension)
@@ -102,7 +104,7 @@ def _stream_tome_file(tome_id, tome_file, contents_stream):
     author_docs = [pdb.get_author_document_by_guid(author['guid']) for author in tome_doc['authors']]
 
     enriched_file = cStringIO.StringIO()
-    added = pydb.ebook_metadata_tools.add_plain_metadata(contents_stream, tome_file, enriched_file, author_docs, tome_doc)
+    added = ebook_metadata_tools.add_plain_metadata(contents_stream, tome_file, enriched_file, author_docs, tome_doc)
     if not added:  # use the file stream just as was passed, no metadata could be added.
         enriched_file = cStringIO.StringIO(contents_stream.read())
 
@@ -112,7 +114,8 @@ def _stream_tome_file(tome_id, tome_file, contents_stream):
 
     filename = generate_download_filename(tome, tome_file)
     
-    # \note: the kindle paperwhite only accepts our download if we stream it in chucks and omit the content-length header 
+    # \note: the kindle paperwhite only accepts our download
+    # if we stream it in chucks and omit the content-length header
     response.headers['Content-Type'] = 'application/octet-stream'
     response.headers['Content-Length'] = file_size
     response.headers['Content-Disposition'] = u'attachment;filename="{}"'.format(filename).encode('utf-8')
@@ -130,10 +133,10 @@ def get_cover():
     
     file_hash = tome_file['hash']
     
-    fp = pydb.pyrosetup.fileserver().get_local_file_path(file_hash)
+    fp = pyrosetup.fileserver().get_local_file_path(file_hash)
     if fp is None:
         return
-    plain_file = open(fp,"rb")
+    plain_file = open(fp, "rb")
 
     # \todo determine mime type and other image params
     # response.headers['Content-Type'] = 'image/jpeg'
@@ -205,7 +208,7 @@ def view_author():
     if author is None:
         author_guid = pdb.get_author_fusion_target_guid(author_guid)
         if author_guid:
-            redirect(URL('view_author', args=(author_guid)))
+            redirect(URL('view_author', args=author_guid))
         
     tomes = pdb.get_tomes_by_author(author['id'])
     tomes.sort(key=lambda x: x['title'])
@@ -214,7 +217,7 @@ def view_author():
 
     tomelist = []
     for tome in tomes:
-        if tome['author_link_fidelity'] >= pydb.network_params.Min_Relevant_Fidelity:
+        if tome['author_link_fidelity'] >= network_params.Min_Relevant_Fidelity:
             tome = pdb.get_tome_document_by_guid(tome['guid'], keep_id=True,
                                                  include_local_file_info=True, include_author_detail=True)
             tomelist.append(tome)
@@ -231,12 +234,12 @@ def view_tome():
     
     tome = pdb.get_tome_document_by_guid(tome_guid, keep_id=True,
                                          include_local_file_info=True, include_author_detail=True)
-    if not 'title' in tome:
+    if 'title' not in tome:
         tome_guid = pdb.get_tome_fusion_target_guid(tome_guid)
         if tome_guid:
-            redirect(URL('view_tome', args=(tome_guid)))
+            redirect(URL('view_tome', args=tome_guid))
 
-    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    title_text = title.coalesce_title(tome['title'], tome['subtitle'])
     response.title = u"{} - Montag".format(title_text)
 
     return {
@@ -265,7 +268,7 @@ def view_tome_debug_info():
 
 
 def _author_edit_form(author, required_fidelity):
-    form = SQLFORM.factory(Field('name',requires=IS_NOT_EMPTY(), default=db_str_to_form(author['name']),
+    form = SQLFORM.factory(Field('name', requires=IS_NOT_EMPTY(), default=db_str_to_form(author['name']),
                                  comment=XML(r'<input type="button" value="Guess name case" '
                                              r'onclick="title_case_field(&quot;no_table_name&quot;)">')),
                            Field('date_of_birth', default=author['date_of_birth'],
@@ -314,10 +317,10 @@ def _is_tome_or_author_guid(string):
 @auth.requires_login()
 def tomesearch():
     retval = {}
-    form = build_search_form()
+    form = search_forms.build_search_form(pdb)
 
     if form.validate(formname='search', session=None, request_vars=request.vars, message_onsuccess='', keepvalues=True):
-        query = read_form_field(form,'query').strip()
+        query = read_form_field(form, 'query').strip()
         if _is_tome_or_author_guid(query):
             tome = pdb.get_tome_by_guid(query)
             if tome is not None:
@@ -327,14 +330,13 @@ def tomesearch():
             if author is not None:
                 redirect(URL('view_author', args=[query]))
 
-        
         response.title = "Search Results - Montag"
-        search_query = build_search_query(form)
+        search_query = search_forms.build_search_query(form)
 
         page_number = 0
         if 'page' in request.vars:
             page_number = int(request.vars.page)
-        pass_paged_query_results_to_view(search_query, retval, page_number)
+        search_forms.pass_paged_query_results_to_view(pdb, search_query, retval, page_number)
 
     retval['form'] = form
     retval['query'] = read_form_field(form, 'query')
@@ -344,7 +346,7 @@ def tomesearch():
 
 
 def _tome_edit_form(tome, required_tome_fidelity):
-    form = SQLFORM.factory(Field('title',requires=IS_NOT_EMPTY(), default=db_str_to_form(tome['title']),
+    form = SQLFORM.factory(Field('title', requires=IS_NOT_EMPTY(), default=db_str_to_form(tome['title']),
                                  comment=DIV(
                            TOOLTIP('Please enter the title of the book like it is written on the cover.'),
                            XML(r'<input type="button" value="Guess title case" onclick="title_case_field(&quot;no_table_title&quot;)">'),
@@ -355,9 +357,9 @@ def _tome_edit_form(tome, required_tome_fidelity):
                            Field('principal_language', default=db_str_to_form(tome['principal_language']),
                                  comment=TOOLTIP('Please use two letter ISO 639-1 codes (e.g. en for English).')),
                            Field('publication_year', default=db_str_to_form(tome['publication_year'])),
-                           Field('tags','text', default=tome['tags'], requires=TagValidator()),
+                           Field('tags', 'text', default=tome['tags'], requires=TagValidator()),
                            Field('type', default=tome['type'], widget=SQLFORM.widgets.radio.widget,
-                                 requires=IS_IN_SET({TomeType.Fiction:'fiction',TomeType.NonFiction:'non-fiction'})),
+                                 requires=IS_IN_SET({TomeType.Fiction: 'fiction', TomeType.NonFiction: 'non-fiction'})),
                            Field('fidelity', requires=FidelityValidator(), default=required_tome_fidelity,
                                  comment='Current Value: {}'.format(tome['fidelity'])),
                            submit_button='Save',
@@ -380,14 +382,13 @@ def add_synopsis_to_tome():
     tome = pdb.get_tome_document_by_guid(tome_guid, keep_id=True,
                                          include_local_file_info=True, include_author_detail=True)
     
-    new_syn = {
-               'guid': pdb.generate_guid(),
-               'fidelity': pydb.network_params.Default_Manual_Fidelity,
+    new_syn = {'guid': pdb.generate_guid(),
+               'fidelity': network_params.Default_Manual_Fidelity,
                'content': ""
                }
     tome['synopses'].append(new_syn)
     
-    return _edit_tome(tome, is_add_synopsis=True)
+    return _edit_tome(tome)
     
 
 @auth.requires_login()
@@ -401,11 +402,11 @@ def edit_tome():
     return _edit_tome(tome_doc)
     
 
-def _edit_tome(tome_doc, is_add_synopsis=False):
+def _edit_tome(tome_doc):
     if not tome_doc:
         return "Tome no longer existing!"
 
-    title_text=pydb.title.coalesce_title(tome_doc['title'], tome_doc['subtitle'])
+    title_text = title.coalesce_title(tome_doc['title'], tome_doc['subtitle'])
     response.title = u"Edit {} - Montag".format(title_text)
 
     field_names = ['title', 'subtitle', 'edition', 'principal_language', 'publication_year', 'tags', 'type', 'fidelity']
@@ -417,7 +418,7 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
     form = _tome_edit_form(tome_doc, required_tome_fidelity)
     synforms = list()
     
-    relevant_synopses = list(relevant_items(tome_doc['synopses']))
+    relevant_synopses = list(network_params.relevant_items(tome_doc['synopses']))
     tome_doc['synopses'] = relevant_synopses
     for synopsis in relevant_synopses:
         synforms.append(_tome_synopses_form(synopsis))
@@ -442,7 +443,7 @@ def _edit_tome(tome_doc, is_add_synopsis=False):
                 for sf in syn_field_names:
                     synopsis_to_edit[sf] = read_form_field(synform, sf)
                 pdb.load_own_tome_document(tome_doc)
-                redirect(URL('edit_tome', args=(tome_doc['guid']), anchor= 'synopses'))
+                redirect(URL('edit_tome', args=(tome_doc['guid']), anchor='synopses'))
 
             elif synform.errors:
                 response.flash = 'form has errors'
@@ -482,7 +483,7 @@ def edit_tome_file_link():
                            Field('fidelity', requires=FidelityValidator(), default=tome_file['fidelity']+0.1),
                            submit_button='Save')
 
-    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    title_text = title.coalesce_title(tome['title'], tome['subtitle'])
     response.title = u"Edit Files {} - Montag".format(title_text)
     
     field_names = ['file_extension', 'fidelity']
@@ -503,7 +504,7 @@ def edit_tome_file_link():
         redirect(URL('edit_tome', args=(tome['guid']), anchor='files'))
     elif form.errors:
         response.flash = 'form has errors'
-    return dict(form=form, tome=tome,file=tome_file)
+    return dict(form=form, tome=tome, file=tome_file)
 
 
 @auth.requires_login()
@@ -516,7 +517,7 @@ def link_tome_to_file():
                            Field('fidelity', requires=FidelityValidator(), default=70),
                            submit_button='Save')
 
-    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    title_text = title.coalesce_title(tome['title'], tome['subtitle'])
     response.title = u'Edit Files of {} - Montag'.format(title_text)
     
     if form.process(keepvalues=True).accepted:
@@ -525,7 +526,7 @@ def link_tome_to_file():
         file_extension = read_form_field(form, 'file_extension')
         fidelity = read_form_field(form, 'fidelity')
         
-        local_file_size = pydb.pyrosetup.fileserver().get_local_file_size(file_hash)
+        local_file_size = pyrosetup.fileserver().get_local_file_size(file_hash)
         
         if not local_file_size:
             response.flash = 'This file is not known to the database, please check the hash'
@@ -547,12 +548,11 @@ def edit_tome_author_link():
     tome = pdb.get_tome(tome_id)
        
     tome_authors = pdb.get_tome_authors(tome_id)
-    tome_author = None
     for ta in tome_authors:
         if int(ta['id']) == int(author_id):
             tome_author = ta
-    
-    if tome_author is None:
+            break
+    else:
         return dict(error="Tome and author not linked?", form=None, tome=tome, author=None, authors=tome_authors)
 
     author_guid = tome_author['guid']
@@ -561,7 +561,7 @@ def edit_tome_author_link():
                            Field('fidelity', requires=FidelityValidator(), default=tome_author['link_fidelity']+0.1),
                            submit_button='Save')
 
-    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    title_text = title.coalesce_title(tome['title'], tome['subtitle'])
     response.title = u"Edit Author Link {} <=>  {} - Montag".format(tome_author['name'], title_text)
 
     if form.process(keepvalues=True).accepted:
@@ -582,7 +582,7 @@ def edit_tome_author_link():
     elif form.errors:
         response.flash = 'form has errors'
 
-    return dict(form=form, tome=tome, author = tome_author, authors=tome_authors)
+    return dict(form=form, tome=tome, author=tome_author, authors=tome_authors)
 
 
 @auth.requires_login()
@@ -603,7 +603,7 @@ def link_tome_to_author():
                            Field('fidelity', requires=FidelityValidator(), default=70),
                            submit_button='Save')
 
-    title_text = pydb.title.coalesce_title(tome['title'], tome['subtitle'])
+    title_text = title.coalesce_title(tome['title'], tome['subtitle'])
     response.title = u"Add Author to {} - Montag".format(title_text)
 
     if form.process(keepvalues=True).accepted:
@@ -635,17 +635,6 @@ def more_actions():
 def index():
     redirect(URL('tomesearch'))
     return dict()
-
-
-@auth.requires_login()
-def call():
-    """
-    exposes services. for example:
-    http://..../[app]/default/call/jsonrpc
-    decorate with @services.jsonrpc the functions to expose
-    supports xml, json, xmlrpc, jsonrpc, amfrpc, rss, csv
-    """
-    return service()
 
 
 def user():
