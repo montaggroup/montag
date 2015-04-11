@@ -44,6 +44,18 @@ class TestTimeLine(unittest.TestCase):
         html = self.timeline.render_result()
         self.assertIn('Timeline ', html)
 
+    def test_timeline_with_a_tome_having_two_tags_returns_list_and_view_renders(self):
+        author_id = self.pdb.add_author('tagmaster')
+        self.pdb.add_tome(title='tig tag toe!', principal_language='en', author_ids=[author_id],
+                          tags_values=['one tag', 'two tag'])
+
+        res = self.timeline.execute()
+        self.assertIn('tome_info', res)
+        tome_info = res['tome_info']
+        self.assertGreaterEqual(len(tome_info), 1)
+
+        html = self.timeline.render_result()
+        self.assertIn('two tag', html)
 
 if __name__ == '__main__':
     unittest.main()
