@@ -2,9 +2,7 @@ import unittest
 import service_helpers
 import web2py_helpers
 import pydb.pyrosetup
-from pydb.testing import test_data
-from pydb import FileType
-
+import database_helpers
 web2py_helpers.prepare_web2py()
 
 
@@ -19,18 +17,8 @@ class TestViewTome(unittest.TestCase):
 
     def test_view_tome_with_a_tome_having_a_file_returns_correct_author_and_view_renders(self):
         author_id = self.pdb.add_author('viewmaster')
-        tome_id = self.pdb.add_tome(title='it is also on file!', principal_language='en', author_ids=[author_id],
-                                    tags_values=['one tag', 'two tag'])
-        tome = self.pdb.get_tome(tome_id)
+        tome = database_helpers.add_sample_tome(self.pdb, author_id, upload_a_file=True)
         tome_guid = tome['guid']
-
-        file_path = test_data.get_book_path('pg1661.epub')
-
-        (file_id, file_hash, size) = pydb.pyrosetup.fileserver().add_file_from_local_disk(file_path, 'epub',
-                                                                                          move_file=False)
-
-        self.pdb.link_tome_to_file(tome_id, file_hash, size, file_extension='epub', file_type=FileType.Content,
-                                   fidelity=80)
 
         self.view_tome.add_args(tome_guid)
         res = self.view_tome.execute()
