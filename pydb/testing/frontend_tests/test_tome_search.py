@@ -8,7 +8,7 @@ web2py_helpers.prepare_web2py()
 class TestTomeSearch(unittest.TestCase):
     def setUp(self):
         self.tomesearch = web2py_helpers.build_request('default', 'tomesearch')
-        service_helpers.start_services()
+        service_helpers.start_services(self.id())
 
     def tearDown(self):
         service_helpers.stop_services()

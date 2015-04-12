@@ -8,7 +8,7 @@ web2py_helpers.prepare_web2py()
 class TestRandomTomes(unittest.TestCase):
     def setUp(self):
         self.random_tomes = web2py_helpers.build_request('default', 'random_tomes')
-        service_helpers.start_services()
+        service_helpers.start_services(self.id())
 
     def tearDown(self):
         service_helpers.stop_services()

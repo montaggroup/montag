@@ -11,7 +11,7 @@ web2py_helpers.prepare_web2py()
 class TestViewTome(unittest.TestCase):
     def setUp(self):
         self.view_tome = web2py_helpers.build_request('default', 'view_tome')
-        service_helpers.start_services(fileserver=True)
+        service_helpers.start_services(self.id(), fileserver=True)
         self.pdb = pydb.pyrosetup.pydbserver()
 
     def tearDown(self):
