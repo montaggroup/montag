@@ -1,16 +1,15 @@
 {{
-import pydbhelpers
-import html_helpers
+from pydb_helpers import html_helpers
 }}
 
 {{ def print_check_results(dbname, problems):
 errors = 0
 }}
-<h1 class="first_on_page"> {{=pydb_helpers.nice_name(dbname)}} </h1>
+<h1 class="first_on_page"> {{=html_helpers.nice_name(dbname)}} </h1>
 {{ for category, items in problems.iteritems(): }}
 {{if items: }}
 
-<h2 onclick="jQuery('#checkTb_{{=category}}').slideToggle(100)"> {{=len(items)}} {{=pydb_helpers.nice_name_lcfirst(category)}}  </h2>
+<h2 onclick="jQuery('#checkTb_{{=category}}').slideToggle(100)"> {{=len(items)}} {{=html_helpers.nice_name_lcfirst(category)}}  </h2>
 <table class='checkResult' id='checkTb_{{=category}}'>
 <tr>
 {{
@@ -28,7 +27,7 @@ if 'last_modification_date' in headings:
     headings.remove('last_modification_date')
 pass
 for heading in headings: }}
-    <th>{{=pydb_helpers.nice_name(heading)}}</th>
+    <th>{{=html_helpers.nice_name(heading)}}</th>
     {{pass}}
 </tr>
    
