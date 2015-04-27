@@ -762,6 +762,11 @@ class MergeDB(basedb.BaseDB):
                   where_clause='name LIKE "%  %" AND fidelity >= ?',
                   params=[network_params.Min_Relevant_Fidelity])
 
+        add_check('authors_with_only_one_name_part_and_fidelity_smaller_70',
+                  from_clause='authors',
+                  where_clause='name NOT LIKE "% %" AND fidelity <= ? AND fidelity >=?',
+                  params=[70, network_params.Min_Relevant_Fidelity])
+
         add_check('files_linked_to_multiple_tomes',
                   from_clause="files f1 INNER JOIN tomes ON tomes.id=f1.tome_id",
                   where_clause="(SELECT count(*) FROM files f2 WHERE f1.hash=f2.hash AND f2.fidelity >= ?) > 1 "
