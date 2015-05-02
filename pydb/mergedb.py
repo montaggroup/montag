@@ -810,9 +810,9 @@ class MergeDB(basedb.BaseDB):
                                'AND fidelity >= ? AND fidelity < 70',
                   params=[network_params.Min_Relevant_Fidelity])
 
-        add_check('tomes_with_titles_containing_the_word_edition_having_fidelity_smaller_70',
+        add_check('tomes_with_titles_or_subtitle_containing_the_word_edition_having_fidelity_smaller_70',
                   from_clause='tomes',
-                  where_clause='title LIKE "% edition%" AND fidelity >= ? AND fidelity < 70',
+                  where_clause='(title LIKE "% edition%" OR subtitle LIKE "% edition%") AND fidelity >= ? AND fidelity < 70',
                   params=[network_params.Min_Relevant_Fidelity])
 
         return problems
