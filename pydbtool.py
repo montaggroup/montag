@@ -107,7 +107,7 @@ def do_service_fetch_updates(args, db):
     friend_id = friend['id']
 
     com_service = pydb.pyrosetup.comservice()
-    job_id = com_service.fetch_updates(friend_id)
+    job_id = com_service.fetch_updates_from_friend(friend_id)
     print u'Update started, job id is {}'.format(job_id)
 
 

@@ -11,8 +11,9 @@ import pyrosetup
 
 logger = logging.getLogger('comservice')
 
+DELAY_BETWEEN_UPDATE_LAUNCHES = 0.2
 
-class Job():
+class Job(object):
     def __init__(self, name, friend_id):
         self.name = name
         self.friend_id = friend_id
@@ -50,7 +51,7 @@ class Job():
         return str(self)
 
 
-class ComService():
+class ComService(object):
     def __init__(self, file_download_monitor):
         # job id -> (process, progress_array)
         self.jobs = {}
@@ -77,7 +78,17 @@ class ComService():
             if e_job.name == job.name and e_job.friend_id == job.friend_id and e_job.is_running():
                 raise ValueError("A job of this type is already running, can't start a second one")
 
-    def fetch_updates(self, friend_id):
+    def fetch_updates_from_friends(self, friend_ids):
+        for index, friend_id in enumerate(friend_ids):
+            try:
+                self.fetch_updates_from_friend(friend_id)
+                if index != len(friend_ids)-1:
+                    # it seems that twisted sometimes has a problem when triggering all connections at once
+                    time.sleep(DELAY_BETWEEN_UPDATE_LAUNCHES)
+            except ValueError:
+                pass
+
+    def fetch_updates_from_friend(self, friend_id):
         friend_id = int(friend_id)
         job = Job("fetch_updates", friend_id)
         self._check_for_already_running(job)

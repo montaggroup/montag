@@ -1,8 +1,8 @@
 # coding: utf8
+import Pyro4.errors
+
 if False:
     from pydb_helpers.ide_fake import *
-
-import Pyro4.errors
 
 from pydb import pyrosetup
 from pydb_helpers.pydb_functions import db_str_to_form, read_form_field, add_job_infos_to_friends_dict
@@ -184,7 +184,7 @@ def fetch_updates():
     friend_id = request.args[0]
     com_service = pyrosetup.comservice()
     try:
-        com_service.fetch_updates(friend_id)
+        com_service.fetch_updates_from_friend(friend_id)
         redirect('../list_friends')
     except ValueError as e:
         session.flash = e.message
@@ -196,12 +196,8 @@ def fetch_updates_all():
     com_service = pyrosetup.comservice()
     friends = pdb.get_friends()
 
-    for friend in friends:
-        try:
-            if friend['can_connect_to']:
-                com_service.fetch_updates(friend['id'])
-        except ValueError:  # already running
-            pass
+    friends_ids_to_update = [friend['id'] for friend in friends if friend['can_connect_to']]
+    com_service.fetch_updates_from_friends(friends_ids_to_update)
     redirect('list_friends')
 
 
