@@ -9,7 +9,7 @@ web2py_helpers.prepare_web2py()
 class TestEditTome(unittest.TestCase):
     def setUp(self):
         self.edit_tome = web2py_helpers.build_request('default', 'edit_tome')
-        service_helpers.start_services()
+        service_helpers.start_services(self.id())
         self.pdb = pydb.pyrosetup.pydbserver()
 
     def tearDown(self):

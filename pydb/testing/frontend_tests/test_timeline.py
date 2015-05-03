@@ -11,7 +11,7 @@ web2py_helpers.prepare_web2py()
 class TestTimeLine(unittest.TestCase):
     def setUp(self):
         self.timeline = web2py_helpers.build_request('default', 'timeline')
-        service_helpers.start_services(fileserver=True)
+        service_helpers.start_services(self.id(), fileserver=True)
         self.pdb = pydb.pyrosetup.pydbserver()
 
     def tearDown(self):
