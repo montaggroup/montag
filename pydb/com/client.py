@@ -11,7 +11,7 @@ import bulk_inserter
 from .. import config
 
 
-class ComClient():
+class ComClient(object):
     def __init__(self, main_db, friend_id, friend_comm_data, comservice):
         self._friend_id = friend_id
         self._friend_comm_data = friend_comm_data

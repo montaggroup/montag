@@ -109,12 +109,13 @@ def get_current_services_status():
     return services_status
 
 
-def logfile_path(service_name, log_file_base_path=log_path):
-    return os.path.join(log_file_base_path, getpass.getuser() + '-' + service_name.replace('.py', '.log').replace('.exe', '.log'))
+def logfile_path(service_name_, log_file_base_path=log_path):
+    return os.path.join(log_file_base_path, getpass.getuser() + '-' + service_name_.replace('.py', '.log').
+                        replace('.exe', '.log'))
 
 
-def start(service_name, log_level=DEFAULT_LOG_LEVEL, base_dir_path=None, log_file_base_path=log_path):
-    startargs = executionenvironment.base_args_to_start_service(service_name)
+def start(service_name_, log_level=DEFAULT_LOG_LEVEL, base_dir_path=None, log_file_base_path=log_path):
+    startargs = executionenvironment.base_args_to_start_service(service_name_)
     startargs.append('--loglevel')
     startargs.append(log_level)
 
@@ -123,16 +124,16 @@ def start(service_name, log_level=DEFAULT_LOG_LEVEL, base_dir_path=None, log_fil
         startargs.append(base_dir_path)
 
     try:
-        with open(logfile_path(service_name, log_file_base_path=log_file_base_path), 'wb', 1) as logfile:
+        with open(logfile_path(service_name_, log_file_base_path=log_file_base_path), 'wb', 1) as logfile:
             p = psutil.Popen(startargs, stdout=logfile, stderr=logfile)
             logfile.flush()
             return_code = p.wait(timeout=1)
             if return_code:
-                raise EnvironmentError("Service {} did not start up correctly".format(service_name))
+                raise EnvironmentError("Service {} did not start up correctly".format(service_name_))
     except psutil.TimeoutExpired:
         pass
     else:
-        raise EnvironmentError("Unable to start service {}".format(service_name))
+        raise EnvironmentError("Unable to start service {}".format(service_name_))
 
 
 def stop(service_process):
@@ -149,6 +150,7 @@ def stop_all_ignoring_exceptions(verbose=False):
         if services_status[name]['status'] != 'not running':
             if verbose:
                 print 'stopping service {}'.format(name)
+            # noinspection PyBroadException
             try:
                 stop(services_status[name]['process'])
             except Exception:

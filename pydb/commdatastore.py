@@ -14,7 +14,7 @@ default_iteration_count = 60000
 salt_length_bytes = 16
 
 
-class CommDataStore:
+class CommDataStore(object):
     def __init__(self, db_file_path, schema_dir):
         self._friends_db = friendsdb.FriendsDB(db_file_path, schema_dir)
         self._unlocked = False

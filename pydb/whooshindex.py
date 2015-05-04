@@ -102,7 +102,6 @@ class WhooshIndex:
             return merge_db_ids
 
 
-
 def MERGE_CUSTOM(writer, segments):
     """This policy merges small segments, where "small" is defined using a
     heuristic based on the fibonacci sequence.
@@ -146,4 +145,3 @@ def MERGE_CUSTOM(writer, segments):
     else:
         logger.debug("No merge point found, no merge yet")
         return segments
-

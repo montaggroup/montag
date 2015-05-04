@@ -4,6 +4,7 @@ import re
 import getpass
 import os
 
+
 def script_extension():
     if using_py2exe():
         return "exe"

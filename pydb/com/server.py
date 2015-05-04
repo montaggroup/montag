@@ -10,7 +10,7 @@ from .. import pyrosetup
 logger = logging.getLogger("com.server")
 
 
-class Server():
+class Server(object):
     def __init__(self, tcp_port_number, upload_rate_limit_kbps):
         self.db = pyrosetup.pydbserver()
         self.com_service = pyrosetup.comservice()
@@ -35,13 +35,13 @@ class Server():
         for f in friends:
             f['comm_data'] = comm_data_store.get_comm_data(f['id'])
             
-        secure_channel = AesHmacSecureChannel(session, None, friends)
+        secure_channel = AesHmacSecureChannel(session, friend_list=friends)
         session.set_lower_layer(secure_channel)
 
         return secure_channel
 
 
-class SessionController():
+class SessionController(object):
     def __init__(self, main_db, com_service, file_server):
         self.job_id = None
         self.com_service = com_service

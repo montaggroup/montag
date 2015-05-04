@@ -19,7 +19,7 @@ def build(file_store_path, pydb_server):
     return fs
 
 
-class FileServer:
+class FileServer(object):
     def __init__(self, db, file_store_):
         self.db = db
         self.file_store = file_store_

@@ -8,7 +8,7 @@ import session
 logger = logging.getLogger('session')
 
 
-class JsonAndBinarySession():
+class JsonAndBinarySession(object):
     def __init__(self, upper_layer):
         self.upper_layer = upper_layer
         self.lower_layer = None

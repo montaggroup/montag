@@ -6,7 +6,7 @@ import logging
 logger = logging.getLogger('tcpclient')
 
 
-class TcpClient():
+class TcpClient(object):
     def __init__(self, upper_layer, reactor_, target_host, target_port, comservice, target_bytes_per_second):
         self.upper_layer = upper_layer
         self.reactor = reactor_
@@ -57,4 +57,3 @@ class ProtocolFactory(Factory):
         host = address.host
         return build_tcp_transport_protocol(self.upper_layer, self.comservice, self.target_bytes_per_second,
                                             address.host)
-
