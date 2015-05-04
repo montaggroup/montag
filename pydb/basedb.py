@@ -24,8 +24,8 @@ class BaseDB(sqlitedb.SqliteDB):
             logger.debug("Loading specialized schema")
             self._execute_sql_file(init_sql_file)
             logger.debug("Done loading schemas")
-        except sqlite.IntegrityError, e:  # error if already exists, \todo why is that so?
-            logger.info("Before rollback due to %s" % repr(e))
+        except sqlite.IntegrityError as e:
+            logger.info(u"Before rollback due to {}".format(e))
             self.rollback()
         if not enable_db_sync:
             self.cur.execute("PRAGMA synchronous = OFF ")

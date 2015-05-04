@@ -137,26 +137,40 @@ def do_service_cancel_job(args, db):
 
 
 def do_import(args, db):
+    pdb = db()
     friend_name = args.friend_name
-    friend = db().get_friend_by_name(friend_name)
+    friend = pdb.get_friend_by_name(friend_name)
     if not friend:
         print >> sys.stderr, "No friend by that name, check your spelling or create a new friend using add_friend"
         return False
     friend_id = friend['id']
 
+    print "Importing Authors"
     with open(args.file_name) as import_file:
+        authors_to_insert = []
         author_docs = ijson.items(import_file, 'authors.item')
         for author_doc in author_docs:
-            print "Author: ", author_doc
-            # \todo do bulk insert
-            db().load_author_documents_from_friend(friend_id, [author_doc])
+            authors_to_insert.append(author_doc)
+            if len(authors_to_insert) >= INSERT_BATCH_SIZE:
+                print "."
+                pdb.load_author_documents_from_friend(friend_id, authors_to_insert)
+                authors_to_insert = []
+        if authors_to_insert:
+            pdb.load_author_documents_from_friend(friend_id, authors_to_insert)
 
+    print "Importing Tomes"
     with open(args.file_name) as import_file:
+        tomes_to_insert = []
         tome_docs = ijson.items(import_file, 'tomes.item')
         for tome_doc in tome_docs:
-            print "Tome: ", tome_doc
-            # \todo do bulk insert
-            db().load_tome_documents_from_friend(friend_id, [tome_doc])
+            tomes_to_insert.append(tome_doc)
+            if len(tomes_to_insert) >= INSERT_BATCH_SIZE:
+                print "."
+                pdb.load_tome_documents_from_friend(friend_id, tomes_to_insert)
+                tomes_to_insert = []
+
+        if tomes_to_insert:
+            pdb.load_tome_documents_from_friend(friend_id, tomes_to_insert)
 
 
 def do_set_comm_data_tcp_plain(args, db):

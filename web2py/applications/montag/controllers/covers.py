@@ -13,6 +13,7 @@ from pydb import title
 from pydb import pyrosetup
 from pydb import ebook_metadata_tools
 
+DEFAULT_COVER_FIDELITY = 80.0
 
 @auth.requires_login()
 def edit_covers():
@@ -58,8 +59,7 @@ def edit_covers_compact():
 
 
 def _set_cover_from_content_form():
-    default_cover_fidelity = 80
-    form = SQLFORM.factory(Field('fidelity', requires=FidelityValidator(), default=default_cover_fidelity),
+    form = SQLFORM.factory(Field('fidelity', requires=FidelityValidator(), default=DEFAULT_COVER_FIDELITY),
                            submit_button='Save')
     return form
 
@@ -107,7 +107,6 @@ def set_cover_from_content():
 
 def _set_main_cover_form():
     default_cover_fidelity = 80
-    # \todo use a more sensible value for fidelity
     form = SQLFORM.factory(Field('fidelity', requires=FidelityValidator(), default=default_cover_fidelity),
                            submit_button='Save')
     return form

@@ -15,8 +15,8 @@ class FriendsDB(sqlitedb.SqliteDB):
             logger.debug("Loading schema")
             self._execute_sql_file("db-schema-friends.sql")
             logger.debug("Done loading schemas")
-        except sqlite.IntegrityError, e:  # error if already exists, \todo why is that so?
-            logger.info("Before rollback due to %s" % repr(e))
+        except sqlite.IntegrityError as e:
+            logger.info(u"Before rollback due to {}".format(e))
             self.rollback()
             pass
 
