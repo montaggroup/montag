@@ -122,7 +122,6 @@ def add_metadata(instream, outstream, author_docs, tome_doc, tome_file):
                     title_el.text = title.coalesce_title(tome_doc['title'], tome_doc['subtitle'])
                     language_el = etree.SubElement(main_element, "{http://purl.org/dc/elements/1.1/}language")
                     language_el.text = tome_doc['principal_language']
-                    # \todo more tags, e.g. file hash in relation or tome guid in source
 
             with zipfile.ZipFile(outstream, 'w') as outzip:
                 _copy_zip_contents(inzip, outzip, [opf_path])

@@ -35,7 +35,6 @@ class TestOnlyRequester(unittest.TestCase):
 
         self.assertFalse(self.completion_callback.called)
 
-        # \todo we don't want to check the callbacks - that's not part of the interface
         self.metadata_requester.activate.assert_called_once_with(session,
                                                                  self.friend_id,
                                                                  self.strategy.metadata_requester_completed,
