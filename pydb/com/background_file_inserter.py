@@ -5,7 +5,7 @@ import pydb.pyrosetup
 logger = logging.getLogger("com.background_file_inserter")
 
 
-class BackgroundFileInserter():
+class BackgroundFileInserter(object):
     def __init__(self):
         self.insert_process = None
 

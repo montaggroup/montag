@@ -1,5 +1,5 @@
 # do not use this "secure" channel in production code!
-class InsecureChannel():
+class InsecureChannel(object):
     def __init__(self, upper_layer):
         self.upper_layer = upper_layer
         self.lower_layer = None

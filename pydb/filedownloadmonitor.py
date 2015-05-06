@@ -1,5 +1,5 @@
 
-class FileDownloadMonitor():
+class FileDownloadMonitor(object):
     def __init__(self):
         self.locked_items = set()
         self.completed_items = set()

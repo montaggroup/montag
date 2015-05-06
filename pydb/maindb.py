@@ -5,6 +5,7 @@ import traceback
 import logging
 import sqlite3 as sqlite
 import Pyro4
+import Pyro4.errors
 
 from mergedb import MergeDB
 from localdb import LocalDB
@@ -55,7 +56,7 @@ def build(db_dir, schema_dir, enable_db_sync=True):
     return db
 
 
-class MainDB:
+class MainDB(object):
     def __init__(self, local_db, friends_db, merge_db, build_foreign_db, index_server):
         self.default_add_fidelity = 50
         self.local_db = local_db
@@ -1037,7 +1038,7 @@ class MainDB:
         if data_author != target_author:  # copy data from data author over
             for key, value in data_author.iteritems():
                 if key in new_author_doc:
-                    if key.lower() not in ("guid"):
+                    if key.lower() != "guid":
                         new_author_doc[key] = data_author[key]
 
         required_fidelity_1 = self.calculate_required_author_fidelity(source_author['id'])

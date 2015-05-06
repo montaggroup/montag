@@ -46,7 +46,7 @@ def _copy_zip_contents(inzip, outzip, filenames_to_skip=list()):
 
 def clear_metadata(instream, outstream):
     try:
-        with zipfile.ZipFile(instream, 'r') as inzip:
+        with zipfile.ZipFile(instream) as inzip:
             opf_path = _get_path_of_content_opf(inzip)
             opf_content = _read_content_opf(inzip, opf_path)
 
@@ -98,7 +98,7 @@ def clear_metadata(instream, outstream):
 
 def add_metadata(instream, outstream, author_docs, tome_doc, tome_file):
     try:
-        with zipfile.ZipFile(instream, 'r') as inzip:
+        with zipfile.ZipFile(instream) as inzip:
             opf_path = _get_path_of_content_opf(inzip)
             opf_content = _read_content_opf(inzip, opf_path)
 
@@ -108,7 +108,8 @@ def add_metadata(instream, outstream, author_docs, tome_doc, tome_file):
                 if re.match(".*metadata$", main_element.tag):
                     logger.debug("Found metadata tag, cleaning")
 
-                    while list(main_element):  # do not remove using a for loop - this will skip elements in python 2.7.5!
+                    while list(main_element):
+                        # do not remove using a for loop - this will skip elements in python 2.7.5!
                         node_to_remove = list(main_element)[0]
                         logger.debug("Removing node %s" % node_to_remove.tag)
                         main_element.remove(node_to_remove)
@@ -144,9 +145,10 @@ def get_metadata_from_opf_string(opf_content):
         string = re.sub('  +', ' ', string)
         return string.strip()
 
+    # noinspection PyBroadException
     try:
         root = defused_etree.fromstring(opf_content)
-    except:
+    except Exception:
         logger.error('Unable to parse opf xml')
         return result
 
@@ -186,7 +188,7 @@ def get_metadata_from_opf_string(opf_content):
 
 def get_metadata(instream):
     try:
-        with zipfile.ZipFile(instream, 'r') as inzip:
+        with zipfile.ZipFile(instream) as inzip:
             opf_path = _get_path_of_content_opf(inzip)
             opf_content = _read_content_opf(inzip, opf_path)
 
@@ -208,4 +210,3 @@ if __name__ == "__main__":
     outs = file("out.epub", "w+b")
     clear_metadata(ins, outs)
     # print get_metadata(ins)
-

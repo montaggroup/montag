@@ -105,6 +105,7 @@ def _wrap_language(lan):
 
     return lan
 
+
 def document_export_filter(items, ignore_fidelity_filter):
     return [_without_ids_and_mod_date(item) for item in items
             if abs(item['fidelity']) >= network_params.Min_Relevant_Fidelity or ignore_fidelity_filter]

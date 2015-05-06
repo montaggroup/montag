@@ -32,5 +32,3 @@ class OnlyRequester(Strategy):
 
     def any_requester_failed(self):
         self._completion_callback()
-
-

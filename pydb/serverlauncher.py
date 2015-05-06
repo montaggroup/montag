@@ -48,7 +48,7 @@ def stop_server(db):
     db.testing_server.terminate()
 
 
-class Server:
+class Server(object):
     def __init__(self, *args, **kwargs):
         self.args = args
         self.kwargs = kwargs

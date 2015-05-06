@@ -94,35 +94,3 @@ def clear_metadata(source_stream, output_stream):
 
 def is_responsible_for_extension(extension):
     return extension.lower() == 'pdf'
-
-
-if __name__ == "__main__":
-
-    def main():
-        usage = "usage: %prog [options] input_pdf_file"
-        epilog = "example: pdf.py inputfile.pdf\n"
-        parser = optparse.OptionParser(usage=usage, epilog=epilog)
-        (options, args) = parser.parse_args()
-        if len(args) != 1:
-            parser.print_help()
-            sys.exit(1)
-
-        infile, = args
-
-        print 'extracting...\n'
-        infilestream = open(infile, "rb")
-
-
-        # fulltext = extract_fulltext(infilestream)
-        # print 'completed:\n'
-        # print fulltext
-
-        # metadata = get_metadata(infilestream)
-        # print metadata
-
-        # outs = file("out.pdf", "w+b")
-        # clear_metadata(infilestream, outs)
-
-        return 0
-
-    sys.exit(main())

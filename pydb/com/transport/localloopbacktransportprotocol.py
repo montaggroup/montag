@@ -3,7 +3,7 @@ import logging
 logger = logging.getLogger("localllopbacktransportprotocol")
 
 
-class LocalLoopBackTransportProtocol():
+class LocalLoopBackTransportProtocol(object):
     """ used to emulate network transfer.
     """
     def __init__(self, upper_layer):

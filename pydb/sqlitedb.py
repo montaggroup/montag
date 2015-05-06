@@ -26,7 +26,7 @@ class SqliteDB(object):
             return row[0]
 
     def _execute_sql_file(self, file_name):
-        with open(os.path.join(self.schema_dir, file_name), 'r') as f:
+        with open(os.path.join(self.schema_dir, file_name)) as f:
             script = f.read()
             self.cur.executescript(script)
 
@@ -108,7 +108,7 @@ class SqliteDB(object):
         return self.cur.lastrowid
 
 
-class Transaction():
+class Transaction(object):
     def __init__(self, db):
         self.db = db
         self.active = True

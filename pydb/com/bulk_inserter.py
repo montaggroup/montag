@@ -2,7 +2,7 @@
 default_queue_limit = 1000
 
 
-class BulkInserter():
+class BulkInserter(object):
     def __init__(self, main_db, friend_id):
         self.main_db = main_db
         self.friend_id = friend_id

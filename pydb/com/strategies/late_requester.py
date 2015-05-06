@@ -43,7 +43,6 @@ class LateRequester(Strategy):
 
         self._start_file_requester()
 
-
     def _start_file_requester(self):
         self.more_file_requests_required = prepare_file_requester(self._main_db, self._file_requester,
                                                                   default_max_files_to_request)

@@ -136,7 +136,7 @@ def _fetch_tomes(merge_db, tome_guids):
     return deleted_tome_guids, tomes_with_authors_and_tags
 
 
-class ProgressFile():
+class ProgressFile(object):
     def __init__(self, progress_file_name):
         self.progress_file_name = progress_file_name
 
@@ -154,5 +154,4 @@ class ProgressFile():
         wp = {'min_mod_date_tomes': min_mod_date_tomes,
               'min_mod_date_authors': min_mod_date_authors}
         json.dump(wp, open(self.progress_file_name, 'wb'))
-
 

@@ -12,7 +12,7 @@ FLAG_UNCOMPRESSED = 'U'
 
 # NOT YET EXTERNALLY REVIEWED FOR HIGH LEVEL SECURITY!
 # secure channel using AES and HMAC-SHA-512
-class AesHmacSecureChannel():
+class AesHmacSecureChannel(object):
     def __init__(self, upper_layer, pre_shared_secret_passphrase=None, friend_list=()):
         self.upper_layer = upper_layer
         if pre_shared_secret_passphrase:
@@ -197,4 +197,3 @@ class AesHmacSecureChannel():
 
         logger.info(u'Established@{} session_cipher_secret: {}... '.format(
             self.role, session_secret_cipher.encode('hex_codec')[:4]))
-

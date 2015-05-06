@@ -13,6 +13,7 @@ logger = logging.getLogger('comservice')
 
 DELAY_BETWEEN_UPDATE_LAUNCHES = 0.2
 
+
 class Job(object):
     def __init__(self, name, friend_id):
         self.name = name

@@ -26,4 +26,3 @@ class OnlyProvider(Strategy):
     def any_requester_failed(self):
         logger.warning("A requester or provider failed to complete.")
         self._completion_callback()
-

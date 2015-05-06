@@ -24,7 +24,7 @@ def _get_empty_extheader(extheader):
     return new_exthhdr
 
 
-class Sectionizer:
+class Sectionizer(object):
     def __init__(self, stream):
         self.f = stream
         header = self.f.read(78)
@@ -35,8 +35,8 @@ class Sectionizer:
         self.num_sections, = struct.unpack_from('>L', header, 74)
         sections = self.f.read(self.num_sections * 8)
         self.rawsections = sections
-        self.sections = struct.unpack_from('>%dL' % (self.num_sections * 2), sections, 0)[::2] + (0xfffffff, )
-        self.indices = struct.unpack_from('>%dL' % (self.num_sections * 2), sections, 0)[1::2] + (0xfffffff, )
+        self.sections = struct.unpack_from('>%dL' % (self.num_sections * 2), sections)[::2] + (0xfffffff, )
+        self.indices = struct.unpack_from('>%dL' % (self.num_sections * 2), sections)[1::2] + (0xfffffff, )
 
     def db_title(self):
         return self.rawheader[0:32]
@@ -152,7 +152,7 @@ def add_metadata(source_stream, output_stream, author_docs, tome_doc, tome_file)
     tome_title = coalesce_title(tome_doc['title'], tome_doc['subtitle'])
 
     short_file_hash = tome_file['hash'][:4]
-    file_title =  u"{} - {} ({})".format(', '.join(author_names), tome_title, short_file_hash)
+    file_title = u"{} - {} ({})".format(', '.join(author_names), tome_title, short_file_hash)
     clear_metadata(source_stream, output_stream, new_title=file_title)
     return True
 

@@ -49,13 +49,10 @@ class EarlyRequester(Strategy):
         self._file_requester.activate(self._session, self._friend_id,
                                       self.file_requester_completed, self.any_requester_failed)
 
-
-
     def file_requester_completed(self):
         if self.more_file_requests_required:
             self._start_file_requester()
             return
-
 
         self._session.request_stop_providing()
 

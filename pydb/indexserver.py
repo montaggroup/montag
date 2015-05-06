@@ -15,7 +15,7 @@ def build(db_dir, schema_dir):
     return IndexServer(whoosh_index, index_thread)
 
 
-class IndexServer():
+class IndexServer(object):
     def __init__(self,  whoosh_index, index_thread):
         self.whoosh_index = whoosh_index
         self.index_thread = index_thread

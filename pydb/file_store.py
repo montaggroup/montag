@@ -11,7 +11,7 @@ import disk_usage
 from pydb import assert_hash
 
 
-class FileStore():
+class FileStore(object):
     def __init__(self, store_dir):
         self.store_dir = store_dir
 
@@ -39,6 +39,7 @@ class FileStore():
         if move_file:
             if not os.path.exists(cache_path):
                 logger.debug(u"move from {} to {} .".format(source_path, cache_path))
+                # noinspection PyBroadException
                 try:
                     shutil.move(source_path, cache_path)
                 except:
@@ -63,7 +64,8 @@ class FileStore():
 
         if size != os.path.getsize(cache_path):
             raise ValueError(u"File sizes after insert do not match: {} bytes in file to insert, "
-                            "{} bytes in store. Cache path is {}".format(size, os.path.getsize(cache_path), cache_path))
+                             "{} bytes in store. Cache path is {}"
+                             .format(size, os.path.getsize(cache_path), cache_path))
 
         if move_file and os.path.exists(source_path):
             os.remove(source_path)
@@ -97,12 +99,14 @@ def hash_stream(stream):
         buf = stream.read(chunk_size_bytes)
     return hash_algo.hexdigest()
 
+
 def strip_file(source_stream, extension_without_dot, target_stream):
     """ returns true if stripped successfully,
         false if stripping not possible or not leading to a changed file
         and raises an exception if the source file is broken
     """
     return ebook_metadata_tools.clear_metadata(source_stream, extension_without_dot, target_stream)
+
 
 def strip_file_to_temp(source_path, extension_without_dot, remove_original=False):
     """ returns the name of the new file and the new hash if stripped,
