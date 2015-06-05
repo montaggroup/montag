@@ -92,3 +92,9 @@ class SessionController(object):
     def session_lost(self, reason):
         self._unregister_job()
         logger.error("The session was lost uncleanly: %s " % reason)
+
+    def pause_producing(self):
+        pass
+
+    def resume_producing(self):
+        pass

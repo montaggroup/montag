@@ -53,7 +53,7 @@ class TestFileTransferPerformance(unittest.TestCase):
         start_time = time.clock()
         for i in xrange(FILE_DELIVERY_REPETITIONS):
             self.received_file_contents = ""
-            pydb.com.session.send_chunked_file(server_session, 'epub', 'a_hash', self.file_stream)
+            server_session.deliver_file('a_hash', 'epub', self.file_stream.read(), more_parts_follow=False)
             self.file_stream.seek(0)
         stop_time = time.clock()
         self.assertEqual(self.received_file_contents, self.test_file_contents)

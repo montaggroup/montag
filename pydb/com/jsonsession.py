@@ -1,10 +1,10 @@
 import json
 import time
 import logging
-import session
 from .. import config
 
 logger = logging.getLogger('session')
+KEEP_ALIVE_SEND_INTERVAL_SECONDS = 120
 
 
 class JsonSession(object):
@@ -55,7 +55,7 @@ class JsonSession(object):
 
     def send_keep_alive_if_necessary(self):
         keep_alive_interval = config.get_int_option('comserver', 'keep_alive_send_interval_seconds',
-                                                    session.KEEP_ALIVE_SEND_INTERVAL_SECONDS)
+                                                    KEEP_ALIVE_SEND_INTERVAL_SECONDS)
         if time.time()-self._last_message_sent > keep_alive_interval:
             self._send_keep_alive()
 

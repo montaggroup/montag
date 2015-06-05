@@ -30,3 +30,8 @@ class InsecureChannel(object):
     def transport_channel_lost(self, reason):
         self.upper_layer.secure_channel_lost(reason)
 
+    def pause_producing(self):
+        self.upper_layer.pause_producing()
+
+    def resume_producing(self):
+        self.upper_layer.resume_producing()

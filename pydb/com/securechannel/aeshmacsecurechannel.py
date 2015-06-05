@@ -202,3 +202,9 @@ class AesHmacSecureChannel(object):
 
         logger.info(u'Established@{} session_cipher_secret: {}... '.format(
             self.role, session_secret_cipher.encode('hex_codec')[:4]))
+
+    def pause_producing(self):
+        self.upper_layer.pause_producing()
+
+    def resume_producing(self):
+        self.upper_layer.resume_producing()

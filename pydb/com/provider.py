@@ -1,9 +1,9 @@
-import os
 from twisted.internet import defer
 from twisted.internet import reactor
 from twisted.internet.task import deferLater
 import logging
-import session
+import file_send_queue
+import twisted
 
 logger = logging.getLogger("com.provider")
 
@@ -12,7 +12,7 @@ def deferred_wait(time_in_seconds):
     return deferLater(reactor, time_in_seconds, lambda: None)
 
 
-class Provider():
+class Provider(object):
     def __init__(self, db, file_server):
         self.db = db
         self.file_server = file_server
@@ -22,8 +22,14 @@ class Provider():
         self.providing_progress_callback = None
         self.number_documents_sent = 0
         self.number_files_sent = 0
+        self.send_queue = None
 
     def activate(self, session_layer, completion_callback, failure_callback):
+        self.send_queue = file_send_queue.FileSendQueue(session_layer,
+                                                        self.file_server,
+                                                        self._progress_made,
+                                                        reactor)
+
         self.lower_layer = session_layer
         session_layer.set_upper_layer(self)
         self._completion_callback = completion_callback
@@ -75,19 +81,9 @@ class Provider():
 
     def command_request_file_received(self, file_hash):
         logger.debug("Request for file {} received".format(file_hash))
-        local_path = self.file_server.get_local_file_path(file_hash)
 
-        if not local_path:
-            logger.info("Sending negative reply for hash %s" % file_hash)
-            self.lower_layer.deliver_file(file_hash, extension="", content="", more_parts_follow=False)
-            return
+        self.send_queue.enqueue(file_hash)
 
-        extension_with_dot = os.path.splitext(local_path)[1]
-        extension = extension_with_dot[1:]
-
-        with open(local_path, 'rb') as fp:
-            session.send_chunked_file(self.lower_layer, extension, file_hash, fp)
-            self._progress_made(number_files_increment=1)
 
     def _progress_made(self, number_documents_increment=0, number_files_increment=0):
         self.number_documents_sent += number_documents_increment
@@ -107,3 +103,9 @@ class Provider():
     def session_lost(self, reason):
         logger.info("Client disconnected, reason: {}".format(reason))
         self._failure_callback()
+
+    def pause_producing(self):
+        self.send_queue.pause_sending()
+
+    def resume_producing(self):
+        self.send_queue.resume_sending()

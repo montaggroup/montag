@@ -68,3 +68,9 @@ class ComClient(object):
     def session_lost(self, reason):
         logger.error("The session was lost uncleanly: %s " % reason)
         self._shutdown()
+
+    def pause_producing(self):
+        pass
+
+    def resume_producing(self):
+        pass

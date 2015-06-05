@@ -95,3 +95,9 @@ class MetadataRequester(object):
     def session_lost(self, reason):
         logger.error("The session was lost uncleanly: %s " % reason)
         self._abort_mission()
+
+    def pause_producing(self):
+        pass
+
+    def resume_producing(self):
+        pass

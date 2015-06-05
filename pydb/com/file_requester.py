@@ -158,6 +158,12 @@ class FileRequester(object):
         logger.error("The session was lost uncleanly: {}".format(reason))
         self._abort_mission()
 
+    def pause_producing(self):
+        pass
+
+    def resume_producing(self):
+        pass
+
 
 class FileInTransfer(object):
     def __init__(self, file_hash, file_extension):
