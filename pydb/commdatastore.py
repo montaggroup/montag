@@ -56,15 +56,14 @@ class CommDataStore(object):
         comm_data_from_db = self._friends_db.get_comm_data_string(friend_id)
 
         if not self.is_locking_active():
-            return decode_comm_data_jason(comm_data_from_db)
+            return decode_comm_data_json(comm_data_from_db)
 
         if not self._unlocked:
             raise IOError("Comm data is locked")
 
         comm_data_input_string = base64.b64decode(comm_data_from_db)
         comm_data_decrypted_string = _decrypt(comm_data_input_string, self.key, friend_id)
-        #todo remove a from json
-        comm_data = decode_comm_data_jason(comm_data_decrypted_string.decode('utf-8'))
+        comm_data = decode_comm_data_json(comm_data_decrypted_string.decode('utf-8'))
         return comm_data
 
     def set_comm_data(self, friend_id, comm_data):
@@ -114,7 +113,7 @@ def _derive_key(passphrase, salt, iteration_count):
     return pbkdf2.py_pbkdf2_hmac(hash_fcn, passphrase_bytes, salt, iteration_count)
 
 
-def decode_comm_data_jason(comm_data_string):
+def decode_comm_data_json(comm_data_string):
     if not comm_data_string:
         return {}
     return json.loads(comm_data_string)
