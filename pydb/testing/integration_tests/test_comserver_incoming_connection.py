@@ -2,7 +2,7 @@ import unittest
 import logging
 import mock
 
-logger = logging.getLogger('test_comservice_incoming_connection')
+logger = logging.getLogger('test_comserver_incoming_connection')
 
 from pydb.com.securechannel import aeshmacsecurechannel
 logging.basicConfig(level=logging.DEBUG)
@@ -32,7 +32,7 @@ def build_message(nonce_a, secret):
     return message_first_64 + message_second_64
 
 
-class TestComserviceIncomingConnection(unittest.TestCase):
+class TestComserverIncomingConnection(unittest.TestCase):
     def setUp(self):
         self.upper_layer_mock = mock.MagicMock()
         self.lower_layer_mock = mock.MagicMock()
