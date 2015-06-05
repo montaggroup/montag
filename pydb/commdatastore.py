@@ -63,6 +63,7 @@ class CommDataStore(object):
 
         comm_data_input_string = base64.b64decode(comm_data_from_db)
         comm_data_decrypted_string = _decrypt(comm_data_input_string, self.key, friend_id)
+        #todo remove a from json
         comm_data = decode_comm_data_jason(comm_data_decrypted_string.decode('utf-8'))
         return comm_data
 
