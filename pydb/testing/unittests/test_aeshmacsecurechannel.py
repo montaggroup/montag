@@ -98,7 +98,7 @@ class TestClientServerInteraction(unittest.TestCase):
     def _setup_server(self, friends_list):
         self.server_upper_layer = Mock(spec=pydb.com.jsonsession.JsonSession)
         self.server_lower_layer = Mock(spec=pydb.com.transport.tcpclient.TcpClient)
-        self.server_sc = AesHmacSecureChannel(self.server_upper_layer, friend_list=friends_list)
+        self.server_sc = AesHmacSecureChannel(self.server_upper_layer, friends=friends_list)
         self.server_sc.set_lower_layer(self.server_lower_layer)
 
     def _connect_client_and_server(self):

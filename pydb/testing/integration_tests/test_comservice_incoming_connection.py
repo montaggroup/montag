@@ -44,7 +44,7 @@ class TestComserviceIncomingConnection(unittest.TestCase):
     def build_and_connect_secure_channel(self, friend_list):
         secure_channel = aeshmacsecurechannel.AesHmacSecureChannel(self.upper_layer_mock,
                                                                    pre_shared_secret_passphrase=None,
-                                                                   friend_list=friend_list)
+                                                                   friends=friend_list)
         secure_channel.set_lower_layer(self.lower_layer_mock)
         secure_channel.transport_channel_established()
         message = build_message(secure_channel.nonce_a, self.secret)
