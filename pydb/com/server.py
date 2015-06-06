@@ -35,7 +35,7 @@ class Server(object):
         for f in friends:
             f['comm_data'] = comm_data_store.get_comm_data(f['id'])
             
-        secure_channel = AesHmacSecureChannel(session, friend_list=friends)
+        secure_channel = AesHmacSecureChannel(session, friends=friends)
         session.set_lower_layer(secure_channel)
 
         return secure_channel

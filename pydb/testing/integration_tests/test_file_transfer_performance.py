@@ -78,7 +78,7 @@ class TestFileTransferPerformance(unittest.TestCase):
             client_session, pre_shared_secret_passphrase="hello")
         server_secure_channel = pydb.com.securechannel.aeshmacsecurechannel.AesHmacSecureChannel(
             server_session,
-            friend_list=[
+            friends=[
                 {'name': 'test friend', 'id': 1, 'comm_data': {'secret': 'hello'}}
             ])
 
@@ -113,7 +113,7 @@ class TestFileTransferPerformance(unittest.TestCase):
             client_session, pre_shared_secret_passphrase="hello")
         server_secure_channel = pydb.com.securechannel.aeshmacsecurechannel.AesHmacSecureChannel(
             server_session,
-            friend_list=[
+            friends=[
                 {'name': 'test friend', 'id': 1, 'comm_data': {'secret': 'hello'}}
             ])
 
@@ -149,7 +149,7 @@ class TestFileTransferPerformance(unittest.TestCase):
         client_secure_channel.set_compression_level(0)
         server_secure_channel = pydb.com.securechannel.aeshmacsecurechannel.AesHmacSecureChannel(
             server_session,
-            friend_list=[
+            friends=[
                 {'name': 'test friend', 'id': 1, 'comm_data': {'secret': 'hello'}}
             ])
         server_secure_channel.set_compression_level(0)
@@ -171,7 +171,7 @@ class TestFileTransferPerformance(unittest.TestCase):
 
         server_secure_channel = pydb.com.securechannel.aeshmacsecurechannel.AesHmacSecureChannel(
             server_session,
-            friend_list=[
+            friends=[
                 {'name': 'test friend', 'id': 1, 'comm_data': {'secret': 'hello'}}
             ])
         server_secure_channel.set_compression_level(0)
@@ -193,7 +193,7 @@ class TestFileTransferPerformance(unittest.TestCase):
         client_secure_channel.set_compression_level(None)
         server_secure_channel = pydb.com.securechannel.aeshmacsecurechannel.AesHmacSecureChannel(
             server_session,
-            friend_list=[
+            friends=[
                 {'name': 'test friend', 'id': 1, 'comm_data': {'secret': 'hello'}}
             ])
         server_secure_channel.set_compression_level(None)
@@ -215,7 +215,7 @@ class TestFileTransferPerformance(unittest.TestCase):
 
         server_secure_channel = pydb.com.securechannel.aeshmacsecurechannel.AesHmacSecureChannel(
             server_session,
-            friend_list=[
+            friends=[
                 {'name': 'test friend', 'id': 1, 'comm_data': {'secret': 'hello'}}
             ])
         server_secure_channel.set_compression_level(None)

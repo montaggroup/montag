@@ -21,6 +21,8 @@ def sha512d(msg):
 
 
 def preshared_secrets(friend_data):
+    """ will raise a KeyError if comm_data is missing the secret entry
+    """
     return preshared_secrets_from_passphrase(friend_data['comm_data']['secret'])
 
 

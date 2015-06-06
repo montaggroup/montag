@@ -13,7 +13,7 @@ FLAG_UNCOMPRESSED = 'U'
 # NOT YET EXTERNALLY REVIEWED FOR HIGH LEVEL SECURITY!
 # secure channel using AES and HMAC-SHA-512
 class AesHmacSecureChannel(object):
-    def __init__(self, upper_layer, pre_shared_secret_passphrase=None, friend_list=()):
+    def __init__(self, upper_layer, pre_shared_secret_passphrase=None, friends=()):
         self.upper_layer = upper_layer
         if pre_shared_secret_passphrase:
             self.preshared_secret_kex_cipher, self.preshared_secret_kex_hmac = preshared_secrets_from_passphrase(
@@ -21,7 +21,7 @@ class AesHmacSecureChannel(object):
 
         self.state = "not_initialized"
         self.role = "server"
-        self.friend_list = list(friend_list)
+        self.friends = list(friends)
 
         self.lower_layer = None
         self.nonce_a = None
@@ -144,9 +144,14 @@ class AesHmacSecureChannel(object):
         if self.state == "kex_waiting_on_nonceB,authB":
             # verify authenticator from client
             auth_found = False
-            for friend in self.friend_list:
+            for friend in self.friends:
 
-                (preshared_secret_kex_cipher, preshared_secret_kex_hmac) = preshared_secrets(friend)
+                try:
+                    (preshared_secret_kex_cipher, preshared_secret_kex_hmac) = preshared_secrets(friend)
+                except KeyError:
+                    logging.debug('Friend entry of "{}" did not contain a comm data secret, skipping'
+                                  .format(friend['name']))
+                    continue
 
                 auth = calc_hmac(preshared_secret_kex_hmac, self.nonce_a + message[:64])
                 if auth == message[64:]:
