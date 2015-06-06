@@ -74,3 +74,4 @@ class ComClient(object):
 
     def resume_producing(self):
         pass
+    
