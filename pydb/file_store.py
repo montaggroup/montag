@@ -72,6 +72,12 @@ class FileStore(object):
 
         return size
 
+    def delete_file(self, file_hash, file_extension):
+        cache_path = self._calculate_cache_path(file_hash) + '.' + file_extension
+        if os.path.exists(cache_path):
+            os.unlink(cache_path)
+
+
     def _calculate_cache_path(self, file_hash):
         assert file_hash, "Hash must not be none"
         file_hash = file_hash.lower()

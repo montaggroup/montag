@@ -91,6 +91,9 @@ class LocalDB(pydb.basedb.BaseDB):
             
         return last_row_id
 
+    def remove_local_file(self, file_hash):
+        self.cur.execute("DELETE FROM local_files WHERE hash=?", [file_hash])
+
     def add_tags_to_tome(self, tome_id, tags_values, fidelity):
         for tag_value in tags_values:
             if tag_value == "" or tag_value is None:

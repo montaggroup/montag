@@ -468,6 +468,11 @@ class MainDB(object):
 
         return local_file_id
 
+    def remove_local_file_exists(self, file_hash):
+        """ removes the record of an existence of a file """
+        self.local_db.remove_local_file(file_hash)
+        self.merge_db.remove_local_file(file_hash)
+
     def link_tome_to_file(self, tome_id, local_file_hash, local_file_size, file_extension,
                           file_type=FileType.Content, fidelity=None):
         """ creates a link between a tome and a local file """
