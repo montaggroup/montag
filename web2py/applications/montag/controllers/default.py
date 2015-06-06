@@ -338,7 +338,7 @@ def tomesearch():
             tome_files = pdb.get_tome_files_by_hash(query)
             for tome_file in tome_files:
                 tome_id = tome_file['tome_id']
-                tome = pdb.get_tome_by_id(tome_id)
+                tome = pdb.get_tome(tome_id)
                 if tome is not None:
                     redirect(URL('view_tome', args=[tome['guid']]))
                     return retval
