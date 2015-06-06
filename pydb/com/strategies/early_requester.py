@@ -29,6 +29,7 @@ class EarlyRequester(Strategy):
         self._metadata_requester.set_document_progress_callback(self.metadata_requester_reported_progress)
         self.metadata_requester_reported_progress(0, 0)
 
+        logging.debug('Activating metadata requester')
         self._metadata_requester.activate(self._session, self._friend_id,
                                           self.metadata_requester_completed, self.any_requester_failed,
                                           bulk_inserter, last_query_date_authors, last_query_date_tomes)
@@ -46,6 +47,7 @@ class EarlyRequester(Strategy):
     def _start_file_requester(self):
         self.more_file_requests_required = prepare_file_requester(self._main_db, self._file_requester,
                                                                   default_max_files_to_request)
+        logging.debug('Activating file requester')
         self._file_requester.activate(self._session, self._friend_id,
                                       self.file_requester_completed, self.any_requester_failed)
 
@@ -59,6 +61,7 @@ class EarlyRequester(Strategy):
         self._provider.set_providing_progress_callback(self.provider_reported_progress)
         self.provider_reported_progress(0, 0)
 
+        logging.debug('Activating provider')
         self._provider.activate(self._session, self.provider_completed, self.any_requester_failed)
 
     def provider_completed(self):

@@ -2,8 +2,8 @@ import json
 import time
 import logging
 from .. import config
-import session
 
+KEEP_ALIVE_SEND_INTERVAL_SECONDS = 120
 
 logger = logging.getLogger('session')
 
@@ -63,7 +63,7 @@ class JsonAndBinarySession(object):
 
     def send_keep_alive_if_necessary(self):
         keep_alive_interval = config.get_int_option('comserver', 'keep_alive_send_interval_seconds',
-                                                    session.KEEP_ALIVE_SEND_INTERVAL_SECONDS)
+                                                    KEEP_ALIVE_SEND_INTERVAL_SECONDS)
         if time.time()-self._last_message_sent > keep_alive_interval:
             self._send_keep_alive()
 
@@ -135,3 +135,9 @@ class JsonAndBinarySession(object):
 
     def secure_channel_lost(self, reason):
         self.upper_layer.session_lost(reason)
+
+    def pause_producing(self):
+        self.upper_layer.pause_producing()
+
+    def resume_producing(self):
+        self.upper_layer.resume_producing()

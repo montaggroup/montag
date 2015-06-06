@@ -19,6 +19,9 @@ NUMBER_OF_JOBS_UPDATE_INTERVAL_SECONDS = 2
 
 logger = logging.getLogger("tcptransportprotocol")
 
+# how many bytes to buffer before trying to pause parent producers
+MAXIMUM_QUEUE_SIZE_BYTES = 2*1024*1024
+
 
 def memory_size():
     import gc
@@ -78,6 +81,7 @@ class TcpTransportProtocol(Protocol):
 
         self.target_bytes_per_second = target_bytes_per_second
         self.read_timeout = config.get_int_option('comserver', 'read_timeout_seconds', READ_TIMEOUT)
+        self.upper_layer_paused = False
 
     def do_timeout(self):
         self.lose_transport_channel("Read timeout")
@@ -119,6 +123,16 @@ class TcpTransportProtocol(Protocol):
             return
         self._really_pump_message_queue()
 
+    def message_queue_size(self):
+        size = 0
+        for el in self.chunks_to_transmit:
+            size += len(el)
+
+        for m in self.queued_messages:
+            size += len(m)
+
+        return size
+
     def _really_pump_message_queue(self):
         self.delay_active = False
 
@@ -136,6 +150,19 @@ class TcpTransportProtocol(Protocol):
                 reactor.callLater(chunk_delay, self._really_pump_message_queue)
         else:
             self.dataReceived()
+
+        if self.message_queue_size() > MAXIMUM_QUEUE_SIZE_BYTES:
+            if not self.upper_layer_paused:
+                logging.debug("Pausing producers")
+                self.upper_layer.pause_producing()
+                self.upper_layer_paused = True
+        else:
+            if self.upper_layer_paused:
+                logging.debug("Resuming producers")
+                self.upper_layer.resume_producing()
+                self.upper_layer_paused = False
+
+            self.upper_layer.resume_producing()
 
     def send_message(self, msg):
         self.queued_messages.append(msg)
