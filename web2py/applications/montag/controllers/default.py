@@ -313,6 +313,8 @@ def edit_author():
 def _is_tome_or_author_guid(string):
     return re.match("[0-9a-z]{32}", string)
 
+def _is_file_hash(string):
+    return re.match("[0-9a-z]{64}", string)
 
 @auth.requires_login()
 def tomesearch():
@@ -325,10 +327,21 @@ def tomesearch():
             tome = pdb.get_tome_by_guid(query)
             if tome is not None:
                 redirect(URL('view_tome', args=[query]))
+                return retval
                 
             author = pdb.get_author_by_guid(query)
             if author is not None:
                 redirect(URL('view_author', args=[query]))
+                return retval
+
+        if _is_file_hash(query):
+            tome_files = pdb.get_tome_files_by_hash(query)
+            for tome_file in tome_files:
+                tome_id = tome_file['tome_id']
+                tome = pdb.get_tome_by_id(tome_id)
+                if tome is not None:
+                    redirect(URL('view_tome', args=[tome['guid']]))
+                    return retval
 
         response.title = "Search Results - Montag"
         search_query = search_forms.build_search_query(form)
