@@ -48,5 +48,14 @@ class TestFileServer(unittest.TestCase):
         local_file_id, file_hash, size = self.file_server.add_file_from_local_disk(self.test_epub_path, 'epub')
         self.file_server.re_strip_file(file_hash, 'epub')
 
+    def test_after_delete_a_file_is_not_in_the_store_anymore(self):
+        local_file_id, file_hash, size = self.file_server.add_file_from_local_disk(self.test_epub_path, 'epub')
+        self.assertTrue(self.file_server.is_file_in_store(self.test_epub_path, 'epub'))
+
+        self.file_server.delete_file(file_hash)
+        self.assertFalse(self.file_server.is_file_in_store(self.test_epub_path, 'epub'))
+
+
+
 if __name__ == "__main__":
     unittest.main()

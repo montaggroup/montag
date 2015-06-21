@@ -99,6 +99,14 @@ class FileServer(object):
 
         return local_file_id, file_hash, size
 
+    def delete_file(self, file_hash):
+        file_extension = self.db.get_file_extension(file_hash)
+        if file_extension is not None:
+            self.file_store.delete_file(file_hash, file_extension)
+            self.db.remove_local_file_exists(file_hash)
+            return True
+        return False
+
     def add_files_from_local_disk(self, file_fields_list):
         result = {}
         for file_fields in file_fields_list:

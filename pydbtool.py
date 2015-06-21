@@ -1,6 +1,8 @@
 #!/usr/bin/env python2.7
+# coding=utf-8
 
 import Pyro4
+import Pyro4.util
 import argparse
 import os
 import sys
@@ -26,6 +28,7 @@ json_separators = (',', ': ')
 INSERT_BATCH_SIZE = 50
 
 
+# noinspection PyUnusedLocal
 def do_print_stats(args, db):
     merge_stats = db().get_merge_statistics()
     print "\nmerge.db contains:"
@@ -59,6 +62,7 @@ def do_remove_friend(args, db):
     print u'Friend {} removed'.format(friend_name)
 
 
+# noinspection PyUnusedLocal
 def do_list_friends(args, db):
     friends = db().get_friends()
     for friend in friends:
@@ -84,6 +88,7 @@ def do_db_search(args, db):
         print_tome_details(tomes[tome_id])
 
 
+# noinspection PyUnusedLocal
 def do_search(args, db):
     index_server = pydb.pyrosetup.indexserver()
 
@@ -93,11 +98,13 @@ def do_search(args, db):
         print_tome_details(tome)
 
 
+# noinspection PyUnusedLocal
 def do_update_search_index(args, db):
     index_server = pydb.pyrosetup.indexserver()
     index_server.update_index()
 
 
+# noinspection PyUnusedLocal
 def do_service_fetch_updates(args, db):
     friend_name = args.friend_name
     friend = db().get_friend_by_name(friend_name)
@@ -111,14 +118,15 @@ def do_service_fetch_updates(args, db):
     print u'Update started, job id is {}'.format(job_id)
 
 
+# noinspection PyUnusedLocal
 def do_service_list_jobs(args, db):
     com_service = pydb.pyrosetup.comservice()
     number = com_service.get_number_of_running_jobs()
     print u'{} jobs running'.format(number)
 
-    job_infos = com_service.get_job_list()
+    job_information_list = com_service.get_job_list()
     print "ID  Name                      Friend            Running  Current Phase    Progress"
-    for job_info in job_infos:
+    for job_info in job_information_list:
         job_id = job_info['id']
         friend = db().get_friend(job_info['friend_id'])
         items_to_do, items_done = com_service.get_job_progress(job_id)
@@ -128,9 +136,10 @@ def do_service_list_jobs(args, db):
             progress = u'{}/{}'.format(items_done, items_to_do)
 
         print u'{:<3} {:<25} {:<17} {:<7} {:<16} {}'.format(job_id, job_info['name'], friend['name'],
-                                                           job_info['is_running'], job_info['current_phase'], progress)
+                                                            job_info['is_running'], job_info['current_phase'], progress)
 
 
+# noinspection PyUnusedLocal
 def do_service_cancel_job(args, db):
     com_service = pydb.pyrosetup.comservice()
     com_service.cancel_job(int(args.id))
@@ -282,6 +291,7 @@ def do_get_latest_tome_related_change(args, db):
     print json.dumps(doc, indent=json_indent, separators=json_separators)
 
 
+# noinspection PyUnusedLocal
 def do_export(args, db, outfile=sys.stdout):
     outfile.write("{\n")
 
@@ -320,6 +330,7 @@ def do_create_file_list(args, db, outfile=sys.stdout):
     outfile.write('\n'.join(tome_file_ids) + "\n")
 
 
+# noinspection PyUnusedLocal
 def do_answer_file_list(args, db):
     filename = args.file_name
     target_dir = args.target_directory
@@ -341,6 +352,7 @@ def do_answer_file_list(args, db):
     print u'{} files found'.format(found)
 
 
+# noinspection PyUnusedLocal
 def do_import_file_store(args, db):
     def insert_files(file_list):
         print u'Inserting {} files'.format(len(file_list))
@@ -397,6 +409,17 @@ def do_import_file_store(args, db):
     return True
 
 
+# noinspection PyUnusedLocal
+def do_delete_file(args, db):
+    file_hash = args.file_hash
+    file_server = pydb.pyrosetup.fileserver()
+    deleted = file_server.delete_file(file_hash)
+    if deleted:
+        print "Sucessfully deleted file"
+    else:
+        print "No such file"
+
+
 def do_fetch_updates(args, db):
     main_db = db()
     friend_name = args.friend_name
@@ -419,22 +442,28 @@ def do_fetch_updates(args, db):
     cc.connect_and_execute(strategy)
 
 
+# noinspection PyUnusedLocal
 def do_check_databases(args, db):
     db().check_databases()
 
 
+# noinspection PyUnusedLocal
 def do_fix_databases(args, db):
     db().fix_databases()
+
 
 def do_recalculate_tome_merge_db_entry(args, db):
     db().recalculate_tome_merge_db_entry(args.tome_guid)
 
+
+# noinspection PyUnusedLocal
 def do_rebuild_merge_db(args, db):
     print "Do not forget to rebuild the search index after this command completed."
     print "You can achieve this by deleting whoosh* in the db folder an restarting the index server."
     db().rebuild_merge_db()
 
 
+# noinspection PyUnusedLocal
 def do_remove_local_tome_links_to_missing_files(args, db):
     removed = db().remove_local_tome_links_to_missing_files()
     print "Removed {} ghost files links".format(removed)
@@ -485,6 +514,7 @@ def do_create_satellite(args, db):
     print "Created satellite db in {}".format(args.target_dir)
 
 
+# noinspection PyUnusedLocal
 def do_encrypt_comm_data(args, db):
     cds = pydb.pyrosetup.comm_data_store()
 
@@ -503,6 +533,7 @@ def do_encrypt_comm_data(args, db):
     cds.activate_locking(password1)
 
 
+# noinspection PyUnusedLocal
 def do_unlock_comm_data(args, db):
     cds = pydb.pyrosetup.comm_data_store()
 
@@ -524,6 +555,7 @@ def do_unlock_comm_data(args, db):
         sys.exit(-1)
 
 
+# noinspection PyUnusedLocal
 def do_show_comm_data_status(args, db):
     cds = pydb.pyrosetup.comm_data_store()
 
@@ -542,6 +574,7 @@ def do_show_comm_data_status(args, db):
         sys.exit(0)
 
 
+# noinspection PyUnusedLocal
 def do_show_disk_usage(args, db):
     total, used, free = pydb.pyrosetup.fileserver().file_store_disk_usage()
 
@@ -551,6 +584,7 @@ def do_show_disk_usage(args, db):
     print " Free: {} GB".format(round(free / gb, 1))
 
 
+# noinspection PyUnusedLocal
 def do_re_strip_file(args, db):
     pydb.pyrosetup.fileserver().re_strip_file(args.file_hash, args.file_extension)
 
@@ -588,14 +622,16 @@ parser_show_tome_debug_info = subparsers.add_parser('show_tome_debug_info', help
 parser_show_tome_debug_info.add_argument('guid', help='tome guid to show')
 parser_show_tome_debug_info.set_defaults(func=do_show_tome_debug_info)
 
-parser_show_author_debug_info = subparsers.add_parser('show_author_debug_info', help='shows debugging info about a author')
+parser_show_author_debug_info = subparsers.add_parser('show_author_debug_info',
+                                                      help='shows debugging info about a author')
 parser_show_author_debug_info.add_argument('guid', help='author guid to show')
 parser_show_author_debug_info.set_defaults(func=do_show_author_debug_info)
 
 
 parser_merge_db_tome_update = subparsers.add_parser('merge_db_tome_update',
-                                                    help='Triggers an update of the merge db info for a given tome. Should not be necessary to call at all.')
-parser_merge_db_tome_update.add_argument('guid', help='tome guid to recalc')
+                                                    help='Triggers an update of the merge db info for a given tome. '
+                                                         'Should not be necessary to call at all.')
+parser_merge_db_tome_update.add_argument('guid', help='tome guid to recalculate')
 
 parser_merge_db_tome_update.set_defaults(func=do_merge_db_tome_update)
 
@@ -615,7 +651,10 @@ parser_add_friend.add_argument('friend_name', help='name of friend')
 parser_add_friend.set_defaults(func=do_add_friend)
 
 parser_remove_friend = subparsers.add_parser('remove_friend',
-                                             help='removes a friend from the db(). Does not remove his opinions from mergedb - use rebuild_merge_db afterwards to achieve this. Does also not delete the foreign db file.')
+                                             help='removes a friend from the db(). '
+                                                  'Does not remove his opinions from mergedb - '
+                                                  'use rebuild_merge_db afterwards to achieve this. '
+                                                  'Does also not delete the foreign db file.')
 parser_remove_friend.add_argument('friend_name', help='name of friend')
 parser_remove_friend.set_defaults(func=do_remove_friend)
 
@@ -647,7 +686,8 @@ parser_create_file_list.add_argument('--max_files', help='Maximum number of file
 parser_create_file_list.set_defaults(func=do_create_file_list)
 
 parser_answer_file_list = subparsers.add_parser('answer_file_list',
-                                                help='creates a folder containing all files we can offer for a file list')
+                                                help='creates a folder containing all '
+                                                     'files we can offer for a file list')
 parser_answer_file_list.add_argument('file_name', help='name of list file')
 parser_answer_file_list.add_argument('target_directory', help='directory to put found files into')
 parser_answer_file_list.set_defaults(func=do_answer_file_list)
@@ -660,20 +700,29 @@ parser_import_file_store.add_argument('--no-strip', '-n', action='store_true',
                                       help='skip stripping of files (faster, requires a trusted clean file store)')
 parser_import_file_store.set_defaults(func=do_import_file_store)
 
+parser_delete_file = subparsers.add_parser('delete_file',
+                                           help='deletes a file from the file store')
+parser_delete_file.add_argument('file_hash', help='hash of file to delete')
+parser_delete_file.set_defaults(func=do_delete_file)
+
+
 parser_set_comm_data_tcp_plain = subparsers.add_parser('set_comm_data_tcp_plain',
-                                                       help='set the communication data for a friend to plain tcp with address and port')
+                                                       help='set the communication data for a friend to plain tcp '
+                                                            'with address and port')
 parser_set_comm_data_tcp_plain.add_argument('friend_name', help='name of friend')
 parser_set_comm_data_tcp_plain.add_argument('hostname', help='host name or ip address of friend')
 parser_set_comm_data_tcp_plain.add_argument('port', help='port number of friend')
 parser_set_comm_data_tcp_plain.set_defaults(func=do_set_comm_data_tcp_plain)
 
 parser_set_comm_data_tcp_aes = subparsers.add_parser('set_comm_data_tcp_aes',
-                                                     help='set the communication data for a friend to aes encrypted tcp with address and port')
+                                                     help='set the communication data for a friend to aes encrypted '
+                                                          'tcp with address and port')
 parser_set_comm_data_tcp_aes.add_argument('friend_name', help='name of friend')
 parser_set_comm_data_tcp_aes.add_argument('hostname', help='host name or ip address of friend')
 parser_set_comm_data_tcp_aes.add_argument('port', help='port number of friend')
 parser_set_comm_data_tcp_aes.add_argument('secret',
-                                          help='shared secret passphrase for this friend (friend needs the same for us)')
+                                          help='shared secret pass phrase for this friend '
+                                               '(friend needs the same for us)')
 parser_set_comm_data_tcp_aes.set_defaults(func=do_set_comm_data_tcp_aes)
 
 parser_fetch_updates = subparsers.add_parser('fetch_updates',
@@ -682,7 +731,8 @@ parser_fetch_updates.add_argument('friend_name', help='name of friend')
 parser_fetch_updates.set_defaults(func=do_fetch_updates)
 
 parser_service_fetch_updates = subparsers.add_parser('service_fetch_updates',
-                                                     help='use the com service to update a friend db by connecting to the friend and downloading')
+                                                     help='use the com service to update a friend db by connecting to '
+                                                          'the friend and downloading')
 parser_service_fetch_updates.add_argument('friend_name', help='name of friend')
 parser_service_fetch_updates.set_defaults(func=do_service_fetch_updates)
 
@@ -699,11 +749,14 @@ parser_check_database = subparsers.add_parser('check_databases', help='instructs
 parser_check_database.set_defaults(func=do_check_databases)
 
 parser_check_database = subparsers.add_parser('fix_databases',
-                                              help='instructs the server to try to fix some database inconsistencies by rebuilding the affected parts of merge db')
+                                              help='instructs the server to try to fix some database inconsistencies '
+                                                   'by rebuilding the affected parts of merge db')
 parser_check_database.set_defaults(func=do_fix_databases)
 
-parser_recalculate_tome_merge_db_entry = subparsers.add_parser('recalculate_tome_merge_db_entry', help='instructs the server to recalculate the merge db entry for a given tome. '
-                                                                                                       'Should not be required for normal operation.')
+parser_recalculate_tome_merge_db_entry = subparsers.add_parser('recalculate_tome_merge_db_entry',
+                                                               help='instructs the server to recalculate the '
+                                                                    'merge db entry for a given tome. '
+                                                                    'Should not be required for normal operation.')
 parser_recalculate_tome_merge_db_entry.add_argument('tome_guid', help='tome guid')
 parser_recalculate_tome_merge_db_entry.set_defaults(func=do_recalculate_tome_merge_db_entry)
 
@@ -713,11 +766,13 @@ parser_rebuild_merge_db = subparsers.add_parser('rebuild_merge_db', help='instru
 parser_rebuild_merge_db.set_defaults(func=do_rebuild_merge_db)
 
 parser_encrypt_comm_data = subparsers.add_parser('encrypt_comm_data',
-                                                 help='instructs the server to encrypt comm data information. Will ask for a password on the console.')
+                                                 help='instructs the server to encrypt comm data information. '
+                                                      'Will ask for a password on the console.')
 parser_encrypt_comm_data.set_defaults(func=do_encrypt_comm_data)
 
 parser_unlock_comm_data = subparsers.add_parser('unlock_comm_data',
-                                                help='instructs the server to unlock encrypted comm data information for use by the services. Will ask for a password on the console')
+                                                help='instructs the server to unlock encrypted comm data information '
+                                                     'for use by the services. Will ask for a password on the console')
 parser_unlock_comm_data.set_defaults(func=do_unlock_comm_data)
 
 parser_comm_data_status = subparsers.add_parser('show_comm_data_status',
@@ -769,7 +824,3 @@ if run_ok is None:
     run_ok = True
 
 sys.exit(0 if run_ok else -2)
-
-
-
-
