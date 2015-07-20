@@ -25,7 +25,7 @@ Boot, log in and execute the following commands:
         virtualenv venv
         source venv/bin/activate
         pip install -r requirements.txt
-        ./montag-services.py start
+        python montag-services.py start
         
 Remark: the 'pip install' command can take 30 minutes to complete, this is normal.
 Now start your browser and surf to http://localhost:8000 (or http://\[ip of Banana Pi\]:8000 if not an the same machine).        
@@ -34,6 +34,6 @@ Whenever you want to start Montag fresh (i.e. after a reboot) use:
 
         cd montag
         source venv/bin/activate
-        ./montag-services.py start
+        python montag-services.py start
 
 If you want to, create a separate user for Montag (i.e. "montag").
