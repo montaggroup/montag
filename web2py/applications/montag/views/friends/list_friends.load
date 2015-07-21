@@ -5,7 +5,7 @@
         <th>
         Name
         </th>
-        {{ if is_secure_channel(request): }}
+        {{ if auth.has_privilege('administer'): }}
             <th>
             </th>
         {{pass}}
@@ -19,7 +19,7 @@
     {{ for friend, update_info in zip(friends, update_infos): }}
     <tr class="friend">
         <td>{{ =friend['name'] }} </td>
-        {{ if is_secure_channel(request): }}
+        {{if auth.has_privilege('administer'): }}
             <td>{{ if not is_locked: }}{{ =A("Edit", _class='edit', _href=URL( 'edit_friend.html',args=[friend['id']] )) }}{{pass}}</td>
         {{pass}}
         <td>{{ =html_helpers.human_readable_time_elapsed_since(update_info[0]) }} </td>

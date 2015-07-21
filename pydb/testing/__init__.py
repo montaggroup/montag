@@ -1,12 +1,17 @@
 import os
 import shutil
 
-
 def guess_schema_dir():
     if os.path.exists("db-schemas"):
         return "db-schemas"
 
     return os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'db-schemas'))
+
+
+def get_clean_testcase_folder(testcase_name):
+    base_dir_name = testcase_name.replace("/", "_").replace("..", "_")
+    base_dir_path = get_clean_temp_dir(base_dir_name)
+    return base_dir_path
 
 
 def get_base_temp_dir():

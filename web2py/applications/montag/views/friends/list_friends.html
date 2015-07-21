@@ -20,7 +20,7 @@
 
 <br>
 <br>
-{{ if is_secure_channel(request): }}
+{{ if auth.has_privilege('administer'): }}
 {{ if not is_locked: }}{{ =A("Add friend", _class='button', _href=URL( 'add_friend')) }}{{pass}}
 {{pass}}
 <br/>

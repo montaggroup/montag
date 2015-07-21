@@ -8,7 +8,7 @@ from pydb import pyrosetup
 from pydb_helpers.pydb_functions import db_str_to_form, read_form_field, add_job_infos_to_friends_dict
 
 
-@auth.requires_login()
+@auth.requires_friend_view_permission()
 def list_friends():
     response.title = 'Friends - Montag'
     
@@ -98,7 +98,7 @@ def _load_friend(friend_id):
     return friend
 
 
-@auth.requires_login()
+@auth.requires_admin_permission()
 def edit_friend():
     friend_id = request.args[0]
     friend = _load_friend(friend_id)
@@ -144,7 +144,7 @@ def _friend_remove_form():
     return form
 
 
-@auth.requires_login()
+@auth.requires_admin_permission()
 def remove_friend():
     friend_id = request.args[0]
     friend = _load_friend(friend_id)
@@ -163,7 +163,7 @@ def remove_friend():
     return dict(form=form, friend=friend)
 
 
-@auth.requires_login()
+@auth.requires_admin_permission()
 def add_friend():
     form = _friend_add_form()
     response.title = 'Add friend'
@@ -179,7 +179,7 @@ def add_friend():
     return dict(form=form)
 
 
-@auth.requires_login()
+@auth.requires_friend_view_permission()
 def fetch_updates():
     friend_id = request.args[0]
     com_service = pyrosetup.comservice()
@@ -191,7 +191,7 @@ def fetch_updates():
         redirect('../list_friends')
 
 
-@auth.requires_login()
+@auth.requires_friend_view_permission()
 def fetch_updates_all():
     com_service = pyrosetup.comservice()
     friends = pdb.get_friends()
@@ -207,7 +207,7 @@ def _unlock_comm_data_form():
     return form
 
 
-@auth.requires_login()
+@auth.requires_friend_view_permission()
 def unlock_comm_data():
     form = _unlock_comm_data_form()
     response.title = 'Unlock Comm Data'
@@ -225,7 +225,7 @@ def unlock_comm_data():
     return dict(form=form)
 
 
-@auth.requires_login()
+@auth.requires_friend_view_permission()
 def clear_completed_jobs():
     com_service = pyrosetup.comservice()
     com_service.clean_jobs()

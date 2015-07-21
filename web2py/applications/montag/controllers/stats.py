@@ -3,7 +3,7 @@ if False:
     from pydb_helpers.ide_fake import *
 
 
-@auth.requires_login()
+@auth.requires_statistics_permission()
 def show_stats():
     merge_stats = pdb.get_merge_statistics()
     local_stats = pdb.get_local_statistics()
@@ -13,7 +13,7 @@ def show_stats():
     return {'merge_stats': merge_stats, 'local_stats': local_stats, 'tome_stats': tome_stats}
 
 
-@auth.requires_login()
+@auth.requires_statistics_permission()
 def show_database_check():
     check_result = pdb.check_databases_for_consistency_problems()
     response.title = "Database Check Result - Montag"
@@ -21,7 +21,7 @@ def show_database_check():
     return {'check_result': check_result}
 
 
-@auth.requires_login()
+@auth.requires_statistics_permission()
 def show_database_content_check():
     filter_string = None
     if request.args:

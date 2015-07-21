@@ -1,6 +1,7 @@
 import unittest
 import pydb.pyrosetup
 
+import pydb.testing
 import service_helpers
 import web2py_helpers
 web2py_helpers.prepare_web2py()
@@ -8,8 +9,9 @@ web2py_helpers.prepare_web2py()
 
 class TestEditAuthor(unittest.TestCase):
     def setUp(self):
-        self.edit_author = web2py_helpers.build_request('default', 'edit_author')
-        service_helpers.start_services(self.id())
+        tc_folder = pydb.testing.get_clean_testcase_folder(self.id())
+        self.edit_author = web2py_helpers.build_request(tc_folder, 'default', 'edit_author')
+        service_helpers.start_services(tc_folder)
         self.pdb = pydb.pyrosetup.pydbserver()
 
     def tearDown(self):

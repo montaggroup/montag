@@ -4,7 +4,6 @@ if False:
 
 import os
 import sys
-
 import Pyro4.util
 
 from pydb import pyrosetup

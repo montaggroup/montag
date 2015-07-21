@@ -47,7 +47,7 @@ pass
       = tome['title']+"."+file['file_extension']
       pass}}
       {{=int(file['fidelity']) }}/100
-          {{ if show_edit_button: }}
+          {{ if show_edit_button and auth.has_privilege('data_edit'): }}
           <span class="edit"> {{ =A("edit link", _href=URL( 'edit_tome_file_link',args=[tome['id'],file['hash']], ))}}  </span>
           {{pass}}
         </li>
@@ -118,7 +118,7 @@ jQuery(document).ready(function(){
     {{pass}}
     <div class="tome_info_paragraph">
     <span class="tome_info_block"> {{=tome_link(tome)}} by {{=authors_links(tome['authors'])}}
-    {{ if show_edit_button: }}
+    {{ if show_edit_button and auth.has_privilege('data_edit'): }}
             <span class="edit"> {{ =A("edit", _href=URL( 'edit_tome',args=[tome['guid']] )) }} </span>
     {{pass}}
     {{ if additional_tome_button_html is not None: }}
@@ -176,9 +176,6 @@ jQuery(document).ready(function(){
 
 {{return}}
 
-{{def is_secure_channel(request):}}
-    {{return request.is_local}}
-
 
 {{def show_author_info_block(author_info, allow_edit=False, additional_author_button_html=None, first_on_page=False):
     class_string = ''
@@ -188,7 +185,7 @@ jQuery(document).ready(function(){
 }}
 
     <h1 {{=class_string}}>{{=author_link(author_info) }} 
-        {{ if allow_edit:
+        {{ if allow_edit and auth.has_privilege('data_edit'):
         =A("edit", _class='edit_author', _href=URL( 'edit_author',args=[author_info['guid']] )) 
         pass}}
     {{ if additional_author_button_html is not None: }}

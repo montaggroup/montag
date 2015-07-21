@@ -12,8 +12,9 @@ def read_config(config_path='pydb.conf'):
     global parser
     parser = ConfigParser.SafeConfigParser()
     try:
+        logger.debug('Reading {}'.format(config_path))
         parser.read(config_path)
-    except Exception as e:
+    except (ConfigParser.NoOptionError, ConfigParser.NoSectionError, ValueError) as e:
         logger.error('could not read config file: {}'.format(e.message))
 
 
@@ -21,7 +22,7 @@ def get_boolean_option(section, name, default):
     try:
         logger.debug('read [{}] {} '.format(section, name))
         return parser.getboolean(section, name)
-    except Exception:
+    except (ConfigParser.NoOptionError, ConfigParser.NoSectionError, ValueError):
         logger.debug('returning default={}'.format(default))
         return default
 
@@ -30,10 +31,18 @@ def get_int_option(section, name, default):
     try:
         logger.debug('read [{}] {} '.format(section, name))
         return parser.getint(section, name)
-    except Exception:
+    except (ConfigParser.NoOptionError, ConfigParser.NoSectionError, ValueError):
         logger.debug('returning default={}'.format(default))
         return default
 
+
+def get_string_option(section, name, default):
+    try:
+        logger.debug('read [{}] {} '.format(section, name))
+        return parser.get(section, name)
+    except (ConfigParser.NoOptionError, ConfigParser.NoSectionError, ValueError):
+        logger.debug('returning default={}'.format(default))
+        return default
 
 def enable_covers():
     return get_boolean_option('common', 'enable_covers', True)

@@ -30,26 +30,15 @@ response.generic_patterns = ['*'] if request.is_local else []
 ## (more options discussed in gluon/tools.py)
 #########################################################################
 
-
-class NoAuth():
-    def __init__(self):
-        pass
-
-    def requires_login(self):
-        def inner(func):
-            return func
-        return inner
-
-
+from pydb import montag_auth
 from gluon.tools import Auth, Crud, Service, PluginManager
-import pydb.config
 
-if pydb.config.enable_web_auth():
-    auth = Auth(db, hmac_key=Auth.get_or_create_key())
-    auth.define_tables()
-    auth.settings.actions_disabled.append('register')
-    auth.settings.reset_password_requires_verification = True
-else:
-    auth = NoAuth()
+web2py_auth = Auth(db, hmac_key=Auth.get_or_create_key())
+web2py_auth.define_tables()
+web2py_auth.settings.actions_disabled.append('register')
+web2py_auth.settings.actions_disabled.append('request_reset_password')
+web2py_auth.settings.reset_password_requires_verification = True
+
+auth = montag_auth.MontagAuth(web2py_auth, request)
 
 crud, service, plugins = Crud(db), Service(), PluginManager()

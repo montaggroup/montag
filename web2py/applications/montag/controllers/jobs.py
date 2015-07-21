@@ -11,7 +11,7 @@ def _friend_name(friend_id):
     return friend['name']
 
 
-@auth.requires_login()
+@auth.requires_friend_view_permission()
 def list_jobs():
     response.title = "List Jobs - Montag"
 
@@ -23,14 +23,14 @@ def list_jobs():
     return dict(job_infos=job_infos)
 
 
-@auth.requires_login()
+@auth.requires_friend_view_permission()
 def clear_completed():
     com_service = pyrosetup.comservice()
     com_service.clean_jobs()
     redirect('list_jobs')
 
 
-@auth.requires_login()
+@auth.requires_friend_view_permission()
 def cancel_job():
     job_id = request.args[0]
     com_service = pyrosetup.comservice()
