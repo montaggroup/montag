@@ -144,9 +144,9 @@ def stop(service_process):
     service_process.wait(timeout=5)
 
 
-def stop_all_ignoring_exceptions(verbose=False):
+def stop_all_ignoring_exceptions(verbose=False, name_filter_fct=lambda x: True):
     services_status = get_current_services_status()
-    for name in names[::-1]:
+    for name in filter(name_filter_fct, names[::-1]):
         if services_status[name]['status'] != 'not running':
             if verbose:
                 print 'stopping service {}'.format(name)
