@@ -17,12 +17,12 @@ def do_list_services(args):
         print 'service %s is %s (pid=%d)' % (name, services_status[name]['status'], services_status[name]['pid'])
 
 
-def do_start_services(args):
+def do_start_services(args, name_filter_fct=lambda x: True):
     services.log_level = args.log_level
     services.log_path = args.log_path
 
     services_status = services.get_current_services_status()
-    for name in services.names:
+    for name in filter(name_filter_fct, services.names):
         if services_status[name]['status'] == 'not running':
             print 'starting service {}, log {}'.format(name, services.logfile_path(name))
             try:
@@ -52,14 +52,18 @@ def _wait_for_db_ping_ok():
 
     return db_ok
 
-def do_stop_services(args):
-    services.stop_all_ignoring_exceptions(verbose=True)
+def do_stop_services(args, name_filter_fct=lambda x: True):
+    services.stop_all_ignoring_exceptions(verbose=True, name_filter_fct=name_filter_fct)
 
 
 
 def do_restart_services(args):
-    do_stop_services(args)
-    do_start_services(args)
+    if args.web2py_only:
+        do_stop_services(args, name_filter_fct=lambda x: 'web2py' in x)
+        do_start_services(args, name_filter_fct=lambda x: 'web2py' in x)
+    else:
+        do_stop_services(args)
+        do_start_services(args)
 
 
 pydb.config.read_config()
@@ -81,6 +85,8 @@ parser_stop.set_defaults(func=do_stop_services)
 parser_restart = subparsers.add_parser('restart', help='stop services')
 parser_restart.add_argument('--log-level', '-L', help='Start services with log level', dest='log_level')
 parser_restart.add_argument('--log-path', '-P', help='set services log path', dest='log_path')
+parser_restart.add_argument('--web2py-only', '-w', action="store_true", default=False, help='only restart web2py')
+
 parser_restart.set_defaults(func=do_restart_services, debug=False, log_level='WARNING', log_path=services.log_path)
 
 args = parser.parse_args()
