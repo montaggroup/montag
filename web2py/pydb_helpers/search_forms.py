@@ -1,7 +1,7 @@
 import pydb
 import pydb.pyrosetup
 from gluon import *
-
+import time
 
 SEARCH_ITEMS_PER_PAGE = 20
 
@@ -50,6 +50,7 @@ def build_search_form(pdb):
                   pydb.TomeType.Fiction: 'Fiction',
                   pydb.TomeType.NonFiction: 'Non-Fiction',
                   "Z": "Don't Care"})),
+        hidden={'nocache': time.time()},
         submit_button='Search',
         _method='GET')
     return form
