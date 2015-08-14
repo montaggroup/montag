@@ -121,7 +121,7 @@ class TcpTransportProtocol(Protocol):
     def _check_message_queue(self):
         if self.delay_active:
             return
-        self._really_pump_message_queue()
+        reactor.callLater(0, self._really_pump_message_queue)
 
     def message_queue_size(self):
         size = 0
