@@ -15,7 +15,7 @@ def _select_author_merge_partner_form(first_author):
     return form
 
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def select_author_merge_partner():
     first_author_guid = request.args[0]
     first_author = pdb.get_author_by_guid(first_author_guid)
@@ -74,7 +74,7 @@ def _fetch_tomes_by_author(author_id):
     return tomelist
 
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def confirm_merge_authors():
     first_author_guid = request.args[0]
     first_author = pdb.get_author_by_guid(first_author_guid)
@@ -95,7 +95,7 @@ def confirm_merge_authors():
             'second_author': second_author, 'second_author_tomes': second_author_tomes}
     
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def execute_merge_authors():
     first_author_guid = request.args[0]
     second_author_guid = request.args[1]
@@ -120,7 +120,7 @@ def _select_tome_merge_partner_form(first_tome):
     return form
 
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def select_tome_merge_partner():
     first_tome_guid = request.args[0]
     first_tome = pdb.get_tome_document_by_guid(first_tome_guid, keep_id=True,
@@ -158,7 +158,7 @@ def select_tome_merge_partner():
     return retval
 
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def confirm_merge_tomes():
     first_tome_guid = request.args[0]
     first_tome = pdb.get_tome_document_by_guid(first_tome_guid, keep_id=True, include_local_file_info=True,
@@ -178,7 +178,7 @@ def confirm_merge_tomes():
     return {'first_tome': first_tome, 'second_tome': second_tome}
 
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def execute_merge_tomes():
     first_tome_guid = request.args[0]
     second_tome_guid = request.args[1]

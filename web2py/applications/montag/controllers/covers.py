@@ -15,7 +15,7 @@ from pydb import ebook_metadata_tools
 
 DEFAULT_COVER_FIDELITY = 80.0
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def edit_covers():
     tome_id = request.args[0]
     tome = pdb.get_tome(tome_id)
@@ -53,7 +53,7 @@ def edit_covers():
             'available_content': available_content, 'current_cover': current_cover}
 
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def edit_covers_compact():
     return edit_covers()
 
@@ -64,7 +64,7 @@ def _set_cover_from_content_form():
     return form
 
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def set_cover_from_content():
     tome_id = request.args[0]
     content_hash = request.args[1]
@@ -112,7 +112,7 @@ def _set_main_cover_form():
     return form
 
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def set_main_cover():
     tome_id = request.args[0]
     file_hash = request.args[1]
@@ -156,7 +156,7 @@ def _stream_image(file_hash, extension):
     return response.stream(plain_file, chunk_size=20000)
 
 
-@auth.requires_login()
+@auth.requires_data_view_permission()
 def get_cover_image():
     image_hash = request.args[0]
     image_extension = request.args[1]
@@ -164,7 +164,7 @@ def get_cover_image():
     return _stream_image(image_hash, image_extension)
 
 
-@auth.requires_login()
+@auth.requires_data_view_permission()
 def get_best_cover():
     tome_id = request.args[0]
 
@@ -195,7 +195,7 @@ def _stream_image_from_content(file_hash, extension):
         return response.stream(cover_target, chunk_size=20000)
 
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def extract_cover_image_from_content():
     file_hash = request.args[0]
     file_extension = request.args[1]

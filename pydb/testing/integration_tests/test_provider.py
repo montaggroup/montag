@@ -8,6 +8,7 @@ import pydb.com.server
 from pydb.testing.test_data import get_book_path
 import logging
 import mock
+import pydb.config
 
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("test_provider")
@@ -15,7 +16,8 @@ logger = logging.getLogger("test_provider")
 
 class TestProvider(unittest.TestCase):
     def setUp(self):
-        pass
+        # initialize intransparent dependency
+        pydb.config.read_config()
 
     def test_disconnect_detection_during_file_providing_works(self):
         session_friend_id = 4

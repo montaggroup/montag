@@ -1,7 +1,7 @@
 {{extend 'layout.html'}}
 {{include 'default/snippets.html'}}
 
-{{if is_secure_channel(request):}}
+{{if auth.has_privilege('administer'):}}
 	{{=form}}
 
 {{ =A("Remove Friend Entry", _class='button', _href=URL('remove_friend', args=[friend_id] )) }}

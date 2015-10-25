@@ -5,11 +5,19 @@ extend_head = XML('<link rel="search" type="application/opensearchdescription+xm
 {{extend 'layout.html'}}
 
 <ul>
-    <li> {{ =A("Show Statistics", _href=URL( 'stats', 'show_stats',args=[] )) }}</li>
+
+
+{{ if auth.has_privilege('data_view'): }}
     <li> {{ =A("Show Random Tomes", _href=URL( 'random_tomes',args=[] )) }}</li>
+{{pass}}
+{{ if auth.has_privilege('friends_view'): }}
     <li> {{ =A("List Jobs", _href=URL( 'jobs', 'list_jobs',args=[] )) }}</li>
+{{pass}}
+{{ if auth.has_privilege('statistics_view'): }}
+    <li> {{ =A("Show Statistics", _href=URL( 'stats', 'show_stats',args=[] )) }}</li>
     <li> {{ =A("Check Databases for Consistency", _href=URL( 'stats', 'show_database_check',args=[] )) }} </li>
     <li> {{ =A("Check Main Database (Merge DB) for Content Problems", _href=URL( 'stats', 'show_database_content_check',args=[] )) }} </li>
+{{pass}}
 </ul>
 
 

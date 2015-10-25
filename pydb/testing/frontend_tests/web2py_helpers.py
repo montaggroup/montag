@@ -1,5 +1,6 @@
 import os
 import sys
+import pydb.config
 
 
 def prepare_web2py():
@@ -10,7 +11,9 @@ def prepare_web2py():
     os.chdir(web2py_path)
 
 
-def build_request(controller_name, function_name):
+def build_request(testcase_folder, controller_name, function_name):
+    # we need to read the config here as this is normally done by web2py service which we do not use here
+    pydb.config.read_config(os.path.join(testcase_folder, 'pydb.conf'))
     env = _prepare_environment(controller_name)
     return Web2pyRequest(env, controller_name, function_name)
 

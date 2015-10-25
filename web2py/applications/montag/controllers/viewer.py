@@ -3,7 +3,7 @@ if False:
     from pydb_helpers.ide_fake import *
 
 
-@auth.requires_login()
+@auth.requires_data_view_permission()
 def viewfile():
     tome_id = request.args[0]
     file_hash = request.args[1]
@@ -18,7 +18,7 @@ def viewfile():
     return {'tome': tome_doc, 'tome_id': tome_id, 'extension': extension, 'file_hash': file_hash}
 
 
-@auth.requires_login()
+@auth.requires_data_view_permission()
 def viewpdf():
     tome_id = request.args[0]
     file_hash = request.args[1]

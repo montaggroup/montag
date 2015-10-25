@@ -7,7 +7,9 @@ Tome not found in database.
 <div class='tome'>
     <div class='tome_text_container'>
         <span class="tome_info_block"> {{=tome_link(tome)}} by&nbsp;{{=authors_links(tome['authors'])}}
+        {{if auth.has_privilege('data_edit'):}}
          <span class="edit"> {{ =A("edit", _id='edit_tome', _href=URL( 'edit_tome',args=[tome['guid']] )) }} </span>
+        {{pass}}
         </span><br>
         {{show_tome_edition_tags_block(tome)}}
 
@@ -28,9 +30,11 @@ Tome not found in database.
             <img src="{{=URL( 'covers', 'get_best_cover', args=[tome['id']]) }}" alt="Large Cover" />
         </div>
         {{ pass }}
+        {{if auth.has_privilege('data_edit'):}}
         <span class="edit"> {{ =A("edit covers", _href=URL( 'covers', 'edit_covers',args=[tome['id']] )) }} </span>
          -
         <span class="edit"> {{ =A("upload cover", _href=URL( 'upload', 'upload_cover',args=[tome['id']] )) }} </span>
+        {{pass}}
         </div>
     {{ pass }}
 

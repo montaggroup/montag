@@ -19,7 +19,7 @@ from pydb_helpers.html_helpers import generate_download_filename
 from pydb_helpers import search_forms
 
 
-@auth.requires_login()
+@auth.requires_data_view_permission()
 def getfile():
     tome_id = request.args[0]
     file_hash = request.args[1]
@@ -32,21 +32,21 @@ def getfile():
     return _stream_tome_file(tome_id, tome_file, plain_file)
 
 
-@auth.requires_login()
+@auth.requires_data_view_permission()
 def getfile_as_mobi():
     tome_id = request.args[0]
     file_hash = request.args[1]
     return _get_converted_file(tome_id, file_hash, 'mobi')
 
 
-@auth.requires_login()
+@auth.requires_data_view_permission()
 def getfile_as_epub():
     tome_id = request.args[0]
     file_hash = request.args[1]
     return _get_converted_file(tome_id, file_hash, 'epub')
 
 
-@auth.requires_login()
+@auth.requires_data_view_permission()
 def getfile_as_pdf():
     tome_id = request.args[0]
     file_hash = request.args[1]
@@ -123,7 +123,7 @@ def _stream_tome_file(tome_id, tome_file, contents_stream):
     return response.stream(enriched_file, chunk_size=20000)
 
 
-@auth.requires_login()
+@auth.requires_data_view_permission()
 def get_cover():
     tome_id = request.args[0]
 
@@ -144,7 +144,7 @@ def get_cover():
     return response.stream(plain_file, chunk_size=20000)
 
 
-@auth.requires_login()
+@auth.requires_data_view_permission()
 def timeline():
     items_per_page = 20
 
@@ -177,7 +177,7 @@ def timeline():
     }
 
 
-@auth.requires_login()
+@auth.requires_data_view_permission()
 def random_tomes():
     response.title = "Random Tomes - Montag"
     
@@ -194,13 +194,13 @@ def random_tomes():
     }
 
 
-@auth.requires_login()
+@auth.requires_data_view_permission()
 def timeline_json():
     result = timeline()
     return json.dumps(result['tome_info'])
 
 
-@auth.requires_login()
+@auth.requires_data_view_permission()
 def view_author():
     author_guid = request.args[0]
 
@@ -228,7 +228,7 @@ def view_author():
     }
 
 
-@auth.requires_login()
+@auth.requires_data_view_permission()
 def view_tome():
     tome_guid = request.args[0]
     
@@ -247,7 +247,7 @@ def view_tome():
     }
 
 
-@auth.requires_login()
+@auth.requires_data_view_permission()
 def view_tome_debug_info():
     tome_guid = request.args[0]
     
@@ -283,7 +283,7 @@ def _author_edit_form(author, required_fidelity):
     return form
 
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def edit_author():
     author_guid = request.args[0]
     author_doc = pdb.get_author_document_by_guid(author_guid, keep_id=True)
@@ -316,7 +316,7 @@ def _is_tome_or_author_guid(string):
 def _is_file_hash(string):
     return re.match("[0-9a-z]{64}", string)
 
-@auth.requires_login()
+@auth.requires_data_view_permission()
 def tomesearch():
     retval = {}
     form = search_forms.build_search_form(pdb)
@@ -389,7 +389,7 @@ def _tome_synopses_form(synopsis):
     return form
 
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def add_synopsis_to_tome():
     tome_guid = request.args[0]
     tome = pdb.get_tome_document_by_guid(tome_guid, keep_id=True,
@@ -404,12 +404,13 @@ def add_synopsis_to_tome():
     return _edit_tome(tome)
     
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def edit_tome():
     tome_guid = request.args[0]
     tome_doc = pdb.get_tome_document_by_guid(tome_guid, keep_id=True,
                                              include_local_file_info=True, include_author_detail=True)
-    if tome_doc is None:
+
+    if tome_doc is None or 'title' not in tome_doc:
         session.flash = "No such tome"
         redirect(URL('tomesearch'))
     return _edit_tome(tome_doc)
@@ -482,7 +483,7 @@ def _edit_tome(tome_doc):
     return dict(form=form, tome=tome_doc, tome_id=tome_id, synforms=synforms, required_fidelity=required_tome_fidelity)
 
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def edit_tome_file_link():
     tome_id = request.args[0]
     file_hash = request.args[1]
@@ -520,7 +521,7 @@ def edit_tome_file_link():
     return dict(form=form, tome=tome, file=tome_file)
 
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def link_tome_to_file():
     tome_id = request.args[0]
     tome = pdb.get_tome(tome_id)
@@ -553,7 +554,7 @@ def link_tome_to_file():
     return dict(form=form, tome=tome)
 
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def edit_tome_author_link():
     tome_id = request.args[0]
     author_id = request.args[1]
@@ -598,7 +599,7 @@ def edit_tome_author_link():
     return dict(form=form, tome=tome, author=tome_author, authors=tome_authors)
 
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def link_tome_to_author():
     tome_id = request.args[0]
     tome = pdb.get_tome(tome_id)
@@ -638,13 +639,13 @@ def link_tome_to_author():
     return dict(form=form, tome=tome, authors=tome_authors)
 
 
-@auth.requires_login()
+@auth.requires_data_view_permission()
 def more_actions():
     response.title = "More Actions - Montag"
     return dict()
 
 
-@auth.requires_login()
+@auth.requires_data_view_permission()
 def index():
     redirect(URL('tomesearch'))
     return dict()

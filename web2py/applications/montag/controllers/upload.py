@@ -46,7 +46,7 @@ def _title_suggestion(filename):
     return title_suggestion
 
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def upload_file():
     response.enable_dropzone = True
     response.title = "Add Tome - Montag"
@@ -82,7 +82,7 @@ def upload_file():
     return dict(form=form)
 
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def upload_file_to_tome():
     tome_guid = request.args[0]
 
@@ -151,7 +151,7 @@ def _add_tome_from_file_form(metadata):
     return form
 
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def add_tome_from_file():
     file_hash = request.args[0]
     file_extension = request.args[1]
@@ -203,7 +203,7 @@ def _upload_cover_form():
     return form
 
 
-@auth.requires_login()
+@auth.requires_data_edit_permission()
 def upload_cover():
     tome_id = request.args[0]
     tome = pdb.get_tome(tome_id)

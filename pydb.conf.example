@@ -12,3 +12,12 @@ read_timeout_seconds=1200
 
 [web]
 enable_auth=False
+
+[permissions]
+; valid roles: viewer, editor, admin
+; set to empty to prevent access
+
+role_anonymous_all = editor
+role_anonymous_localhost = admin
+role_authenticated_all = editor
+role_authenticated_localhost = admin
