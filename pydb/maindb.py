@@ -869,7 +869,9 @@ class MainDB(object):
     def find_or_create_author(self, author_name, fidelity):
         """ returns a merge db author id """
         author_name = author_name.strip()
-        author_candidates = self.find_authors(author_name)
+        author_candidates = self.find_authors_with_same_name_key(author_name)
+        if len(author_candidates) > 1:  # multiple hits, filter more strict
+            author_candidates = self.find_authors(author_name)
 
         if len(author_candidates) == 1:  # we have only one candidate, use it
             return author_candidates[0]['id']
