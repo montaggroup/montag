@@ -181,7 +181,8 @@ class MainDB(object):
         return self.merge_db.get_tome_by_guid(tome_guid)
 
     def get_tome_document_by_guid(self, tome_guid, ignore_fidelity_filter=False,
-                                  include_author_detail=False, keep_id=False, include_local_file_info=False):
+                                  include_author_detail=False, keep_id=False, include_local_file_info=False,
+                                  hide_private_tags=True):
         """ returns the full tome document (including files, tags..) for a given tome identified by id
             a tome document may be empty (only guid, no title key) if the fidelity is below the relevance threshold
         """
@@ -194,6 +195,9 @@ class MainDB(object):
         if include_local_file_info:
             for file_info in result['files']:
                 self._add_local_file_info(file_info)
+
+        if hide_private_tags:
+            result['tags'] = [tag for tag in result['tags'] if not tag['tag_value'].startswith('%')]
 
         return result
 
@@ -1013,7 +1017,7 @@ class MainDB(object):
             source_guid, target_guid = target_guid, source_guid
             source_tome, target_tome = target_tome, source_tome
 
-        new_tome_doc = self.get_tome_document_by_guid(target_guid)
+        new_tome_doc = self.get_tome_document_by_guid(target_guid, hide_private_tags=False)
 
         if data_tome != target_tome:  # copy data from data tome over
             for key, value in data_tome.iteritems():

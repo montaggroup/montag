@@ -262,7 +262,7 @@ def do_edit_tome(args, db):
     if args.load_local:
         doc = db().get_local_tome_document_by_guid(args.guid, args.ignore_fidelity_filter)
     else:
-        doc = db().get_tome_document_by_guid(args.guid, args.ignore_fidelity_filter)
+        doc = db().get_tome_document_by_guid(args.guid, args.ignore_fidelity_filter, hide_private_tags=False)
 
     edited_doc = let_user_edit_document(doc, detect_unchanged=not args.load_local)
     if edited_doc is not None:
@@ -318,7 +318,7 @@ def do_export(args, db, outfile=sys.stdout):
             first = False
         else:
             outfile.write(",\n")
-        tome = db().get_tome_document_by_guid(tome_guid)
+        tome = db().get_tome_document_by_guid(tome_guid, hide_private_tags=True)
         tome_json = json.dumps(tome, indent=json_indent, separators=json_separators)
         outfile.write(tome_json)
     outfile.write("]\n")
@@ -500,7 +500,7 @@ def do_create_satellite(args, db):
 
         tomes_to_insert = []
         for tome_guid in all_tome_guids:
-            tome = db().get_tome_document_by_guid(tome_guid)
+            tome = db().get_tome_document_by_guid(tome_guid, hide_private_tags=True)
 
             tomes_to_insert.append(tome)
             if len(tomes_to_insert) >= insert_bulk_size:
