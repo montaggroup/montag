@@ -73,6 +73,40 @@ class TestGetBestRelevantCoverAvailable(unittest.TestCase):
         self.assertIsNone(result)
 
 
+class TestGetTomeByGuid(unittest.TestCase):
+    def setUp(self):
+        self.main_db, self.main_db_mocks = build_main_db_with_mocks()
+        self.main_db_mocks.merge_db.get_tome_document_by_guid.return_value = {
+            'title': 'a tome',
+            'guid': ' 1234',
+            'tags': [
+                {
+                    'tag_value': '%this_is_private',
+                    'fidelity': 70
+                },
+                {
+                    'tag_value': 'this_is_not_private',
+                    'fidelity': 80
+                },
+                  {
+                    'tag_value': '<this_is_detail',
+                    'fidelity': 80
+                }
+            ]
+        }
+
+    def test_if_hide_private_tags_is_disabled_all_tags_are_returned(self):
+        doc = self.main_db.get_tome_document_by_guid('1234', hide_private_tags=False)
+
+        tags = doc['tags']
+        self.assertEqual(len(tags), 3)
+
+    def test_if_hide_private_tags_is_enabled_private_tags_are_not_returned(self):
+        doc = self.main_db.get_tome_document_by_guid('1234', hide_private_tags=True)
+
+        tags = doc['tags']
+        self.assertEqual(len(tags), 2)
+
 if __name__ == '__main__':
     unittest.main()
 

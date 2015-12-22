@@ -1,3 +1,4 @@
+# coding=utf-8
 import copy
 import logging
 from pydb import network_params
@@ -135,3 +136,11 @@ def calculate_required_edit_fidelity(merge_db_item, items_from_friends):
     if required_fidelity > 100:
         required_fidelity = 100
     return required_fidelity
+
+
+def remove_detail_tags(tome_document):
+    """
+    edits the tome in place
+    :return: None
+    """
+    tome_document['tags'] = [tag for tag in tome_document['tags'] if not tag['tag_value'].startswith('<')]

@@ -1,7 +1,10 @@
+import time
+
+from gluon import *
+
 import pydb
 import pydb.pyrosetup
-from gluon import *
-import time
+from pydb import documents
 
 SEARCH_ITEMS_PER_PAGE = 20
 
@@ -60,22 +63,23 @@ def get_query_page(pdb, query, start_offset, end_offset):
     index_server = pydb.pyrosetup.indexserver()
     result_tome_ids = index_server.search_tomes(query)
 
-    tomelist = []
+    tome_documents = []
     for tome_id in result_tome_ids[start_offset:end_offset]:
         merge_tome = pdb.get_tome(tome_id)
         if merge_tome is not None:
             tome = pdb.get_tome_document_by_guid(merge_tome['guid'], keep_id=True,
                                                  include_local_file_info=True, include_author_detail=True,
                                                  hide_private_tags=False)
-            tomelist.append(tome)
+            documents.remove_detail_tags(tome)
+            tome_documents.append(tome)
 
     def tome_key(t):
         if not t['authors']:
             return ""
         return t['authors'][0]['detail']['name']
-    tomelist.sort(key=tome_key)
+    tome_documents.sort(key=tome_key)
 
-    return len(result_tome_ids), tomelist
+    return len(result_tome_ids), tome_documents
 
 
 def pass_paged_author_query_results_to_view(pdb, query, view_dict, page_number):

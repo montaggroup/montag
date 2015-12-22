@@ -14,6 +14,7 @@ from pydb import title
 from pydb import pyrosetup
 from pydb import ebook_metadata_tools
 from pydb import network_params
+from pydb import documents
 from pydb_helpers.pydb_functions import db_str_to_form, read_form_field
 from pydb_helpers.html_helpers import generate_download_filename
 from pydb_helpers import search_forms
@@ -159,16 +160,17 @@ def timeline():
     changed_tome_guids = pdb.get_tome_document_timeline(items_per_page, page_start)
     
     response.title = "Timeline - Montag"
-    tomelist = []
+    tome_documents = []
     for tome_index, tome_guid in enumerate(changed_tome_guids):
         tome = pdb.get_tome_document_by_guid(tome_guid, keep_id=True, include_local_file_info=True,
                                              include_author_detail=True, hide_private_tags=False)
         if 'title' in tome:
             tome['index'] = tome_index+1
-            tomelist.append(tome)
+            documents.remove_detail_tags(tome)
+            tome_documents.append(tome)
 
     return {
-        'tome_info': tomelist,
+        'tome_info': tome_documents,
         'title': 'Timeline',
         'page': page_number,
         'page_start': page_start,
@@ -182,15 +184,16 @@ def random_tomes():
     response.title = "Random Tomes - Montag"
     
     tomes = pdb.get_random_tomes(20)
-    tomelist = []
+    tome_documents = []
     for tome_index, tome_info in enumerate(tomes):
         tome = pdb.get_tome_document_by_guid(tome_info['guid'], include_local_file_info=True,
                                              include_author_detail=True, keep_id=True, hide_private_tags=False)
         tome['index'] = tome_index+1
-        tomelist.append(tome)
+        documents.remove_detail_tags(tome)
+        tome_documents.append(tome)
 
     return {
-        'tome_info': tomelist, 'title': 'Random Tomes'
+        'tome_info': tome_documents, 'title': 'Random Tomes'
     }
 
 
@@ -215,17 +218,18 @@ def view_author():
 
     response.title = u'{} - Montag'.format(author['name'])
 
-    tomelist = []
+    tome_documents = []
     for tome in tomes:
         if tome['author_link_fidelity'] >= network_params.Min_Relevant_Fidelity:
             tome = pdb.get_tome_document_by_guid(tome['guid'], keep_id=True,
                                                  include_local_file_info=True, include_author_detail=True,
                                                  hide_private_tags=False)
-            tomelist.append(tome)
+            documents.remove_detail_tags(tome)
+            tome_documents.append(tome)
 
     return {
         'author_info':  author,
-        'tome_info': tomelist
+        'tome_info': tome_documents
     }
 
 
@@ -374,7 +378,8 @@ def _tome_edit_form(tome, required_tome_fidelity):
                                  comment=TOOLTIP('Please use two letter ISO 639-1 codes (e.g. en for English).')),
                            Field('publication_year', default=db_str_to_form(tome['publication_year'])),
                            Field('tags', 'text', default=tome['tags'], requires=TagValidator(),
-                                 comment=TOOLTIP('Use Syntax: FIDELITY TAG_VALUE. Prefix a TAG_VALUE with % to make it private. Private tags are not synchronized with friends.')),
+                                 comment=TOOLTIP('Use Syntax: FIDELITY TAG_VALUE. <BR> Prefix a TAG_VALUE with % to make it private. Private tags are not synchronized with friends.<br>'
+                                                 'Prefix a TAG_VALUE with < to show it only on the tome detail page (it is still synchronized).')),
                            Field('type', default=tome['type'], widget=SQLFORM.widgets.radio.widget,
                                  requires=IS_IN_SET({TomeType.Fiction: 'fiction', TomeType.NonFiction: 'non-fiction'})),
                            Field('fidelity', requires=FidelityValidator(), default=required_tome_fidelity,
