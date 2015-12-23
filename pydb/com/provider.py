@@ -70,7 +70,7 @@ class Provider(object):
             yield deferred_wait(0)
 
         for tome_guid in changed_tome_guids:
-            tome = self.db.get_tome_document_by_guid(tome_guid)
+            tome = self.db.get_tome_document_by_guid(tome_guid, hide_private_tags=True)
             self.lower_layer.deliver_document("tome", tome)
             self._progress_made(number_documents_increment=1)
             yield deferred_wait(0)

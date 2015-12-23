@@ -162,7 +162,7 @@ def timeline():
     tomelist = []
     for tome_index, tome_guid in enumerate(changed_tome_guids):
         tome = pdb.get_tome_document_by_guid(tome_guid, keep_id=True, include_local_file_info=True,
-                                             include_author_detail=True)
+                                             include_author_detail=True, hide_private_tags=False)
         if 'title' in tome:
             tome['index'] = tome_index+1
             tomelist.append(tome)
@@ -185,7 +185,7 @@ def random_tomes():
     tomelist = []
     for tome_index, tome_info in enumerate(tomes):
         tome = pdb.get_tome_document_by_guid(tome_info['guid'], include_local_file_info=True,
-                                             include_author_detail=True, keep_id=True)
+                                             include_author_detail=True, keep_id=True, hide_private_tags=False)
         tome['index'] = tome_index+1
         tomelist.append(tome)
 
@@ -219,7 +219,8 @@ def view_author():
     for tome in tomes:
         if tome['author_link_fidelity'] >= network_params.Min_Relevant_Fidelity:
             tome = pdb.get_tome_document_by_guid(tome['guid'], keep_id=True,
-                                                 include_local_file_info=True, include_author_detail=True)
+                                                 include_local_file_info=True, include_author_detail=True,
+                                                 hide_private_tags=False)
             tomelist.append(tome)
 
     return {
@@ -233,7 +234,8 @@ def view_tome():
     tome_guid = request.args[0]
     
     tome = pdb.get_tome_document_by_guid(tome_guid, keep_id=True,
-                                         include_local_file_info=True, include_author_detail=True)
+                                         include_local_file_info=True, include_author_detail=True,
+                                         hide_private_tags=False)
     if 'title' not in tome:
         tome_guid = pdb.get_tome_fusion_target_guid(tome_guid)
         if tome_guid:
@@ -252,7 +254,8 @@ def view_tome_debug_info():
     tome_guid = request.args[0]
     
     tome = pdb.get_tome_document_by_guid(tome_guid, keep_id=True,
-                                         include_local_file_info=True, include_author_detail=True)
+                                         include_local_file_info=True, include_author_detail=True,
+                                         hide_private_tags=False)
     debug_info = pdb.get_debug_info_for_tome_by_guid(tome_guid)
     
     friends = debug_info['friends']
@@ -370,7 +373,8 @@ def _tome_edit_form(tome, required_tome_fidelity):
                            Field('principal_language', default=db_str_to_form(tome['principal_language']),
                                  comment=TOOLTIP('Please use two letter ISO 639-1 codes (e.g. en for English).')),
                            Field('publication_year', default=db_str_to_form(tome['publication_year'])),
-                           Field('tags', 'text', default=tome['tags'], requires=TagValidator()),
+                           Field('tags', 'text', default=tome['tags'], requires=TagValidator(),
+                                 comment=TOOLTIP('Use Syntax: FIDELITY TAG_VALUE. Prefix a TAG_VALUE with % to make it private. Private tags are not synchronized with friends.')),
                            Field('type', default=tome['type'], widget=SQLFORM.widgets.radio.widget,
                                  requires=IS_IN_SET({TomeType.Fiction: 'fiction', TomeType.NonFiction: 'non-fiction'})),
                            Field('fidelity', requires=FidelityValidator(), default=required_tome_fidelity,
@@ -393,7 +397,7 @@ def _tome_synopses_form(synopsis):
 def add_synopsis_to_tome():
     tome_guid = request.args[0]
     tome = pdb.get_tome_document_by_guid(tome_guid, keep_id=True,
-                                         include_local_file_info=True, include_author_detail=True)
+                                         include_local_file_info=True, include_author_detail=True, hide_private_tags=False)
     
     new_syn = {'guid': pdb.generate_guid(),
                'fidelity': network_params.Default_Manual_Fidelity,
@@ -408,7 +412,8 @@ def add_synopsis_to_tome():
 def edit_tome():
     tome_guid = request.args[0]
     tome_doc = pdb.get_tome_document_by_guid(tome_guid, keep_id=True,
-                                             include_local_file_info=True, include_author_detail=True)
+                                             include_local_file_info=True, include_author_detail=True,
+                                             hide_private_tags=False)
 
     if tome_doc is None or 'title' not in tome_doc:
         session.flash = "No such tome"
@@ -503,7 +508,7 @@ def edit_tome_file_link():
     field_names = ['file_extension', 'fidelity']
 
     if form.process(keepvalues=True).accepted:
-        doc = pdb.get_tome_document_by_guid(tome['guid'])
+        doc = pdb.get_tome_document_by_guid(tome['guid'], hide_private_tags=False)
         other_files = filter(lambda x: x['hash'] != file_hash, doc['files'])
         tome_file_doc = filter(lambda x: x['hash'] == file_hash, doc['files'])[0]
 
@@ -579,7 +584,7 @@ def edit_tome_author_link():
     response.title = u"Edit Author Link {} <=>  {} - Montag".format(tome_author['name'], title_text)
 
     if form.process(keepvalues=True).accepted:
-        doc = pdb.get_tome_document_by_guid(tome['guid'])
+        doc = pdb.get_tome_document_by_guid(tome['guid'], hide_private_tags=False)
         other_authors = filter(lambda x: x['guid'] != author_guid, doc['authors'])
         tome_author_doc = filter(lambda x: x['guid'] == author_guid, doc['authors'])[0]
 

@@ -36,5 +36,25 @@ class TestViewTome(unittest.TestCase):
         html = self.view_tome.render_result()
         self.assertIn('viewmaster', html)
 
+    def test_view_tome_with_a_tome_having_private_tag_returns_the_tag_and_view_renders(self):
+        author_id = self.pdb.add_author('viewmaster')
+        tome = database_helpers.add_sample_tome(self.pdb, author_id, upload_a_file=True, tag_values=["%secret"])
+        tome_guid = tome['guid']
+
+        self.view_tome.add_args(tome_guid)
+        res = self.view_tome.execute()
+        self.assertIn('tome', res)
+        result_tome = res['tome']
+
+        self.assertIn('tags', result_tome)
+        tags = result_tome['tags']
+        self.assertEqual(len(tags), 3)
+
+        private_tag_values = [tag['tag_value'] for tag in tags if tag['tag_value'].startswith('%')]
+        self.assertEqual(private_tag_values, ['%secret'])
+
+        html = self.view_tome.render_result()
+        self.assertIn('%secret', html)
+
 if __name__ == '__main__':
     unittest.main()

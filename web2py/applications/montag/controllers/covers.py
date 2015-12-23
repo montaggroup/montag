@@ -22,7 +22,7 @@ def edit_covers():
     tome_guid = tome['guid']
 
     tome = pdb.get_tome_document_by_guid(tome_guid, include_local_file_info=True,
-                                         include_author_detail=True, keep_id=True)
+                                         include_author_detail=True, keep_id=True, hide_private_tags=False)
 
     title_text = title.coalesce_title(tome['title'], tome['subtitle'])
     response.title = u'Edit Cover for {} - Montag'.format(title_text)
@@ -130,7 +130,7 @@ def set_main_cover():
         fidelity = read_form_field(form, 'fidelity')
         pdb.link_tome_to_file(tome_id, file_hash, file_size, file_extension, FileType.Cover, fidelity)
 
-        doc = pdb.get_tome_document_by_guid(tome['guid'])
+        doc = pdb.get_tome_document_by_guid(tome['guid'], hide_private_tags=False)
         other_files = filter(lambda x: x['hash'] != file_hash, doc['files'])
         tome_file_doc = filter(lambda x: x['hash'] == file_hash, doc['files'])[0]
         tome_file_doc['fidelity'] = fidelity
