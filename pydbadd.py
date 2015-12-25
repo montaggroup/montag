@@ -19,7 +19,7 @@ def read_metadata(filepath):
         if not os.path.exists(metadata_path):
             raise Exception('No metadata file found')
 
-    return pydb.opf.Metadata.from_file(metadata_path)
+    return pydb.opf.read_metadata_from_file(metadata_path)
 
 
 def title_split(title):
@@ -48,7 +48,10 @@ def add_file(db, filepath, fidelity, tome_type, delete_source):
     author_ids = db.find_or_create_authors(metadata.authors, fidelity=fidelity)
 
     title, subtitle, edition = title_split(metadata.title)
-    # print 'tome cands: ',tome_candidates
+
+    if metadata.edition is not None:
+        edition = metadata.edition
+
     print u'Metadata tags: {}'.format(metadata.tags)
     tome_id = db.find_or_create_tome(title, metadata.language, author_ids,
                                      subtitle, tome_type=tome_type,
