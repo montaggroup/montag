@@ -1,10 +1,11 @@
 import unittest
 import logging
-logging.basicConfig()
 
-import pydb.mergedb as mergedb
+from pydb import mergedb
 from pydb import FileType
 import pydb.testing.unittests
+
+logging.basicConfig()
 
 
 class TestCalculateItemsDifference(unittest.TestCase):

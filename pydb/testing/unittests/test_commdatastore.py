@@ -5,7 +5,7 @@ import pydb.commdatastore as commdatastore
 import pydb.testing.unittests
 
 
-class test_comm_data_activate_locking(unittest.TestCase):
+class TestCommDataActivateLocking(unittest.TestCase):
     def setUp(self):
         self.cds = commdatastore.CommDataStore(":memory:", pydb.testing.guess_schema_dir())
         self.passphrase = "hello"
@@ -46,7 +46,7 @@ class test_comm_data_activate_locking(unittest.TestCase):
         self.assertEquals(comm_data['secret'], u'öther_secret')
 
 
-class test_comm_data_store_unlock_without_locking_active(unittest.TestCase):
+class TestCommDataStoreUnlockWithoutLockingActive(unittest.TestCase):
     def setUp(self):
         self.cds = commdatastore.CommDataStore(":memory:", pydb.testing.guess_schema_dir())
 
@@ -60,12 +60,12 @@ class test_comm_data_store_unlock_without_locking_active(unittest.TestCase):
         self.assertRaises(OverflowError, self.cds.unlock, "a passphrase")
 
 
-class test_comm_data_store_derive_key(unittest.TestCase):
+class TestCommDataStoreDeriveKey(unittest.TestCase):
     def test_umlauts_in_passphrase_do_not_lead_to_crash(self):
         commdatastore._derive_key(u'ölölölöl', 'aaa', 5)
 
 
-class test_comm_data_store_unlock(unittest.TestCase):
+class TestCommDataStoreUnlock(unittest.TestCase):
     def setUp(self):
         self.passphrase = "hello123"
 

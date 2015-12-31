@@ -24,8 +24,7 @@ class TestMainSetup(unittest.TestCase):
     def setUp(self):
         self.main_db, _ = build_main_db_with_mocks()
 
-
-    def testPing(self):
+    def test_ping(self):
         self.assertEqual(self.main_db.ping(), 'pong')
 
 

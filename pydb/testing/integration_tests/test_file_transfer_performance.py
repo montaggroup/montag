@@ -1,8 +1,7 @@
 import unittest
-import sys
-import os
-
-sys.path.append(os.getcwd())
+import time
+import logging
+import mock
 
 import pydb.com.securechannel.aeshmacsecurechannel
 import pydb.com.securechannel.insecurechannel
@@ -12,9 +11,6 @@ import pydb.com.json_and_binary_session
 import pydb.com.session
 from pydb.testing.test_data import get_book_path
 from cStringIO import StringIO
-import time
-import logging
-import mock
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("test_file_transfer_performance")
@@ -29,6 +25,7 @@ class TestFileTransferPerformance(unittest.TestCase):
 
         self.received_file_contents = ""
 
+        # noinspection PyUnusedLocal
         def file_received(file_hash, extension, content, more_parts_follow):
             self.received_file_contents += content
 

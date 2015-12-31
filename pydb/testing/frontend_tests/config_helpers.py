@@ -1,5 +1,6 @@
 import os
 
+
 def get_config_file_path(testcase_folder):
     config_file_path = os.path.join(testcase_folder, 'pydb.conf')
     return config_file_path

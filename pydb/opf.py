@@ -2,7 +2,7 @@
 
 import logging
 import re
-import defusedxml.ElementTree as ET #use hardened xml implementation because reading unknown xml document
+import defusedxml.ElementTree as DefusedEtree  # use hardened xml implementation because reading unknown xml document
 
 logger = logging.getLogger('opf')
 
@@ -40,7 +40,7 @@ class Metadata:
             string = re.sub("  +", " ", string)
             return string
 
-        tree = ET.parse(filename)
+        tree = DefusedEtree.parse(filename)
         root = tree.getroot()
         result = cls()
         for child in root:

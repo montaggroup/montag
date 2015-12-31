@@ -3,12 +3,12 @@ import unittest
 import pydb.comservice as comservice
 
 
-class test_comservice_build(unittest.TestCase):
+class TestComserviceBuild(unittest.TestCase):
     def test_build_does_not_crash(self):
-        c = comservice.build()
+        comservice.build()
 
 
-class test_comservice_locking(unittest.TestCase):
+class TestComserviceLocking(unittest.TestCase):
     def setUp(self):
         self.cs = comservice.build()
 

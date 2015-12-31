@@ -3,7 +3,7 @@ import pydb.com.strategies.late_requester
 import mock
 
 
-class StrategyProgressTracker():
+class StrategyProgressTracker(object):
     def __init__(self):
         self.reported_current_phase_id = None
         self.reported_current_phase_name = None

@@ -16,7 +16,6 @@ class TestFileSendQueue(unittest.TestCase):
         self.file_server_mock = mock.MagicMock()
         self.file_server_mock.get_local_file_path.return_value = get_book_path('pg1661.epub')
 
-
         self.send_queue = pydb.com.file_send_queue.FileSendQueue(self.session_mock,
                                                                  self.file_server_mock,
                                                                  self.report_progress_mock,
@@ -24,7 +23,7 @@ class TestFileSendQueue(unittest.TestCase):
 
     def test_when_queue_is_empty_an_enqueue_call_leads_to_a_deliver_file_call(self):
         self.send_queue.enqueue('aaa')
-        self.session_mock.deliver_file.assert_called_once()
+        self.assertEquals(self.session_mock.deliver_file.call_count, 1)
 
     def test_when_sending_paused_on_an_empty_queue_an_enqueue_call_does_not_lead_to_a_deliver_file_call(self):
         self.send_queue.pause_sending()

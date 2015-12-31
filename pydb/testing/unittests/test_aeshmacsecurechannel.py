@@ -11,7 +11,7 @@ from pydb.com.securechannel.aeshmacsecurechannel import AesHmacSecureChannel
 used_module = 'pydb.com.securechannel.aeshmacsecurechannel'
 
 
-class test_secure_channel_server_mode(unittest.TestCase):
+class TestSecureChannelServerMode(unittest.TestCase):
     def setUp(self):
         self.upper_layer = Mock(spec=pydb.com.jsonsession.JsonSession)
         self.lower_layer = Mock(spec=pydb.com.transport.tcpclient.TcpClient)
@@ -36,7 +36,7 @@ class test_secure_channel_server_mode(unittest.TestCase):
         self.assertRaises(Exception, self.sc.message_received, "a" * 64)
 
 
-class test_secure_channel_client_mode(unittest.TestCase):
+class TestSecureChannelClientMode(unittest.TestCase):
     def setUp(self):
         self.upper_layer = Mock(spec=pydb.com.jsonsession.JsonSession)
         self.lower_layer = Mock(spec=pydb.com.transport.tcpclient.TcpClient)

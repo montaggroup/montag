@@ -6,10 +6,11 @@ import sys
 
 import Pyro4
 
-default_fidelity = 60
+DEFAULT_FIDELITY = 60
 
 from pydb import FileType
 from pydb import TomeType
+
 
 # REISA: RegExImportScannerAssistantToolThingy
 class Reisa(QtGui.QMainWindow):
@@ -59,10 +60,10 @@ class Reisa(QtGui.QMainWindow):
 
         print "Inserting: %s" % file_path
 
-        author_ids = self.db.find_or_create_authors(list(authors), fidelity=default_fidelity)
+        author_ids = self.db.find_or_create_authors(list(authors), fidelity=DEFAULT_FIDELITY)
 
         tome_id = self.db.find_or_create_tome(title, language, author_ids, None, tome_type=tome_type,
-                                              fidelity=default_fidelity)
+                                              fidelity=DEFAULT_FIDELITY)
 
         # \todo the file might already be linked to another tome,
         # that ain't generic or completely different - we should handle that
@@ -72,9 +73,9 @@ class Reisa(QtGui.QMainWindow):
         (file_id, file_hash, size) = self.file_server.add_file_from_local_disk(file_path, extension, move_file=True)
         if file_id:
             self.db.link_tome_to_file(tome_id, file_hash, size, file_extension=extension, file_type=FileType.Content,
-                                      fidelity=default_fidelity)
+                                      fidelity=DEFAULT_FIDELITY)
         if item['tags']:
-            self.db.add_tags_to_tome(tome_id, item['tags'], fidelity=default_fidelity)
+            self.db.add_tags_to_tome(tome_id, item['tags'], fidelity=DEFAULT_FIDELITY)
 
     def go_button_clicked(self):
         self.ui.table_widget.sortByColumn(3, QtCore.Qt.AscendingOrder)

@@ -7,7 +7,7 @@ import pydb.testing.unittests
 from pydb import TomeType
 
 
-class test_tome_statistics(unittest.TestCase):
+class TestTomeStatistics(unittest.TestCase):
     def setUp(self):
         # a merge db derives from base db
         self.merge_db = mergedb.MergeDB(":memory:", pydb.testing.guess_schema_dir(),
@@ -79,7 +79,7 @@ class test_tome_statistics(unittest.TestCase):
 
 
 # noinspection PyProtectedMember
-class test_schema_version(unittest.TestCase):
+class TestSchemaVersion(unittest.TestCase):
     def setUp(self):
         # a merge db derives from base db
         self.merge_db = mergedb.MergeDB(":memory:", pydb.testing.guess_schema_dir(),
@@ -95,7 +95,7 @@ class test_schema_version(unittest.TestCase):
         self.assertEquals(0, self.merge_db._get_schema_version())
 
 
-class test_data_files_equal(unittest.TestCase):
+class TestDataFilesEqual(unittest.TestCase):
     def test_file_compare_two_exact_copies_should_return_true(self):
         file_a = {
             "file_type": 1,

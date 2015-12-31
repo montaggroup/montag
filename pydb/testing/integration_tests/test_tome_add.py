@@ -1,14 +1,13 @@
 import unittest
 import logging
 
-logger = logging.getLogger('test_tome_add')
-
 import pydb
 import pydb.testing
 from pydb.testing.integration_tests import helpers
 
-
+logger = logging.getLogger('test_tome_add')
 logging.basicConfig(level=logging.WARN)
+
 
 class TestAddTome(unittest.TestCase):
     def setUp(self):
@@ -131,13 +130,13 @@ class TestFindOrCreateTome(unittest.TestCase):
 
     def test_in_the_presence_of_the_tome_already_existing_twice_function_will_use_the_one_with_smaller_guid_1(self):
         tome_id1 = self.main_db.add_tome('ti', 'lang', [self.author_id], guid="12341234123412341234123412341234")
-        tome_id2 = self.main_db.add_tome('ti', 'lang', [self.author_id], guid="23451234123412341234123412341234")
+        self.main_db.add_tome('ti', 'lang', [self.author_id], guid="23451234123412341234123412341234")
 
         tome_id3 = self._add_tome(title='ti', subtitle=None, publication_year=None, edition=None)
         self.assertEqual(tome_id3, tome_id1)
 
     def test_in_the_presence_of_the_tome_already_existing_twice_function_will_use_the_one_with_smaller_guid_2(self):
-        tome_id1 = self.main_db.add_tome('ti', 'lang', [self.author_id], guid="52341234123412341234123412341234")
+        self.main_db.add_tome('ti', 'lang', [self.author_id], guid="52341234123412341234123412341234")
         tome_id2 = self.main_db.add_tome('ti', 'lang', [self.author_id], guid="23451234123412341234123412341234")
 
         tome_id3 = self._add_tome(title='ti', subtitle=None, publication_year=None, edition=None)
@@ -146,7 +145,7 @@ class TestFindOrCreateTome(unittest.TestCase):
     def test_in_the_presence_of_the_tome_already_existing_twice_function_will_ignore_ones_with_low_fidelity(self):
         tome_id1 = self.main_db.add_tome('ti', 'lang', [self.author_id],
                                          guid="52341234123412341234123412341234", fidelity=50)
-        tome_id2 = self.main_db.add_tome('ti', 'lang', [self.author_id],
+        self.main_db.add_tome('ti', 'lang', [self.author_id],
                                          guid="23451234123412341234123412341234", fidelity=10)
 
         tome_id3 = self._add_tome(title='ti', subtitle=None, publication_year=None, edition=None)

@@ -1,5 +1,7 @@
 import unittest
+
 import pydb.pyrosetup
+import pydb.testing
 
 import service_helpers
 import web2py_helpers

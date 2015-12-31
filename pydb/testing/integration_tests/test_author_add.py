@@ -1,13 +1,11 @@
 import unittest
-
 import logging
-logger = logging.getLogger('test_author_add')
 
 from pydb.testing.integration_tests import helpers
 import pydb.testing
 
+logger = logging.getLogger('test_author_add')
 logging.basicConfig(level=logging.INFO)
-
 
 
 class TestAddAuthor(unittest.TestCase):

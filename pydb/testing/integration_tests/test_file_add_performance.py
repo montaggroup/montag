@@ -26,14 +26,12 @@ class TestFileAddPerformance(unittest.TestCase):
         pass
 
     def test_add_an_epub(self):
-
         for i in xrange(10):
             pydb_base_dir = tempfile.mkdtemp('pydb_file_add_performance')
             pydbserver = mock.MagicMock()
             self.file_server = pydb.fileserver.build(os.path.join(pydb_base_dir, 'filestore'), pydbserver)
             time.sleep(0.5)
 
-            script_path = os.path.dirname(__file__)
             file_path = get_book_path('pg1661.epub')
 
             # read the file to fill the os cache

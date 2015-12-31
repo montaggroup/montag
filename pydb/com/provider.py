@@ -1,9 +1,10 @@
+import logging
+
 from twisted.internet import defer
 from twisted.internet import reactor
 from twisted.internet.task import deferLater
-import logging
+
 import file_send_queue
-import twisted
 
 logger = logging.getLogger("com.provider")
 

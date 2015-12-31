@@ -10,7 +10,7 @@ txt_file_path = get_book_path('pg1661.txt')
 
 def extract_cover_from_file(file_path, extension):
     with open(file_path, 'rb') as source_stream:
-        return etools.get_cover_image(source_stream, 'epub')
+        return etools.get_cover_image(source_stream, extension)
 
 
 class TestCoverExtraction(unittest.TestCase):

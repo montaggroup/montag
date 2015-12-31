@@ -2,7 +2,7 @@ import unittest
 import pydb.filedownloadmonitor as filedownloadmonitor
 
 
-class test_calculate_delete_all(unittest.TestCase):
+class TestCalculateDeleteAll(unittest.TestCase):
     def setUp(self):
         self.monitor = filedownloadmonitor.FileDownloadMonitor()
 

@@ -1,13 +1,9 @@
 import unittest
-import sys
-import os
-
-sys.path.append(os.getcwd())
+import logging
+import mock
 
 import pydb.com.server
 from pydb.testing.test_data import get_book_path
-import logging
-import mock
 import pydb.config
 
 logging.basicConfig(level=logging.DEBUG)

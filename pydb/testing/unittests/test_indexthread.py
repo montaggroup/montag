@@ -1,7 +1,8 @@
 import unittest
 import pydb.indexthread
 
-class test_fetch_tomes(unittest.TestCase):
+
+class TestFetchTomes(unittest.TestCase):
     def setUp(self):
         self.merge_db = MockMergeDB()
 
@@ -34,7 +35,7 @@ class test_fetch_tomes(unittest.TestCase):
         self.assertEqual(author['name'], 'high link')
 
 
-class MockMergeDB():
+class MockMergeDB(object):
     def __init__(self):
         self.tomes = {}
         self.tome_guid_to_id = {}

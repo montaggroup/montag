@@ -3,12 +3,11 @@ import unittest
 import pydb.crypto
 
 
-class test_aes_ctr_interface_encryption(unittest.TestCase):
+class TestAesCtrInterfaceEncryption(unittest.TestCase):
     def setUp(self):
         self.initial_ctr_val = 0
         self.aes256_key = str(bytearray.fromhex('000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f'))
         self.acc = pydb.crypto.AesCtr(self.aes256_key, self.initial_ctr_val)
-        pass
 
     def test_empty(self):
         pass

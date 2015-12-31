@@ -1,5 +1,5 @@
 import pydb.zipfile.zipfile as zipfile
-import xml.etree.ElementTree as etree
+import xml.etree.ElementTree as ElementTree
 import defusedxml.ElementTree as defused_etree
 import re
 import logging
@@ -9,7 +9,7 @@ import zlib
 logger = logging.getLogger('epub')
 logger.addHandler(logging.NullHandler())
 
-etree.register_namespace("", "http://www.idpf.org/2007/opf")
+ElementTree.register_namespace("", "http://www.idpf.org/2007/opf")
 
 
 def _get_path_of_content_opf(zip_file):
@@ -76,7 +76,7 @@ def clear_metadata(instream, outstream):
                     except zipfile.BadZipfile, e:
                         raise ValueError("Caught a BadZipFile exception: %s" % repr(e))
 
-                    new_content = etree.tostring(root)
+                    new_content = ElementTree.tostring(root)
                     _write_content_opf(outzip, opf_path, new_content)
     except zipfile.BadZipfile:
         raise ValueError("Unable to open epub zip")
@@ -115,18 +115,18 @@ def add_metadata(instream, outstream, author_docs, tome_doc, tome_file):
                         main_element.remove(node_to_remove)
 
                     for author_doc in author_docs:
-                        author_el = etree.SubElement(main_element, "{http://purl.org/dc/elements/1.1/}creator",
-                                                     {"{http://www.idpf.org/2007/opf}role": "aut"})
+                        author_el = ElementTree.SubElement(main_element, "{http://purl.org/dc/elements/1.1/}creator",
+                                                           {"{http://www.idpf.org/2007/opf}role": "aut"})
                         author_el.text = author_doc['name']
-                    title_el = etree.SubElement(main_element, "{http://purl.org/dc/elements/1.1/}title")
+                    title_el = ElementTree.SubElement(main_element, "{http://purl.org/dc/elements/1.1/}title")
                     title_el.text = title.coalesce_title(tome_doc['title'], tome_doc['subtitle'])
-                    language_el = etree.SubElement(main_element, "{http://purl.org/dc/elements/1.1/}language")
+                    language_el = ElementTree.SubElement(main_element, "{http://purl.org/dc/elements/1.1/}language")
                     language_el.text = tome_doc['principal_language']
 
             with zipfile.ZipFile(outstream, 'w') as outzip:
                 _copy_zip_contents(inzip, outzip, [opf_path])
 
-                new_content = etree.tostring(root)
+                new_content = ElementTree.tostring(root)
                 _write_content_opf(outzip, opf_path, new_content)
     except zipfile.BadZipfile:
         raise ValueError("Unable to open epub zip")

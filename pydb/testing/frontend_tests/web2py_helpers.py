@@ -18,7 +18,7 @@ def build_request(testcase_folder, controller_name, function_name):
     return Web2pyRequest(env, controller_name, function_name)
 
 
-class Web2pyRequest():
+class Web2pyRequest(object):
     def __init__(self, environment, controller_name, function_name):
         self.env = environment
         self.request = self.env['request']
@@ -54,6 +54,7 @@ class Web2pyRequest():
             self.execute()
 
         response = self.env['response']
+        # noinspection PyProtectedMember
         response._view_environment.update(self.env)
         view_file = '{}/{}.html'.format(self.controller_name, self.function_name)
         html = response.render(view_file, self.result)

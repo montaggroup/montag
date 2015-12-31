@@ -2,12 +2,11 @@ import unittest
 import copy
 
 import logging
-logger = logging.getLogger('test_merge_of_documents')
 
 import pydb.testing
 from pydb.testing.integration_tests import helpers
 
-
+logger = logging.getLogger('test_merge_of_documents')
 logging.basicConfig(level=logging.INFO)
 
 tome_doc_friend_1 = {

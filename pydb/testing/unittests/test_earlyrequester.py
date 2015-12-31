@@ -3,7 +3,7 @@ import pydb.com.strategies.early_requester
 import mock
 
 
-class test_early_requester(unittest.TestCase):
+class TestEarlyRequester(unittest.TestCase):
     def setUp(self):
         self.provider = mock.MagicMock()
         self.metadata_requester = mock.MagicMock()

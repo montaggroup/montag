@@ -16,6 +16,7 @@ RoleConfig = namedtuple('RoleConfig', ['role_anonymous_all',
                                        'role_authenticated_all',
                                        'role_authenticated_localhost'])
 
+
 class MontagAuth(object):
     def __init__(self, web2py_auth, request):
         self.web2py_auth = web2py_auth

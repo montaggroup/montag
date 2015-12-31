@@ -2,24 +2,19 @@ import unittest
 import os
 import time
 import tempfile
-
 import logging
-
-logging.basicConfig(level=logging.WARNING)
 
 import pydb.fileserver
 import pydb.maindb
 import pydb.testing
 from pydb.testing.test_data import get_book_path
 
-
+logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("test_file_server")
 
 
 class TestFileServer(unittest.TestCase):
     def setUp(self):
-        script_path = os.path.dirname(__file__)
-
         pydb_base_dir = tempfile.mkdtemp('test_file_server')
         pydbserver = pydb.maindb.build(os.path.join(pydb_base_dir, 'db'),
                                        pydb.testing.guess_schema_dir())

@@ -13,6 +13,5 @@ class TestMobiAddMetaData(unittest.TestCase):
             mobi.add_metadata(input, output, [], tome, tome_file)
 
 
-
 if __name__ == '__main__':
     unittest.main()

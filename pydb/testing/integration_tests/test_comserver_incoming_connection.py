@@ -2,10 +2,11 @@ import unittest
 import logging
 import mock
 
+from pydb.com.securechannel import aeshmacsecurechannel
 logger = logging.getLogger('test_comserver_incoming_connection')
 
-from pydb.com.securechannel import aeshmacsecurechannel
 logging.basicConfig(level=logging.DEBUG)
+
 
 def build_friend(id, name, add_secret=False, secret=None):
     friend_data = {

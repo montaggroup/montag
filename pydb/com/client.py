@@ -1,14 +1,14 @@
-from twisted.internet import reactor
-from json_and_binary_session import JsonAndBinarySession
-
 import logging
 
-logger = logging.getLogger("com.client")
+from twisted.internet import reactor
 
+from json_and_binary_session import JsonAndBinarySession
 from securechannel.aeshmacsecurechannel import AesHmacSecureChannel
 from transport.tcpclient import TcpClient
 import bulk_inserter
 from .. import config
+
+logger = logging.getLogger("com.client")
 
 
 class ComClient(object):
@@ -74,4 +74,3 @@ class ComClient(object):
 
     def resume_producing(self):
         pass
-    

@@ -20,8 +20,8 @@ extension = executionenvironment.script_extension()
 PSUTIL2 = psutil.version_info >= (2, 0)
 
 
-def service_name(basename):
-    return service_prefix + basename + "." + extension
+def service_name(base_name):
+    return service_prefix + base_name + "." + extension
 
 names = [service_name(basename) for basename in basenames]
 

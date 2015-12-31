@@ -11,6 +11,7 @@ logger = logging.getLogger('whoosh_index')
 
 MAX_NUMBER_OF_SEARCH_RESULTS = 500
 
+
 def build(db_dir):
     if not os.path.exists(db_dir):
         os.makedirs(db_dir)

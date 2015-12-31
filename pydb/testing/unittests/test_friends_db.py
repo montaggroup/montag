@@ -4,7 +4,7 @@ import pydb.friendsdb
 import pydb.testing.unittests
 
 
-class test_delete_friends(unittest.TestCase):
+class TestDeleteFriends(unittest.TestCase):
 
     def setUp(self):
         self.friends_db = pydb.friendsdb.FriendsDB(":memory:", pydb.testing.guess_schema_dir())
@@ -32,10 +32,10 @@ class test_delete_friends(unittest.TestCase):
         self.assertIsNone(f)
 
 
-class test_can_connect_to(unittest.TestCase):
+class TestCanConnectTo(unittest.TestCase):
     def setUp(self):
         self.friends_db = pydb.friendsdb.FriendsDB(":memory:", pydb.testing.guess_schema_dir())
-        self.friend_id = friend_id = self.friends_db.add_friend("a friend")
+        self.friend_id = self.friends_db.add_friend("a friend")
 
     def test_setup(self):
         pass
