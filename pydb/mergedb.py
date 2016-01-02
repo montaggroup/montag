@@ -735,7 +735,7 @@ class MergeDB(basedb.BaseDB):
                   from_clause="files INNER JOIN tomes ON tomes.id=files.tome_id",
                   where_clause="file_extension NOT IN "
                                "('epub', 'mobi', 'pdf', 'txt', 'pdb', 'jpg', 'html', 'lit', "
-                               "'djvu','epub','rtf', 'azw3', 'png', 'gif', 'cbr') "
+                               "'djvu','epub','rtf', 'azw3', 'azw4', 'png', 'gif', 'cbr') "
                                "AND files.fidelity >=?",
                   order_by_clause="files.hash",
                   params=[network_params.Min_Relevant_Fidelity])
@@ -743,6 +743,10 @@ class MergeDB(basedb.BaseDB):
         add_check('authors_with_identical_names',
                   from_clause="authors a1 INNER JOIN authors a2 ON a1.name=a2.name COLLATE NOCASE",
                   where_clause="a1.guid != a2.guid AND "
+                               "( " 
+                               " (a1.date_of_birth is NULL or a2.date_of_birth is NULL) "
+                               " OR a1.date_of_birth=a2.date_of_birth "
+                               ") AND "
                                "a1.fidelity >=? AND "
                                "a2.fidelity >=?",
                   order_by_clause="a1.name COLLATE NOCASE",
@@ -751,6 +755,10 @@ class MergeDB(basedb.BaseDB):
         add_check('authors_with_highly_similar_names',
                   from_clause="authors a1 INNER JOIN authors a2 ON a1.name_key=a2.name_key",
                   where_clause="a1.guid != a2.guid AND "
+                               "( " 
+                               " (a1.date_of_birth is NULL or a2.date_of_birth is NULL) "
+                               " OR a1.date_of_birth=a2.date_of_birth "
+                               ") AND "
                                "a1.fidelity >=? AND "
                                "a2.fidelity >=? AND "
                                "a1.name != a2.name COLLATE NOCASE",
