@@ -42,10 +42,20 @@ class TestOpfOperations(unittest.TestCase):
         os.write(fd, self.reference_opf_string)
         os.close(fd)
 
-        metadata = opf.Metadata.from_file(filename)
+        metadata = opf.read_metadata_from_file(filename)
 
         self.assertTrue(metadata)
         self._assert_is_metadata_correct(metadata)
 
 
+class TestOpfReadBack(unittest.TestCase):
+    def setUp(self):
+        self.md = opf.Metadata()
 
+    def test_read_back_edition(self):
+        self.md.edition = 'my edition'
+        xml = self.md.to_opf_string()
+        print xml
+
+        read_back = opf.read_metadata_from_string(xml)
+        self.assertEqual(read_back.edition, 'my edition')
