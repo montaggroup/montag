@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+# coding=utf-8
 
 import Pyro4
 import argparse
@@ -73,6 +74,13 @@ def add_file(db, filepath, fidelity, tome_type, delete_source):
         print u"Unable to add file '{}' to db - check whether it might be defective".format(filepath)
 
 
+def add_file_only(filepath, delete_source):
+    filepath = os.path.abspath(filepath)
+    base, extension = os.path.splitext(filepath)
+    extension = extension[1:]  # remove period
+    pydb.pyrosetup.fileserver().add_file_from_local_disk(filepath, extension, move_file=delete_source)
+
+
 def main():
     sys.excepthook = Pyro4.util.excepthook
 
@@ -86,6 +94,8 @@ def main():
                         type=int, default='50')
     parser.add_argument('--delete', '-d', help="Delete source file after successful import", action="store_true",
                         default=False)
+    parser.add_argument('--add-file-only', action="store_true", default=False,
+                        help="Do not read metadata and do not create a new tome, just put the file into the filestore.")
 
     parser.add_argument('filepaths', nargs='+')
 
@@ -110,7 +120,10 @@ def main():
     for filepath in args.filepaths:
         filepath = unicode(filepath.decode(sys.stdin.encoding))  # decode stuff coming in from command line
 
-        add_file(db, filepath, args.fidelity, tome_type, args.delete)
+        if args.add_file_only:
+            add_file_only(filepath, args.delete)
+        else:
+            add_file(db, filepath, args.fidelity, tome_type, args.delete)
 
 
 if __name__ == "__main__":
