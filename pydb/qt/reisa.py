@@ -1,3 +1,4 @@
+# coding=utf-8
 import reisa_window
 from PySide import QtCore, QtGui
 import os

@@ -1,3 +1,5 @@
+# coding=utf-8
+# coding=utf-8
 import pydb.basedb
 import logging
 

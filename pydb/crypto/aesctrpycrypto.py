@@ -1,3 +1,4 @@
+# coding=utf-8
 from Crypto.Cipher import AES
 from Crypto.Util import Counter
 

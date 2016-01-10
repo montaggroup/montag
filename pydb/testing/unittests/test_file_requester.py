@@ -1,3 +1,4 @@
+# coding=utf-8
 import unittest
 import pydb.com.file_requester
 import mock
@@ -29,7 +30,6 @@ class TestFileRequester(unittest.TestCase):
         self.callback.assert_called_once_with()
 
     def test_when_7_downloads_are_scheduled_all_7_will_be_executed_eventually(self):
-
         self.comservice.lock_file_for_fetching.return_value = 'locked'
 
         self.requester.queue_download_file('hash1')
@@ -95,45 +95,45 @@ class TestFileRequesterLocking(unittest.TestCase):
     def test_when_downloads_complete_all_locks_are_released(self):
         hashes = ('hash1', 'hash2', 'hash3', 'hash4', 'hash5', 'hash6', 'hash7')
 
-        for hash in hashes:
-            self.requester.queue_download_file(hash)
+        for hash_ in hashes:
+            self.requester.queue_download_file(hash_)
 
         self.requester.activate(self.session, self.friend_id, self.callback, self.failure_callback)
 
-        for hash in hashes:
-            self.requester.command_deliver_file_received(hash, 'ext1', 'c1', False)
+        for hash_ in hashes:
+            self.requester.command_deliver_file_received(hash_, 'ext1', 'c1', False)
 
-        for hash in hashes:
-            self.comservice.lock_file_for_fetching.assert_any_call(hash)
-            self.comservice.release_file_after_fetching.assert_any_call(hash, success=True)
+        for hash_ in hashes:
+            self.comservice.lock_file_for_fetching.assert_any_call(hash_)
+            self.comservice.release_file_after_fetching.assert_any_call(hash_, success=True)
 
     def test_when_downloading_is_aborted_all_locks_are_released(self):
         hashes = ('hash1', 'hash2', 'hash3', 'hash4', 'hash5', 'hash6', 'hash7')
 
-        for hash in hashes:
-            self.requester.queue_download_file(hash)
+        for hash_ in hashes:
+            self.requester.queue_download_file(hash_)
 
         self.requester.activate(self.session, self.friend_id, self.callback, self.failure_callback)
 
-        for hash in hashes[0:3]:
-            self.requester.command_deliver_file_received(hash, 'ext1', 'c1', False)
+        for hash_ in hashes[0:3]:
+            self.requester.command_deliver_file_received(hash_, 'ext1', 'c1', False)
         self.requester.session_failed('aborted')
 
-        for hash in hashes[0:3]:
-            self.comservice.release_file_after_fetching.assert_any_call(hash, success=True)
-        for hash in hashes[3:]:
-            self.comservice.release_file_after_fetching.assert_any_call(hash, success=False)
+        for hash_ in hashes[0:3]:
+            self.comservice.release_file_after_fetching.assert_any_call(hash_, success=True)
+        for hash_ in hashes[3:]:
+            self.comservice.release_file_after_fetching.assert_any_call(hash_, success=False)
 
     def test_when_downloads_fail_all_locks_are_released(self):
         hashes = ('hash1', 'hash2', 'hash3', 'hash4', 'hash5', 'hash6', 'hash7')
 
-        for hash in hashes:
-            self.requester.queue_download_file(hash)
+        for hash_ in hashes:
+            self.requester.queue_download_file(hash_)
 
         self.requester.activate(self.session, self.friend_id, self.callback, self.failure_callback)
 
-        for hash in hashes:
-            self.requester.command_deliver_file_received(hash, 'ext1', "", False)
+        for hash_ in hashes:
+            self.requester.command_deliver_file_received(hash_, 'ext1', "", False)
 
-        for hash in hashes:
-            self.comservice.release_file_after_fetching.assert_any_call(hash, success=False)
+        for hash_ in hashes:
+            self.comservice.release_file_after_fetching.assert_any_call(hash_, success=False)

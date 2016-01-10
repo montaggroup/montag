@@ -1,3 +1,4 @@
+# coding=utf-8
 import mobi
 import epub
 import pdf

@@ -59,17 +59,20 @@ def remove_already_known_ebooks(path, dry_run=False):
         log_progress()
 
 
-parser = argparse.ArgumentParser(description='Removes files that are already known to the database')
-parser.add_argument('paths', help='Path to file or directory to scan', nargs='+')
-parser.add_argument('-d', '--debug', help='Enables debug output', action='store_true')
-parser.add_argument('-n', '--dry-run', help='Do not really delete files', action='store_true')
+def main():
+    parser = argparse.ArgumentParser(description='Removes files that are already known to the database')
+    parser.add_argument('paths', help='Path to file or directory to scan', nargs='+')
+    parser.add_argument('-d', '--debug', help='Enables debug output', action='store_true')
+    parser.add_argument('-n', '--dry-run', help='Do not really delete files', action='store_true')
 
-args = parser.parse_args()
+    args = parser.parse_args()
 
-logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO, format="%(name)8s: %(message)s")
+    logging.basicConfig(level=logging.DEBUG if args.debug else logging.INFO, format="%(name)8s: %(message)s")
 
-for path in args.paths:
-    remove_already_known_ebooks(path, args.dry_run)
+    for path in args.paths:
+        remove_already_known_ebooks(path, args.dry_run)
 
+if __name__ == "__main__":
+    main()
 
 

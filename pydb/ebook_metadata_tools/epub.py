@@ -1,3 +1,4 @@
+# coding=utf-8
 import pydb.zipfile.zipfile as zipfile
 import xml.etree.ElementTree as ElementTree
 import defusedxml.ElementTree as defused_etree
@@ -96,6 +97,7 @@ def clear_metadata(instream, outstream):
     return True
 
 
+# noinspection PyUnusedLocal
 def add_metadata(instream, outstream, author_docs, tome_doc, tome_file):
     try:
         with zipfile.ZipFile(instream) as inzip:

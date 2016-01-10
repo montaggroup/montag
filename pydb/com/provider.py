@@ -1,3 +1,4 @@
+# coding=utf-8
 import logging
 
 from twisted.internet import defer
@@ -82,9 +83,7 @@ class Provider(object):
 
     def command_request_file_received(self, file_hash):
         logger.debug("Request for file {} received".format(file_hash))
-
         self.send_queue.enqueue(file_hash)
-
 
     def _progress_made(self, number_documents_increment=0, number_files_increment=0):
         self.number_documents_sent += number_documents_increment

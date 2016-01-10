@@ -219,7 +219,7 @@ class BaseDB(sqlitedb.SqliteDB):
         """ returns a tome file link entry or None if not found"""
         return self.get_single_object("SELECT * FROM files WHERE tome_id=? AND hash=?", [tome_id, file_hash])
 
-    def get_tome_files(self, tome_id, file_type=pydb.FileType.Content):
+    def get_tome_files(self, tome_id, file_type):
         """ returns a dictionary of file_fields for all files linked to the given tome """
 
         return self.get_list_of_objects("SELECT * FROM files "
@@ -605,7 +605,7 @@ class BaseDB(sqlitedb.SqliteDB):
                 author_result['detail'] = author_db
 
         file_infos = self.get_tome_files(tome_id, file_type=pydb.FileType.Content) + \
-                     self.get_tome_files(tome_id, file_type=pydb.FileType.Cover)
+            self.get_tome_files(tome_id, file_type=pydb.FileType.Cover)
         tome['files'] = document_export_filter(file_infos, ignore_fidelity_filter)
 
         tag_infos = self.get_tome_tags(tome_id)
@@ -698,4 +698,3 @@ def data_fields_equal(fields_a, fields_b):
             return False
 
     return True
-

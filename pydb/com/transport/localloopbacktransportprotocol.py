@@ -1,3 +1,4 @@
+# coding=utf-8
 import logging
 
 logger = logging.getLogger("localllopbacktransportprotocol")
@@ -47,5 +48,4 @@ class LocalLoopBackTransportProtocol(object):
     # noinspection PyPep8Naming
     def connectionLost(self, reason):
         self.upper_layer.transport_channel_lost(reason)
-
 

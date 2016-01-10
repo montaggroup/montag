@@ -1,8 +1,11 @@
-from twisted.internet.protocol import Protocol
-from twisted.internet import reactor
+# coding=utf-8
 import logging
 import re
 from collections import deque
+
+from twisted.internet import protocol
+from twisted.internet import reactor as twisted_reactor
+
 from ... import config
 
 WaitingForLength = 0
@@ -20,7 +23,7 @@ NUMBER_OF_JOBS_UPDATE_INTERVAL_SECONDS = 2
 logger = logging.getLogger("tcptransportprotocol")
 
 # how many bytes to buffer before trying to pause parent producers
-MAXIMUM_QUEUE_SIZE_BYTES = 2*1024*1024
+MAXIMUM_QUEUE_SIZE_BYTES = 2 * 1024 * 1024
 
 
 def memory_size():
@@ -46,22 +49,24 @@ def is_lan_address(host_address):
     priv_16 = re.compile("^172.(1[6-9]|2[0-9]|3[0-1]).[0-9]{1,3}.[0-9]{1,3}$")
 
     return priv_lo.match(host_address) or priv_24.match(host_address) or priv_20.match(host_address) or \
-           priv_16.match(host_address)
+        priv_16.match(host_address)
 
 
 def build_tcp_transport_protocol(upper_layer, com_server, target_bytes_per_second, host_address):
     if config.ignore_rate_limit_in_lan() and is_lan_address(host_address):
         logger.debug("Disabling rate limiting for host {} in LAN".format(host_address))
         target_bytes_per_second = 1000000000
-    return TcpTransportProtocol(upper_layer, com_server, target_bytes_per_second)
+    return TcpTransportProtocol(upper_layer, com_server, target_bytes_per_second, twisted_reactor)
 
 
-class TcpTransportProtocol(Protocol):
+class TcpTransportProtocol(protocol.Protocol, object):
     """
     note: some of the methods names here are not PEP8 as we are overwriting twisted methods
     """
-    def __init__(self, upper_layer, comservice, target_bytes_per_second):
+
+    def __init__(self, upper_layer, comservice, target_bytes_per_second, reactor):
         self.upper_layer = upper_layer
+        self.reactor = reactor()
         self.data = bytearray()
         self.state = WaitingForLength
         self.expected_length = 0
@@ -84,6 +89,7 @@ class TcpTransportProtocol(Protocol):
         self.upper_layer_paused = False
 
     def do_timeout(self):
+        logger.warn("Timeout on network connection, closing.")
         self.lose_transport_channel("Read timeout")
 
     def current_number_of_jobs(self):
@@ -91,18 +97,18 @@ class TcpTransportProtocol(Protocol):
 
     def update_number_of_jobs(self):
         self.number_of_jobs_cache = self.comservice.get_number_of_running_jobs()
-        reactor.callLater(NUMBER_OF_JOBS_UPDATE_INTERVAL_SECONDS, self.update_number_of_jobs)
+        self.reactor.callLater(NUMBER_OF_JOBS_UPDATE_INTERVAL_SECONDS, self.update_number_of_jobs)
 
     # noinspection PyPep8Naming
     def pauseProducing(self):
         self.paused = True
-        logger.debug("Pause called, {} chunks and {} messages queued".format(len(self.chunks_to_transmit),
-                                                                             len(self.queued_messages)))
+        logger.debug("Pause called, %s chunks and %s messages queued", len(self.chunks_to_transmit),
+                     len(self.queued_messages))
 
     # noinspection PyPep8Naming
     def resumeProducing(self):
-        logger.debug("Resume called, {} chunks and {} messages queued".format(
-            len(self.chunks_to_transmit), len(self.queued_messages)))
+        logger.debug("Resume called, %s chunks and %s messages queued",
+                     len(self.chunks_to_transmit), len(self.queued_messages))
         self.paused = False
         self._check_message_queue()
         self.dataReceived()
@@ -121,7 +127,7 @@ class TcpTransportProtocol(Protocol):
     def _check_message_queue(self):
         if self.delay_active:
             return
-        reactor.callLater(0, self._really_pump_message_queue)
+        self.reactor.callLater(0, self._really_pump_message_queue)
 
     def message_queue_size(self):
         size = 0
@@ -147,18 +153,18 @@ class TcpTransportProtocol(Protocol):
                 chunk_delay = self.get_delay_after_chunk(len(next_chunk))
 
                 self.delay_active = True
-                reactor.callLater(chunk_delay, self._really_pump_message_queue)
+                self.reactor.callLater(chunk_delay, self._really_pump_message_queue)
         else:
             self.dataReceived()
 
         if self.message_queue_size() > MAXIMUM_QUEUE_SIZE_BYTES:
             if not self.upper_layer_paused:
-                logging.debug("Pausing producers")
+                logger.debug("Pausing producers")
                 self.upper_layer.pause_producing()
                 self.upper_layer_paused = True
         else:
             if self.upper_layer_paused:
-                logging.debug("Resuming producers")
+                logger.debug("Resuming producers")
                 self.upper_layer.resume_producing()
                 self.upper_layer_paused = False
 
@@ -179,7 +185,7 @@ class TcpTransportProtocol(Protocol):
         self.upper_layer.transport_channel_established()
         self.transport.bufferSize = 1024 * 1024 * 5
 
-        self.timeout = reactor.callLater(self.read_timeout, self.do_timeout)
+        self.timeout = self.reactor.callLater(self.read_timeout, self.do_timeout)
 
     def dataReceived(self, data=""):
         self.timeout.reset(self.read_timeout)
@@ -211,9 +217,9 @@ class TcpTransportProtocol(Protocol):
                 self.state = WaitingForLength
                 msg = str(msg)
                 self.upper_layer.message_received(msg)
-                reactor.callLater(0, self.dataReceived)
+                self.reactor.callLater(0, self.dataReceived)
 
-    def connectionLost(self, reason):
+    def connectionLost(self, reason=protocol.connectionDone):
         self.upper_layer.transport_channel_lost(reason)
 
 

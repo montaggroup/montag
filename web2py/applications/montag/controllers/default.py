@@ -320,8 +320,10 @@ def edit_author():
 def _is_tome_or_author_guid(string):
     return re.match("[0-9a-z]{32}", string)
 
+
 def _is_file_hash(string):
     return re.match("[0-9a-z]{64}", string)
+
 
 @auth.requires_data_view_permission()
 def tomesearch():
@@ -499,7 +501,7 @@ def edit_tome_file_link():
     file_hash = request.args[1]
     tome = pdb.get_tome(tome_id)
 
-    files = pdb.get_tome_files(tome_id, include_local_file_info=True)
+    files = pdb.get_tome_files(tome_id, file_type=pydb.FileType.Content, include_local_file_info=True)
     tome_files = filter(lambda x: x['hash'] == file_hash, files)
     tome_file = tome_files[0]
 

@@ -1,3 +1,4 @@
+# coding=utf-8
 import logging
 
 default_max_files_to_request = 100000

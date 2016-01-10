@@ -1,3 +1,4 @@
+# coding=utf-8
 # patched copy of python 2.7.5 zipfile
 # patch the zip-file open() function to fix an issue that leads to an error when trying to open a file
 # it seems that the zip format allows to store a file entry at the first place in the central archive table - using a
@@ -168,6 +169,7 @@ def is_zipfile(filename):
     return result
 
 
+# noinspection PyPep8Naming
 def _EndRecData64(fpin, offset, endrec):
     """
     Read the ZIP64 end-of-archive records and use that to update endrec
@@ -432,7 +434,7 @@ class ZipInfo(object):
             extra = extra[ln + 4:]
 
 
-# noinspection PyMethodMayBeStatic,PyAugmentAssignment,PyMethodParameters
+# noinspection PyMethodMayBeStatic,PyAugmentAssignment,PyMethodParameters,PyClassicStyleClass
 class _ZipDecrypter:
     """Class to handle decryption of files stored within a ZIP archive.
 

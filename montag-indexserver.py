@@ -1,15 +1,18 @@
 #!/usr/bin/env python2.7
+# coding=utf-8
 import logging
-
-logging.basicConfig(level=logging.INFO)
-
-import Pyro4
 import argparse
 import time
+
+import Pyro4
+
 from pydb.executionenvironment import determine_database_directory, get_schema_dir
 import pydb.indexserver
 import pydb.config
 import pydb.logconfig
+
+logging.basicConfig(level=logging.INFO)
+
 
 if __name__ == "__main__":
     import pydb.pyrosetup

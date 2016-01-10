@@ -1,3 +1,4 @@
+# coding=utf-8
 import pydb.names
 import network_params
 import time

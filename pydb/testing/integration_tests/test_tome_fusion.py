@@ -1,13 +1,14 @@
+# coding=utf-8
 import unittest
 import copy
 import logging
 
 from pydb.testing.integration_tests import helpers
+import pydb.testing
+
 
 logger = logging.getLogger('test_tome_fusion')
 logging.basicConfig(level=logging.INFO)
-
-import pydb.testing
 
 
 author_doc_1 = {
@@ -60,6 +61,7 @@ tome_author_2_doc['guid'] = 'baaaaaaaaaabbbbbbbbbbcccccccccc2'
 tome_author_2_doc['authors'] = [{'guid': 'aaaaaaaaaabbbbbbbbbbccccccccccd2',
                                  'order': 1,
                                  'fidelity': 65}]
+
 
 class TestTomeFusion(unittest.TestCase):
     def setUp(self):

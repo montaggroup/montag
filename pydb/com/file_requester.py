@@ -1,9 +1,9 @@
+# coding=utf-8
 from collections import deque
 import logging
 import os
 import traceback
 from tempfile import mkstemp
-
 
 MaxParallelFileRequests = 5
 
@@ -75,11 +75,11 @@ class FileRequester(object):
 
         if self.current_transfer is not None:
             raise ValueError("Answer order error, was expecting more parts for hash {}, but got not content".format(
-                             self.current_transfer.file_hash))
+                    self.current_transfer.file_hash))
 
     def _positive_file_reply_received(self, file_hash, extension, content, more_parts_follow):
         logger.info("New file content, hash: {}, (Extension {}, more parts: {})".format(
-                    file_hash, extension, more_parts_follow))
+                file_hash, extension, more_parts_follow))
 
         if self.current_transfer is None:  # new file answer expected
             self._start_multipart_transfer(extension, file_hash)
@@ -89,9 +89,10 @@ class FileRequester(object):
                              "but got a part for hash {}".format(self.current_transfer.file_hash, file_hash))
 
         self.current_transfer.write(content)
-
         if not more_parts_follow:
             self._finish_multipart_transfer()
+
+        self._session.send_keep_alive_if_necessary()
 
     def _finish_multipart_transfer(self):
         self.current_transfer.close()
@@ -190,7 +191,6 @@ class FileInTransfer(object):
 
 
 class DownloadQueue(object):
-
     def __init__(self):
         self.hashes_to_request_set = set()
         self.hashes_to_request = deque([])

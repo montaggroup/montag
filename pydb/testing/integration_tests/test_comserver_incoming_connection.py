@@ -1,3 +1,4 @@
+# coding=utf-8
 import unittest
 import logging
 import mock
@@ -8,9 +9,9 @@ logger = logging.getLogger('test_comserver_incoming_connection')
 logging.basicConfig(level=logging.DEBUG)
 
 
-def build_friend(id, name, add_secret=False, secret=None):
+def build_friend(id_, name, add_secret=False, secret=None):
     friend_data = {
-        'id': id,
+        'id': id_,
         'name': name,
         'comm_data': {
             'type': 'tcp_aes',

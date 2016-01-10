@@ -1,16 +1,17 @@
 #!/usr/bin/env python2.7
+# coding=utf-8
 import logging
-
-logging.basicConfig(level=logging.INFO)
-
-import Pyro4
-import pydb.comservice
-
 import argparse
 import multiprocessing
 
+import Pyro4
+
+import pydb.comservice
 import pydb.config
 import pydb.logconfig
+
+logging.basicConfig(level=logging.INFO)
+
 
 pydb.config.read_config()
 pydb.logconfig.catch_twisted_log_messages()
@@ -33,7 +34,7 @@ if __name__ == "__main__":
 
     pydb.logconfig.set_log_level(args.loglevel)
 
-    print "Pyro port: %s" % (args.pyro_port)
+    print "Pyro port: %s" % args.pyro_port
     daemon = Pyro4.Daemon(port=args.pyro_port)  # make a Pyro daemon
 
     commserver_uri = daemon.register(cs, objectId=args.pyro_name)  # register the db object as a Pyro object

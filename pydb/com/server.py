@@ -1,8 +1,9 @@
-from twisted.internet import reactor
+# coding=utf-8
+import logging
+
 from json_and_binary_session import JsonAndBinarySession
 from transport.tcpserver import TcpServer
 from securechannel.aeshmacsecurechannel import AesHmacSecureChannel
-import logging
 import master_strategy
 import bulk_inserter
 from .. import pyrosetup
@@ -11,7 +12,7 @@ logger = logging.getLogger("com.server")
 
 
 class Server(object):
-    def __init__(self, tcp_port_number, upload_rate_limit_kbps):
+    def __init__(self, tcp_port_number, upload_rate_limit_kbps, reactor):
         self.db = pyrosetup.pydbserver()
         self.com_service = pyrosetup.comservice()
         self.file_server = pyrosetup.fileserver()
@@ -22,7 +23,7 @@ class Server(object):
         tcp_server_factory = TcpServer(self.build_stack, self.com_service, upload_rate_limit_kbps * 1000)
         
         reactor.listenTCP(tcp_port_number, tcp_server_factory)
-        logger.info("Server listening on port {}".format(tcp_port_number))
+        logger.info("Server listening on port %s", tcp_port_number)
 
     def build_stack(self):
 
@@ -75,7 +76,7 @@ class SessionController(object):
         self._communication_strategy.associated(self._session, friend_id, self.strategy_completed, inserter)
 
     def _unregister_job(self):
-        logging.info("Unregister job called, job is {}".format(self.job_id))
+        logging.info("Unregister job called, job is %s", self.job_id)
         if self.job_id is not None:
             self.com_service.unregister_job(self.job_id)
             self.job_id = None
@@ -91,7 +92,7 @@ class SessionController(object):
 
     def session_lost(self, reason):
         self._unregister_job()
-        logger.error("The session was lost uncleanly: %s " % reason)
+        logger.error("The session was lost uncleanly: %s ", reason)
 
     def pause_producing(self):
         pass

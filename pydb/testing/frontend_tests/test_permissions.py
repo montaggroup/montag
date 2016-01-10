@@ -1,16 +1,17 @@
+# coding=utf-8
 import unittest
-import pydb.pyrosetup
+import logging
 
+import pydb.pyrosetup
+import pydb.testing
 import service_helpers
 import web2py_helpers
 import config_helpers
-web2py_helpers.prepare_web2py()
-import logging
+from gluon import http
 
+web2py_helpers.prepare_web2py()
 
 logging.basicConfig(level=logging.WARNING)
-
-from gluon import http
 
 
 class TestPermissions(unittest.TestCase):
@@ -35,7 +36,6 @@ class TestPermissions(unittest.TestCase):
             self.assertIn('login', e.headers['Location'])
         else:
             self.assertTrue(False, "Expected http redirect")
-
 
 
 if __name__ == '__main__':
