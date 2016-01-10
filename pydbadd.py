@@ -1,4 +1,5 @@
 #!/usr/bin/env python2.7
+# coding=utf-8
 
 import Pyro4
 import argparse
@@ -40,7 +41,7 @@ def title_split(title):
     return title, subtitle, edition
 
 
-def add_file(db, filepath, fidelity, tome_type, delete_source):
+def add_file(db, file_server, filepath, fidelity, tome_type, delete_source):
     print u"Adding {}".format(filepath)
     filepath = os.path.abspath(filepath)
     metadata = read_metadata(filepath)
@@ -64,13 +65,20 @@ def add_file(db, filepath, fidelity, tome_type, delete_source):
     base, extension = os.path.splitext(filepath)
     extension = extension[1:]  # remove period
 
-    (file_id, file_hash, size) = pydb.pyrosetup.fileserver().add_file_from_local_disk(filepath, extension,
+    (file_id, file_hash, size) = file_server.add_file_from_local_disk(filepath, extension,
                                                                                       move_file=delete_source)
     if file_id:
         db.link_tome_to_file(tome_id, file_hash, size, file_extension=extension, file_type=FileType.Content,
                              fidelity=fidelity)
     else:
         print u"Unable to add file '{}' to db - check whether it might be defective".format(filepath)
+
+
+def add_file_only(file_server, filepath, delete_source):
+    filepath = os.path.abspath(filepath)
+    base, extension = os.path.splitext(filepath)
+    extension = extension[1:]  # remove period
+    file_server.add_file_from_local_disk(filepath, extension, move_file=delete_source)
 
 
 def main():
@@ -86,6 +94,12 @@ def main():
                         type=int, default='50')
     parser.add_argument('--delete', '-d', help="Delete source file after successful import", action="store_true",
                         default=False)
+    parser.add_argument('--add-file-only', action="store_true", default=False,
+                        help="Do not read metadata and do not create a new tome, just put the file into the filestore.")
+    parser.add_argument('--only-if-file-known', action="store_true", default=False,
+                        help="Option for --add-file-only: Do only add the file if is known to the database")
+    parser.add_argument('--verbose', '-v', action="store_true", default=False,
+                        help="Be more verbose")
 
     parser.add_argument('filepaths', nargs='+')
 
@@ -99,6 +113,8 @@ def main():
         print >> sys.stderr, "Unable to talk to server, is it running?`"
         sys.exit(-1)
 
+    file_server = pydb.pyrosetup.fileserver()
+
     tome_type = TomeType.Unknown
     if args.tome_type == 'nonfiction':
         tome_type = TomeType.NonFiction
@@ -110,7 +126,23 @@ def main():
     for filepath in args.filepaths:
         filepath = unicode(filepath.decode(sys.stdin.encoding))  # decode stuff coming in from command line
 
-        add_file(db, filepath, args.fidelity, tome_type, args.delete)
+        if args.add_file_only:
+            if args.only_if_file_known:
+                abspath = os.path.abspath(filepath)
+                base, extension = os.path.splitext(filepath)
+                extension = extension[1:]  # remove period
+                if not file_server.is_file_known(abspath, extension):
+                    if args.verbose:
+                        print >> sys.stderr, u"File {} not known to database, skipping".format(filepath)
+                        continue
+
+            if args.verbose:
+                print >> sys.stderr, u"Adding file {}".format(filepath)
+            add_file_only(file_server, filepath, args.delete)
+        else:
+            if args.verbose:
+                print >> sys.stderr, u"Adding file with tome {}".format(filepath)
+            add_file(db, file_server, filepath, args.fidelity, tome_type, args.delete)
 
 
 if __name__ == "__main__":
