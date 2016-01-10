@@ -43,7 +43,7 @@ class BaseDB(sqlitedb.SqliteDB):
 
     def get_used_languages(self):
         return self.get_single_column("SELECT DISTINCT(principal_language) "
-                                      "FROM tomes WHERE fidelity >= ?",
+                                      "FROM tomes WHERE fidelity >= ? ORDER BY principal_language ASC",
                                       [network_params.Min_Relevant_Fidelity])
 
     def get_tome_statistics(self):
