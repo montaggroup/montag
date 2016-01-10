@@ -44,6 +44,13 @@ def build(db_dir):
     return WhooshIndex(index)
 
 
+def simplify_query(query):
+    query = query.strip()
+    if query.startswith('* '):
+        return query[2:]
+    return query
+
+
 class WhooshIndex(object):
     def __init__(self, whoosh_index):
         self.index = whoosh_index
@@ -95,13 +102,14 @@ class WhooshIndex(object):
         writer.commit()
 
     def search_tomes(self, query_text):
-        logger.info(u'Searching for "{}"'.format(query_text))
+        query_text = simplify_query(query_text)
+        logger.info(u'Searching for "%s"', query_text)
         parser = QueryParser('any_field', self.index.schema)
         my_query = parser.parse(query_text)
         with self.index.searcher() as searcher:
             results = list(searcher.search(my_query, limit=MAX_NUMBER_OF_SEARCH_RESULTS))
             merge_db_ids = [r['merge_db_id'] for r in results]
-            logger.info(u'Found {} results'.format(len(merge_db_ids)))
+            logger.info(u'Found %s results', len(merge_db_ids))
             return merge_db_ids
 
 
@@ -129,19 +137,19 @@ def MERGE_CUSTOM(writer, segments):
             total_docs += count
 
         if log_stats:
-            logger.debug("{}: {}/{}, fib {}".format(i, count, total_docs, fib(i+5)))
+            logger.debug("%s: %s/%s, fib %s", i, count, total_docs, fib(i+5))
 
         if merge_point_found:
             unchanged_segments.append(seg)
         else:
             segments_to_merge.append((seg, i))
             if i > 3 and total_docs < fib(i + 5):
-                logger.debug("Merge point found at {} - {}".format(i, total_docs))
+                logger.debug("Merge point found at %s - %s", i, total_docs)
                 merge_point_found = True
 
     if merge_point_found and len(segments_to_merge) > 1:
         for seg, i in segments_to_merge:
-            logger.info("Merging segment {} having size {}".format(i, seg.doc_count_all()))
+            logger.info("Merging segment %s having size %s", i, seg.doc_count_all())
             reader = SegmentReader(writer.storage, writer.schema, seg)
             writer.add_reader(reader)
             reader.close()

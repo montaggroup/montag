@@ -327,7 +327,7 @@ def _is_file_hash(string):
 
 @auth.requires_data_view_permission()
 def tomesearch():
-    retval = {}
+    retval = {'tome_info': None}
     form = search_forms.build_search_form(pdb)
 
     if form.validate(formname='search', session=None, request_vars=request.vars, message_onsuccess='', keepvalues=True):

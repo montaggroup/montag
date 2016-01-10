@@ -46,7 +46,7 @@ def build_search_form(pdb):
         lang_list = [""] + lang_list
     lang_tuples = [(lang, lang if lang !="" else "don't care") for lang in lang_list]
     form = SQLFORM.factory(
-        Field('query', requires=IS_NOT_EMPTY(), default="", label="Search for"),
+        Field('query', default="", label="Search for"),
         Field('principal_language', default="", requires=IS_IN_SET(lang_tuples, zero=None)),
         Field('tome_type', label="", default="Z",
               widget=SQLFORM.widgets.radio.widget,

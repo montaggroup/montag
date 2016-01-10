@@ -5,7 +5,7 @@
 
 {{=form}}
 
-{{if query:}}
+{{if tome_info is not None:}}
 <h1>Results for {{=query}}:</h1>
     {{show_paging_controls()}}
 <ul class="tomes">
