@@ -1,3 +1,4 @@
+# coding=utf-8
 import unittest
 import os
 import time
@@ -49,7 +50,6 @@ class TestFileServer(unittest.TestCase):
 
         self.file_server.delete_file(file_hash)
         self.assertFalse(self.file_server.is_file_in_store(self.test_epub_path, 'epub'))
-
 
 
 if __name__ == "__main__":

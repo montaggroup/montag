@@ -1,3 +1,4 @@
+# coding=utf-8
 import pydb.services
 import pydb.testing
 

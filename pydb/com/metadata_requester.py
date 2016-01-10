@@ -1,3 +1,4 @@
+# coding=utf-8
 import logging
 
 logger = logging.getLogger("com.metadata_requester")
@@ -41,8 +42,8 @@ class MetadataRequester(object):
     def command_set_number_documents_entries_received(self, number_entries_batch, number_entries_total):
         if self.number_documents_to_receive_total == 0:
             self.number_documents_to_receive_total = number_entries_total
-        logger.info("Incoming entries: {}/{}".format(self.number_documents_received+number_entries_batch,
-                                                     self.number_documents_to_receive_total))
+        logger.info("Incoming entries: %s/%s", self.number_documents_received+number_entries_batch,
+                    self.number_documents_to_receive_total)
 
         if number_entries_batch == 0 and self.number_documents_to_receive_total > 0:
             raise RuntimeError("Still {} documents outstanding but none sent"
@@ -61,7 +62,7 @@ class MetadataRequester(object):
         elif document_type == "tome":
             self._bulk_inserter.queue_tome(document)
         else:
-            logger.error("Unsupported document type:", document_type)
+            logger.error("Unsupported document type: %s", document_type)
             self._abort_mission()
 
         self._session.send_keep_alive_if_necessary()
@@ -72,7 +73,7 @@ class MetadataRequester(object):
 
         self._bulk_inserter.do_insert()
 
-        logger.info("New mod dates: A %f T %f" % (new_mod_date_authors, new_mod_date_tomes))
+        logger.info("New mod dates: A %f T %f", new_mod_date_authors, new_mod_date_tomes)
         self.main_db.set_friend_last_query_dates(self._friend_id, new_mod_date_authors, new_mod_date_tomes)
         self.min_modification_date_authors = new_mod_date_authors
         self.min_modification_date_tomes = new_mod_date_tomes
@@ -93,7 +94,7 @@ class MetadataRequester(object):
         self._abort_mission()
 
     def session_lost(self, reason):
-        logger.error("The session was lost uncleanly: %s " % reason)
+        logger.error("The session was lost uncleanly: %s ", reason)
         self._abort_mission()
 
     def pause_producing(self):

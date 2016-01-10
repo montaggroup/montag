@@ -1,3 +1,4 @@
+# coding=utf-8
 # fidelity values of documents received from friends will be reduced by this values before
 # we display it as our opinion,
 # needs to larger than 0 or the network will degrade

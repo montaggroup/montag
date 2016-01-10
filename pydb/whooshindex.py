@@ -1,3 +1,4 @@
+# coding=utf-8
 import os
 import logging
 import title
@@ -42,7 +43,8 @@ def build(db_dir):
 
     return WhooshIndex(index)
 
-class WhooshIndex:
+
+class WhooshIndex(object):
     def __init__(self, whoosh_index):
         self.index = whoosh_index
 
@@ -103,6 +105,7 @@ class WhooshIndex:
             return merge_db_ids
 
 
+# noinspection PyPep8Naming
 def MERGE_CUSTOM(writer, segments):
     """This policy merges small segments, where "small" is defined using a
     heuristic based on the fibonacci sequence.

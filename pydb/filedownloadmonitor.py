@@ -1,4 +1,4 @@
-
+# coding=utf-8
 class FileDownloadMonitor(object):
     def __init__(self):
         self.locked_items = set()

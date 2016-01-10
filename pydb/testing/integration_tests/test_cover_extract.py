@@ -1,3 +1,4 @@
+# coding=utf-8
 import unittest
 import os
 import pydb.ebook_metadata_tools as etools

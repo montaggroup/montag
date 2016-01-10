@@ -1,3 +1,4 @@
+# coding=utf-8
 import unittest
 from collections import namedtuple
 import mock
@@ -87,7 +88,7 @@ class TestGetTomeByGuid(unittest.TestCase):
                     'tag_value': 'this_is_not_private',
                     'fidelity': 80
                 },
-                  {
+                {
                     'tag_value': '<this_is_detail',
                     'fidelity': 80
                 }
@@ -106,13 +107,6 @@ class TestGetTomeByGuid(unittest.TestCase):
         tags = doc['tags']
         self.assertEqual(len(tags), 2)
 
+
 if __name__ == '__main__':
     unittest.main()
-
-
-
-    
-    
-    
-    
-    

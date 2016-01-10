@@ -1,8 +1,9 @@
+# coding=utf-8
 from twisted.internet.protocol import Factory
 from tcptransportprotocol import build_tcp_transport_protocol
 
 
-class TcpServer(Factory):
+class TcpServer(Factory, object):
     # the stack build function should build a complete protocol stack (without transport) and return the security layer
     def __init__(self, stack_build_function, comservice, upload_rate_limit_kbytes_per_second):
         self.stack_build_function = stack_build_function

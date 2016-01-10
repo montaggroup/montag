@@ -1,15 +1,18 @@
 #!/usr/bin/env python2.7
+# coding=utf-8
 
 import logging
-logging.basicConfig(level=logging.INFO)
-
-from twisted.internet import reactor
-from pydb.com.server import Server
-import pydb.config as config
 import argparse
 
+from twisted.internet import reactor
+
+from pydb.com.server import Server
+import pydb.config as config
 import pydb.config
 import pydb.logconfig
+
+logging.basicConfig(level=logging.INFO)
+
 
 if __name__ == "__main__":
     pydb.config.read_config()
@@ -24,7 +27,7 @@ if __name__ == "__main__":
     pydb.logconfig.set_log_level(args.loglevel)
 
     s = Server(tcp_port_number=config.comserver_port(),
-               upload_rate_limit_kbps=config.upload_rate_limit_kbytes_per_second())
+               upload_rate_limit_kbps=config.upload_rate_limit_kbytes_per_second(), reactor=reactor)
 
     reactor.run()
 

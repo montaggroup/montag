@@ -1,18 +1,20 @@
 #!/usr/bin/env python2.7
+# coding=utf-8
 import logging
-
-logging.basicConfig(level=logging.INFO)
-
-import Pyro4
-import pydb.fileserver
 import argparse
 import os
 import time
+
+import Pyro4
+
+import pydb.fileserver
 from pydb.executionenvironment import get_main_dir
 import pydb.commdatastore
 import pydb.pyrosetup
 import pydb.config
 import pydb.logconfig
+
+logging.basicConfig(level=logging.INFO)
 
 
 def determine_file_store_dir(override_base_path=None):
@@ -54,5 +56,3 @@ if __name__ == "__main__":
     daemon.register(file_server, objectId=args.pyro_name)
 
     daemon.requestLoop()        
-
-

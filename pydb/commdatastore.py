@@ -1,3 +1,4 @@
+# coding=utf-8
 import friendsdb
 import os
 import pbkdf2

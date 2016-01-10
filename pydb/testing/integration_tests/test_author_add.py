@@ -1,3 +1,4 @@
+# coding=utf-8
 import unittest
 import logging
 
@@ -33,15 +34,15 @@ class TestAddAuthor(unittest.TestCase):
         self.assertEqual(len(authors), 0)
 
     def test_after_adding_we_can_retrieve_a_merge_document(self):
-        id = self.main_db.add_author(name='john Smith')
-        item = self.main_db.get_author(id)
+        id_ = self.main_db.add_author(name='john Smith')
+        item = self.main_db.get_author(id_)
         guid = item['guid']
         author_doc = self.main_db.get_author_document_by_guid(guid)
         self.assertEqual(author_doc['name'], 'john Smith')
 
     def test_after_adding_we_can_retrieve_a_local_document(self):
-        id = self.main_db.add_author(name='john Smith')
-        item = self.main_db.get_author(id)
+        id_ = self.main_db.add_author(name='john Smith')
+        item = self.main_db.get_author(id_)
         guid = item['guid']
         author_doc = self.main_db.get_local_author_document_by_guid(guid)
         self.assertEqual(author_doc['name'], 'john Smith')

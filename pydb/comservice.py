@@ -1,3 +1,4 @@
+# coding=utf-8
 from multiprocessing import Process, Array, Value
 import com.client
 import com.master_strategy

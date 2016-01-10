@@ -1,3 +1,4 @@
+# coding=utf-8
 import pydb
 import pydb.basedb
 import time
@@ -21,45 +22,47 @@ class LocalDB(pydb.basedb.BaseDB):
         """
         logger.debug("Before insert")
         self.cur.execute(
-            "INSERT INTO tomes "
-            "(guid, title, subtitle, edition, principal_language, publication_year, "
-            "fidelity, last_modification_date, type) "
-            "VALUES (?,?,?,?,?,?,?,?,?)",
-            [guid, title, subtitle, edition, principal_language, publication_year, fidelity, time.time(), tome_type])
+                "INSERT INTO tomes "
+                "(guid, title, subtitle, edition, principal_language, publication_year, "
+                "fidelity, last_modification_date, type) "
+                "VALUES (?,?,?,?,?,?,?,?,?)",
+                [guid, title, subtitle, edition, principal_language, publication_year, fidelity, time.time(),
+                 tome_type])
 
         logger.info("Last row id is %s", str(self.cur.lastrowid))
         tome_id = self.cur.lastrowid
 
         for index, author_id in enumerate(remove_duplicates_in_list(author_ids)):
             self.cur.execute(
-                "INSERT INTO tomes_authors (tome_id, author_id, author_order, fidelity,last_modification_date) "
-                "VALUES(?,?,?,?,?)",
-                [tome_id, author_id, index, fidelity, time.time()])
+                    "INSERT INTO tomes_authors (tome_id, author_id, author_order, fidelity,last_modification_date) "
+                    "VALUES(?,?,?,?,?)",
+                    [tome_id, author_id, index, fidelity, time.time()])
 
         return tome_id
 
     def add_author(self, guid, name, fidelity, date_of_birth, date_of_death):
         """ adds a new author, generating a guid, returns the id of the author """
         self.cur.execute(
-            "INSERT INTO authors (guid, name, date_of_birth, date_of_death, fidelity, last_modification_date) "
-            "VALUES (?,?,?,?,?,?)",
-            [guid, name, date_of_birth, date_of_death, fidelity, time.time()])
+                "INSERT INTO authors (guid, name, date_of_birth, date_of_death, fidelity, last_modification_date) "
+                "VALUES (?,?,?,?,?,?)",
+                [guid, name, date_of_birth, date_of_death, fidelity, time.time()])
         return self.cur.lastrowid
 
     def add_synopsis_to_tome(self, guid, content, tome_id, fidelity):
         """ adds a new synopsis, does link it to tome """
         self.cur.execute(
-            "INSERT INTO synopses (guid, content, tome_id, fidelity, last_modification_date) VALUES (?,?,?,?,?)",
-            [guid, content, tome_id, fidelity, time.time()])
+                "INSERT INTO synopses (guid, content, tome_id, fidelity, last_modification_date) VALUES (?,?,?,?,?)",
+                [guid, content, tome_id, fidelity, time.time()])
         return self.cur.lastrowid
 
     def add_tome_file_link(self, fidelity, file_extension, file_type, local_db_tome_id, local_file_hash,
                            local_file_size):
         pydb.assert_hash(local_file_hash)
         self.cur.execute(
-            "INSERT OR IGNORE INTO files "
-            "(tome_id,file_type, hash, size, file_extension, fidelity, last_modification_date) VALUES(?,?,?,?,?,?,?)",
-            (local_db_tome_id, file_type, local_file_hash, local_file_size, file_extension, fidelity, time.time()))
+                "INSERT OR IGNORE INTO files "
+                "(tome_id,file_type, hash, size, file_extension, fidelity, last_modification_date) "
+                "VALUES(?,?,?,?,?,?,?)",
+                (local_db_tome_id, file_type, local_file_hash, local_file_size, file_extension, fidelity, time.time()))
 
     def remove_file_link(self, tome_id, file_hash):
         self.cur.execute("DELETE FROM files WHERE tome_id=? AND hash=?", [tome_id, file_hash])
@@ -82,13 +85,14 @@ class LocalDB(pydb.basedb.BaseDB):
         return bool(result)
 
     def add_local_file(self, file_hash, extension):
-        self.cur.execute("INSERT OR IGNORE INTO local_files (last_modification_date, hash, file_extension) VALUES (?,?,?)",
-                    (time.time(), file_hash, extension))
+        self.cur.execute(
+                "INSERT OR IGNORE INTO local_files (last_modification_date, hash, file_extension) VALUES (?,?,?)",
+                (time.time(), file_hash, extension))
         last_row_id = self.cur.lastrowid
         if not last_row_id:  # insert was ignored
             local_file = self.get_local_file_by_hash(file_hash)
             return local_file['id']
-            
+
         return last_row_id
 
     def remove_local_file(self, file_hash):
@@ -100,8 +104,8 @@ class LocalDB(pydb.basedb.BaseDB):
                 raise ValueError("Invalid tag value: '%s'" % tag_value)
 
             self.cur.execute("INSERT OR IGNORE INTO tome_tags (tome_id, tag_value, fidelity, last_modification_date) "
-                        "VALUES(?,?,?,?)",
-                        (tome_id, tag_value, fidelity, time.time()))
+                             "VALUES(?,?,?,?)",
+                             (tome_id, tag_value, fidelity, time.time()))
 
             # stripping metadata from a file might change its hash. if we request file xx from a remote peer,
 

@@ -1,21 +1,20 @@
 #!/usr/bin/env python2.7
+# coding=utf-8
 import logging
-
-logging.basicConfig(level=logging.INFO)
-
-import Pyro4
-import pydb.maindb
 import argparse
 import os
 import time
 import atexit
+
+import Pyro4
+
+import pydb.maindb
 from pydb.executionenvironment import get_schema_dir, determine_database_directory
 import pydb.commdatastore
 import pydb.config
 import pydb.logconfig
 
-
-
+logging.basicConfig(level=logging.INFO)
 
 if __name__ == "__main__":
     import pydb.pyrosetup
@@ -40,7 +39,6 @@ if __name__ == "__main__":
     logger = logging.getLogger('pydbserver')
     logger.info('### logging started at %s local time. ###', time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime()))
 
-
     pydb.config.read_config()
     db_dir = determine_database_directory(args.basepath)
     main_db = pydb.maindb.build(db_dir, schema_dir=get_schema_dir(), enable_db_sync=not args.no_sync)
@@ -57,5 +55,3 @@ if __name__ == "__main__":
     daemon.register(comm_data_store, objectId=args.comm_data_store_name)
 
     daemon.requestLoop()        
-
-

@@ -1,3 +1,4 @@
+# coding=utf-8
 import time
 
 data_tables = ["tome_types", "tomes", "tome_tags", "synopses", "files", "authors", "pseudonyms",

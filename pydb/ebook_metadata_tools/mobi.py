@@ -1,3 +1,4 @@
+# coding=utf-8
 #  0.1 - based on code from exthupd.py 0.26
 # which is based on mobiunpack http://www.mobileread.com/forums/showthread.php?t=61986
 

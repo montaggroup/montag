@@ -1,3 +1,4 @@
+# coding=utf-8
 from twisted.internet.protocol import Factory
 from twisted.internet.endpoints import TCP4ClientEndpoint
 from tcptransportprotocol import build_tcp_transport_protocol
@@ -46,7 +47,7 @@ class TcpClient(object):
         self.upper_layer.transport_channel_failed(error)
 
 
-class ProtocolFactory(Factory):
+class ProtocolFactory(Factory, object):
     def __init__(self, upper_layer, comservice, target_bytes_per_second):
         self.upper_layer = upper_layer
         self.comservice = comservice

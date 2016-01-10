@@ -1,3 +1,4 @@
+# coding=utf-8
 import json
 import time
 import logging
@@ -8,6 +9,8 @@ KEEP_ALIVE_SEND_INTERVAL_SECONDS = 120
 
 
 class JsonSession(object):
+    """ deprecated
+    """
     def __init__(self, upper_layer):
         self.upper_layer = upper_layer
         self.lower_layer = None
@@ -106,7 +109,7 @@ class JsonSession(object):
         elif command == "noOp":
             pass
         else:
-            logger.error(u'Unsupported command "{}"'.format(command))
+            logger.error(u'Unsupported command "%s"', command)
 
     def secure_channel_established(self, friend_id):
         self.upper_layer.session_established(friend_id)

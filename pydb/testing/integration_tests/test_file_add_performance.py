@@ -1,16 +1,14 @@
+# coding=utf-8
 import unittest
 import sys
 import os
 import time
 import tempfile
 import mock
-from pydb.testing.test_data import get_book_path
-
-sys.path.append(os.getcwd())
-
-import pydb.fileserver
-
 import logging
+
+from pydb.testing.test_data import get_book_path
+import pydb.fileserver
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("test_file_add_performance")

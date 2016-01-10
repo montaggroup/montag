@@ -1,3 +1,4 @@
+# coding=utf-8
 import json
 import time
 import logging
@@ -64,7 +65,7 @@ class JsonAndBinarySession(object):
     def send_keep_alive_if_necessary(self):
         keep_alive_interval = config.get_int_option('comserver', 'keep_alive_send_interval_seconds',
                                                     KEEP_ALIVE_SEND_INTERVAL_SECONDS)
-        if time.time()-self._last_message_sent > keep_alive_interval:
+        if time.time() - self._last_message_sent > keep_alive_interval:
             self._send_keep_alive()
 
     def _send_message(self, object_to_send):

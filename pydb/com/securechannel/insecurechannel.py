@@ -1,3 +1,4 @@
+# coding=utf-8
 # do not use this "secure" channel in production code!
 class InsecureChannel(object):
     def __init__(self, upper_layer):

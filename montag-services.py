@@ -1,16 +1,21 @@
 #!/usr/bin/env python2.7
+# coding=utf-8
 import logging
-logging.basicConfig(level=logging.INFO)
-
 import argparse
 import sys
-import pydb.services as services
 import time
-import pydb.pyrosetup
+
 import Pyro4
+import Pyro4.errors
+
+import pydb.services as services
+import pydb.pyrosetup
 import pydb.config
 
+logging.basicConfig(level=logging.INFO)
 
+
+# noinspection PyUnusedLocal
 def do_list_services(args):
     services_status = services.get_current_services_status()
     for name in services_status.keys():
@@ -52,11 +57,13 @@ def _wait_for_db_ping_ok():
 
     return db_ok
 
+
+# noinspection PyUnusedLocal
 def do_stop_services(args, name_filter_fct=lambda x: True):
     services.stop_all_ignoring_exceptions(verbose=True, name_filter_fct=name_filter_fct)
 
 
-
+# noinspection PyShadowingNames
 def do_restart_services(args):
     if args.web2py_only:
         do_stop_services(args, name_filter_fct=lambda x: 'web2py' in x)
@@ -66,29 +73,33 @@ def do_restart_services(args):
         do_start_services(args)
 
 
-pydb.config.read_config()
-parser = argparse.ArgumentParser(description='Controls and lists montag services.')
+def main():
+    pydb.config.read_config()
+    parser = argparse.ArgumentParser(description='Controls and lists montag services.')
 
-subparsers = parser.add_subparsers(help='sub-command help')
+    subparsers = parser.add_subparsers(help='sub-command help')
 
-parser_list = subparsers.add_parser('status', help='list services status')
-parser_list.set_defaults(func=do_list_services)
+    parser_list = subparsers.add_parser('status', help='list services status')
+    parser_list.set_defaults(func=do_list_services)
 
-parser_start = subparsers.add_parser('start', help='start services')
-parser_start.add_argument('--log-level', '-L', help='Start services with log level', dest='log_level')
-parser_start.add_argument('--log-path', '-P', help='set services log path', dest='log_path')
-parser_start.set_defaults(func=do_start_services, debug=False, log_level='WARNING', log_path=services.log_path)
+    parser_start = subparsers.add_parser('start', help='start services')
+    parser_start.add_argument('--log-level', '-L', help='Start services with log level', dest='log_level')
+    parser_start.add_argument('--log-path', '-P', help='set services log path', dest='log_path')
+    parser_start.set_defaults(func=do_start_services, debug=False, log_level='WARNING', log_path=services.log_path)
 
-parser_stop = subparsers.add_parser('stop', help='stop services')
-parser_stop.set_defaults(func=do_stop_services)
+    parser_stop = subparsers.add_parser('stop', help='stop services')
+    parser_stop.set_defaults(func=do_stop_services)
 
-parser_restart = subparsers.add_parser('restart', help='stop services')
-parser_restart.add_argument('--log-level', '-L', help='Start services with log level', dest='log_level')
-parser_restart.add_argument('--log-path', '-P', help='set services log path', dest='log_path')
-parser_restart.add_argument('--web2py-only', '-w', action="store_true", default=False, help='only restart web2py')
+    parser_restart = subparsers.add_parser('restart', help='stop services')
+    parser_restart.add_argument('--log-level', '-L', help='Start services with log level', dest='log_level')
+    parser_restart.add_argument('--log-path', '-P', help='set services log path', dest='log_path')
+    parser_restart.add_argument('--web2py-only', '-w', action="store_true", default=False, help='only restart web2py')
 
-parser_restart.set_defaults(func=do_restart_services, debug=False, log_level='WARNING', log_path=services.log_path)
+    parser_restart.set_defaults(func=do_restart_services, debug=False, log_level='WARNING', log_path=services.log_path)
 
-args = parser.parse_args()
+    args = parser.parse_args()
 
-args.func(args)
+    args.func(args)
+
+if __name__ == "__main__":
+    main()

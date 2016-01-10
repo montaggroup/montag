@@ -1,3 +1,4 @@
+# coding=utf-8
 import unittest
 import hashlib
 import pydb.ebook_metadata_tools.pdf as pdf

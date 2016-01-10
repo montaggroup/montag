@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# coding=utf-8
 
 """
 Return disk usage statistics about the given path as a (total, used, free)

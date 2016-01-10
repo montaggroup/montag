@@ -1,3 +1,4 @@
+# coding=utf-8
 import unittest
 from pydb import opf
 import os

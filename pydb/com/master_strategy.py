@@ -1,3 +1,4 @@
+# coding=utf-8
 import strategies.early_requester
 import strategies.late_requester
 import metadata_requester
