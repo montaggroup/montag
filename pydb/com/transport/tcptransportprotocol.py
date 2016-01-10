@@ -66,7 +66,7 @@ class TcpTransportProtocol(protocol.Protocol, object):
 
     def __init__(self, upper_layer, comservice, target_bytes_per_second, reactor):
         self.upper_layer = upper_layer
-        self.reactor = reactor()
+        self.reactor = reactor
         self.data = bytearray()
         self.state = WaitingForLength
         self.expected_length = 0
