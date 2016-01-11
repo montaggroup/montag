@@ -77,12 +77,17 @@ class FileSendQueue(object):
         file_extension_with_dot = os.path.splitext(local_path)[1]
         file_extension = file_extension_with_dot[1:]
 
+        try:
+            self.file_in_progress = open(local_path, 'rb')
+        except IOError as e:
+            logger.error("Could not open file {}: {}, sending negative reply".format(local_path, e))
+            self.session.deliver_file(file_hash, extension="", content="", more_parts_follow=False)
+            return
+
         logging.info("Sending file {}".format(file_hash))
         self.is_transfer_in_progress = True
         self.file_hash_in_progress = file_hash
         self.file_extension_in_progress = file_extension
 
-        self.file_in_progress = open(local_path, 'rb')
         self.next_chunk = self.file_in_progress.read(FILE_TRANSFER_CHUNK_SIZE)
         self._send_next_chunk()
-
