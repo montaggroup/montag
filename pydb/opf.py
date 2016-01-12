@@ -24,7 +24,7 @@ class Metadata(object):
         self.publication_year = None
         self.edition = None
 
-        logger.debug("opf inititalized")
+        logger.debug("opf initialized")
 
     def __str__(self):
         series_text = ""
@@ -44,7 +44,7 @@ class Metadata(object):
                     <guide/>
                 </package>
                 """)
-        metadata_elemement = root[0]
+        metadata_element = root[0]
 
         def add_tag(tag_name, text=None, sort=None, role=None, scheme=None, name=None, content=None):
             attrib = {}
@@ -58,10 +58,10 @@ class Metadata(object):
                 attrib['name'] = name
             if content is not None:
                 attrib['content'] = content
-            elem = metadata_elemement.makeelement(tag_name, attrib=attrib)
+            elem = metadata_element.makeelement(tag_name, attrib=attrib)
             if text is not None:
                 elem.text = text.strip()
-            metadata_elemement.append(elem)
+            metadata_element.append(elem)
 
         add_tag(_dc_ns('title'), self.title)
         add_tag(_dc_ns('language'), self.language)
@@ -74,7 +74,7 @@ class Metadata(object):
         if self.series_index is not None:
             add_tag('meta', name='calibre:series_index', content=str(self.series_index))
         if self.title_sort is not None:
-           add_tag('meta', name='calibre:title_sort', content=self.title_sort)
+            add_tag('meta', name='calibre:title_sort', content=self.title_sort)
         if self.edition is not None:
             add_tag('meta', name='pydb:edition_name', content=self.edition)
 
