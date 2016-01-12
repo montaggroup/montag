@@ -51,6 +51,13 @@ class TestFileServer(unittest.TestCase):
         self.file_server.delete_file(file_hash)
         self.assertFalse(self.file_server.is_file_in_store(self.test_epub_path, 'epub'))
 
+    def test_after_re_adding_an_existing_file_without_extension_no_new_entry_is_created(self):
+        txt_file_without_extension = get_book_path('pg1661_txt')
+        first_id, first_hash, first_size = self.file_server.add_file_from_local_disk(self.test_txt_path, 'txt')
+        second_id,  second_hash, second_size = self.file_server.add_file_from_local_disk(txt_file_without_extension, '')
+        self.assertEqual(first_id, second_id)
+
 
 if __name__ == "__main__":
     unittest.main()
+

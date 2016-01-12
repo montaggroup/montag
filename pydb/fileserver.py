@@ -95,6 +95,11 @@ class FileServer(object):
                 logger.warning(u"Could not strip file {}, seems to be broken".format(source_path))
                 return None, None, None
 
+        if len(extension) == 0:
+            existing_extension = self.db.get_file_extension(file_hash)
+            if existing_extension is not None:
+                extension = existing_extension
+
         size = self.file_store.add_file(source_path, file_hash, extension, move_file)
         local_file_id = self.db.add_local_file_exists(file_hash, extension)
 
