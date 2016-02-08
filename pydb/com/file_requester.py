@@ -60,12 +60,12 @@ class FileRequester(object):
                     self._complete_mission()
                 return
 
-            logger.info("Fetching file with hash {}".format(file_hash))
+            logger.info(u"Fetching file with hash {}".format(file_hash))
             self.requested_hashes.append(file_hash)
             self._session.request_file(file_hash)
 
     def _negative_file_reply_received(self, file_hash):
-        logger.info("Negative reply for hash {}".format(file_hash))
+        logger.info(u"Negative reply for hash {}".format(file_hash))
         expected_hash = self.requested_hashes.popleft()
         if file_hash != expected_hash:
             raise ValueError("Request order error, requested hash {} but got {}".format(expected_hash, file_hash))
@@ -78,7 +78,7 @@ class FileRequester(object):
                     self.current_transfer.file_hash))
 
     def _positive_file_reply_received(self, file_hash, extension, content, more_parts_follow):
-        logger.info("New file content, hash: {}, (Extension {}, more parts: {})".format(
+        logger.info(u"New file content, hash: {}, (Extension {}, more parts: {})".format(
                 file_hash, extension, more_parts_follow))
 
         if self.current_transfer is None:  # new file answer expected
@@ -97,7 +97,7 @@ class FileRequester(object):
     def _finish_multipart_transfer(self):
         self.current_transfer.close()
         self.number_files_downloaded += 1
-        logger.info("Adding file via {}".format(self.current_transfer.file_name))
+        logger.info(u"Adding file via {}".format(self.current_transfer.file_name))
         self.file_inserter.insert_file_in_background(self.current_transfer.file_name,
                                                      self.current_transfer.file_extension,
                                                      self.current_transfer.file_hash)
@@ -125,23 +125,23 @@ class FileRequester(object):
                 self._positive_file_reply_received(file_hash, extension, content, more_parts_follow)
 
         except ValueError as e:
-            logger.error("Caught a value error: {} ({}) - {}".format(e.message, str(e), traceback.format_exc()))
+            logger.error(u"Caught a value error: {} ({}) - {}".format(e.message, str(e), traceback.format_exc()))
             self._abort_mission()
             return
 
         self._update_progress()
 
         if not more_parts_follow or not content:
-            logger.info("Requesting next file")
+            logger.info(u"Requesting next file")
             self._launch_file_requests()
 
     def _complete_mission(self):
-        logger.debug("No more files to request, waiting for last insert to complete")
+        logger.debug(u"No more files to request, waiting for last insert to complete")
         self.file_inserter.wait_for_insert_to_complete()
         self._completion_callback()
 
     def _abort_mission(self):
-        logger.debug("Abort called, waiting for last insert to complete...")
+        logger.debug(u"Abort called, waiting for last insert to complete...")
         self.file_inserter.wait_for_insert_to_complete()
 
         if self.current_transfer is not None:
@@ -152,11 +152,11 @@ class FileRequester(object):
         self._failure_callback()
 
     def session_failed(self, reason):
-        logger.error("sessionFailed: {}".format(reason))
+        logger.error(u"sessionFailed: {}".format(reason))
         self._abort_mission()
 
     def session_lost(self, reason):
-        logger.error("The session was lost uncleanly: {}".format(reason))
+        logger.error(u"The session was lost uncleanly: {}".format(reason))
         self._abort_mission()
 
     def pause_producing(self):
@@ -181,7 +181,7 @@ class FileInTransfer(object):
         self.file_object = os.fdopen(handle, "wb")
 
     def write(self, data):
-        logger.debug("Writing {} bytes into file".format(len(data)))
+        logger.debug(u"Writing {} bytes into file".format(len(data)))
         self.file_object.write(data)
 
     def close(self):
@@ -218,7 +218,7 @@ def determine_next_hash_to_request(hashes_to_request, comservice):
 
         file_hash = hashes_to_request.popleft()
         if file_hash in checked_hashes:
-            logger.warning("All remaining files are busy, will recommend shutdown")
+            logger.warning(u"All remaining files are busy, will recommend shutdown")
             return None
         checked_hashes.add(file_hash)
 
@@ -226,9 +226,9 @@ def determine_next_hash_to_request(hashes_to_request, comservice):
         if lock_result == "locked":
             return file_hash
         elif lock_result == "busy":
-            logger.info("File {} currently locked, putting it to the end of the queue".format(file_hash))
+            logger.info(u"File {} currently locked, putting it to the end of the queue".format(file_hash))
             hashes_to_request.append(file_hash)
         elif lock_result == "completed":
-            logger.info("File transfer for hash {} already completed, skipping".format(file_hash))
+            logger.info(u"File transfer for hash {} already completed, skipping".format(file_hash))
         else:
             raise ValueError("Unknown file hash lock result: '{}'".format(lock_result))
