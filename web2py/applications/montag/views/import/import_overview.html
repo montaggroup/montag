@@ -1,0 +1,19 @@
+{{extend 'layout.html'}}
+{{from pydb_helpers import html_helpers}}
+
+<h1> Bulk file import </h1>
+
+Bulk file import is currently work in progress.
+Please contact us via github if you like to help!
+
+<h1> File statistics </h1>
+<table>
+    {{ for state, count in file_counts.iteritems(): }}
+        <tr><th>{{ =state}}</th><td>{{ =count}}</td></tr>
+    {{ pass }}
+</table>
+
+<p>
+See <a href="{{=URL('pending_files')}}"> here </a> for details about pending files.<br>
+See <a href="{{=URL('identified_files')}}"> here </a> for details about recently identified files.<br>
+</p>

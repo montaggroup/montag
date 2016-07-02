@@ -12,11 +12,12 @@ def build_main_db_with_mocks():
     local_db = mock.MagicMock()
     friends_db = mock.MagicMock()
     merge_db = mock.MagicMock()
+    importer_db = mock.MagicMock()
     build_foreign_db = mock.MagicMock()
     index_server = mock.MagicMock()
 
     mocks = MainDbMocks(local_db, friends_db, merge_db, build_foreign_db, index_server)
-    db = main_db.MainDB(local_db, friends_db, merge_db, build_foreign_db, index_server)
+    db = main_db.MainDB(local_db, friends_db, merge_db, importer_db, build_foreign_db, index_server)
 
     return db, mocks
 

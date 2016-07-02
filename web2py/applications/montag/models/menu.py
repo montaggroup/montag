@@ -33,6 +33,7 @@ if auth.has_privilege('data_view'):
 
 if auth.has_privilege('data_edit'):
     response.menu.append((T('Add Tome'), False, URL('upload', 'upload_file'), []))
+    response.menu.append((T('Bulk Import'), False, URL('import', 'import_overview'), []))
 
 if auth.has_privilege('friends_view'):
     response.menu.append((T('Friends'), False, URL('friends', 'list_friends'), []))

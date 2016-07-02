@@ -14,7 +14,7 @@ log_path = tempfile.gettempdir()
 DEFAULT_LOG_LEVEL = 'INFO' 
 
 service_prefix = 'montag-'
-basenames = ["pydbserver", "comserver", "comservice", "indexserver", "fileserver", "web2py"]
+basenames = ["pydbserver", "comserver", "comservice", "indexserver", "fileserver", "web2py", "importer"]
 
 extension = executionenvironment.script_extension()
 

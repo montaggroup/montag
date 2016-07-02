@@ -12,6 +12,7 @@ from mergedb import MergeDB
 from localdb import LocalDB
 from friendsdb import FriendsDB
 from foreigndb import ForeignDB
+from importerdb import ImporterDB
 from pydb import FileType, TomeType, pyrosetup
 from sqlitedb import Transaction
 from contextlib import contextmanager
@@ -40,6 +41,7 @@ def build(db_dir, schema_dir, enable_db_sync=True):
     merge_db = MergeDB(db_path(db_dir, "merge"), schema_dir, local_db=local_db, enable_db_sync=False)
     merge_db.add_source(local_db)
     friends_db = FriendsDB(db_path(db_dir, "friends"), schema_dir)
+    importer_db = ImporterDB(db_path(db_dir, "importer"), schema_dir)
 
     def build_foreign_db(friend_id):
         foreign_db_path = db_path(db_dir, os.path.join("foreign", str(friend_id)))
@@ -48,7 +50,7 @@ def build(db_dir, schema_dir, enable_db_sync=True):
 
     index_server = pyrosetup.indexserver()
 
-    db = MainDB(local_db, friends_db, merge_db, build_foreign_db, index_server)
+    db = MainDB(local_db, friends_db, merge_db, importer_db, build_foreign_db, index_server)
     db.load_foreign_dbs()
 
     merge_db.recalculate_if_neccessary()
@@ -58,11 +60,16 @@ def build(db_dir, schema_dir, enable_db_sync=True):
 
 
 class MainDB(object):
-    def __init__(self, local_db, friends_db, merge_db, build_foreign_db, index_server):
+    def __init__(self, local_db, friends_db, merge_db, importer_db, build_foreign_db, index_server):
+        """
+
+        :type importer_db: pydb.importer_db.ImporterDB
+        """
         self.default_add_fidelity = 50
         self.local_db = local_db
         self.friends_db = friends_db
         self.merge_db = merge_db
+        self.importer_db = importer_db
         self.foreign_dbs = {}
         self.index_server = index_server
 
@@ -439,6 +446,51 @@ class MainDB(object):
         if tome:
             self._update_search_index()
             return tome['id']
+
+    def get_import_file_count_by_state(self, state):
+        return self.importer_db.get_file_count_by_state(state)
+
+    def get_import_pending_files(self):
+        pending_files = self.importer_db.get_pending_files()
+        for f in pending_files:
+            self._add_file_extension(f)
+            self._add_original_file_name(f)
+        return pending_files
+
+    def get_import_rececently_identified_files(self):
+        files = self.importer_db.get_recently_identified_files()
+        for f in files:
+            self._add_file_extension(f)
+            self._add_original_file_name(f)
+        return files
+
+
+    def _add_original_file_name(self, f):
+        hash_ = f['hash']
+        file_name = self.importer_db.get_fact_value(hash_, 'file_name')
+        if file_name is not None:
+            f['file_name'] = file_name
+        else:
+            logger.warn('No file name for pending file {} found'.format(hash_))
+            f['file_name'] = ''
+
+    def _add_file_extension(self, f):
+        hash_ = f['hash']
+        local_file = self.local_db.get_local_file_by_hash(hash_)
+        if local_file is not None:
+            f['file_extension'] = local_file['file_extension']
+        else:
+            logger.warn('No local file for pending file {} found'.format(hash_))
+            f['file_extension'] = ''
+
+    def get_import_file_state(self, file_hash):
+        return self.importer_db.get_file_info(file_hash)
+
+    def get_import_file_facts(self, file_hash):
+        return self.importer_db.get_facts(file_hash)
+
+    def get_import_identifer_results(self, file_hash):
+        return self.importer_db.get_identifier_results(file_hash)
 
     def _apply_file_hash_translation(self, source_hash, target_hash):
         """ goes through all databases making sure that all instances of source_hash

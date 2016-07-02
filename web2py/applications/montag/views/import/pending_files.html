@@ -1,0 +1,25 @@
+{{extend 'layout.html'}}
+{{from pydb_helpers import html_helpers}}
+
+<table class='pendingFiles'>
+<tr>
+    <th>File Name</th>
+    <th>Type</th>
+    <th>Imported</th>
+    <th>State</th>
+    <th>Since</th>
+    <th>Hash</th>
+</tr>
+{{for item in items:}}
+ <tr>
+    <td>{{=A(item['file_name'], _href=URL('file_info', args=[item['hash']]))}}</td>
+    <td>{{=item['file_extension']}}</td>
+    <td>{{=html_helpers.human_readable_time_elapsed_since(item['date_import'])}}</td>
+    <td>{{=item['input_state']}}</td>
+    <td>{{=html_helpers.human_readable_time_elapsed_since(item['date_last_state_change'])}}</td>
+    <td class="hash">{{
+        =A(html_helpers.short_hash(item['hash'])+'...', _href=URL('file_info', args=[item['hash']]))
+        }}</td>
+ </tr>
+ {{pass}}
+</table>
