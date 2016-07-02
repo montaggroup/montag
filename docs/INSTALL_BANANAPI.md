@@ -20,6 +20,7 @@ Boot, log in and execute the following commands:
         sudo apt-get update
         sudo apt-get install git python-pip python-virtualenv
         sudo apt-get install libz-dev python-dev
+        sudo apt-get install build-essential
         git clone https://github.com/montaggroup/montag.git
         cd montag
         virtualenv venv
