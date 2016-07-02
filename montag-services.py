@@ -65,6 +65,7 @@ def do_stop_services(args, name_filter_fct=lambda x: True):
 
 # noinspection PyShadowingNames
 def do_restart_services(args):
+    # @todo handle situation where one service does not stop
     if args.web2py_only:
         do_stop_services(args, name_filter_fct=lambda x: 'web2py' in x)
         do_start_services(args, name_filter_fct=lambda x: 'web2py' in x)

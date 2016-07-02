@@ -1,0 +1,44 @@
+{{extend 'layout.html'}}
+{{from pydb_helpers import html_helpers}}
+
+{{if file_info is None:}}
+<h1>File not found</h1>
+{{else:}}
+<h1> File Info </h1>
+<table>
+    <tr><th>Imported</th><td>{{=html_helpers.human_readable_time_elapsed_since(file_info['date_import'])}}</td></tr>
+    <tr><th>State</th><td>{{=file_info['input_state']}}</td></tr>
+    <tr><th>Since</th><td>{{=html_helpers.human_readable_time_elapsed_since(file_info['date_last_state_change'])}}</td></tr>
+    <tr><th>Hash</th><td>{{=file_info['hash']}}</td></tr>
+</table>
+
+<h1> File Facts </h1>
+<table class='facts'>
+<tr>
+    <th>Name</th>
+    <th>Value</th>
+</tr>
+{{for key, value in file_facts.iteritems():}}
+ <tr>
+    <td>{{=key}}</td>
+    <td>{{=value}}</td>
+ </tr>
+ {{pass}}
+</table>
+{{pass}}
+
+<h1> Identification Results </h1>
+<table class='identifier_results'>
+<tr>
+    <th>Identifier</th>
+    <th>Fidelity</th>
+    <th>Result</th>
+</tr>
+{{for result in identifier_results:}}
+ <tr>
+    <td>{{=result['identifier_name']}}</td>
+    <td>{{=result['fidelity']}}</td>
+     <td>{{=result['tome_document']}}</td>
+ </tr>
+ {{pass}}
+</table>

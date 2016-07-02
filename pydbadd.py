@@ -5,9 +5,9 @@ import Pyro4
 import argparse
 import os
 import sys
-from pydb import FileType, TomeType
-import re
 
+from pydb import FileType, TomeType
+import pydb.title
 import pydb.opf
 
 
@@ -23,24 +23,6 @@ def read_metadata(filepath):
     return pydb.opf.read_metadata_from_file(metadata_path)
 
 
-def title_split(title):
-    subtitle = None
-    edition = None
-
-    title = title.strip()
-
-    m = re.match('(.*), ([^,]+) edition$', title, re.IGNORECASE)
-    if m:
-        title = m.group(1)
-        edition = m.group(2)+" Edition"
-
-    if ":" in title:
-        title, subtitle = title.split(':', 1)
-        title = title.strip()
-        subtitle = subtitle.strip()
-    return title, subtitle, edition
-
-
 def add_file(db, file_server, filepath, fidelity, tome_type, delete_source):
     print u"Adding {}".format(filepath)
     filepath = os.path.abspath(filepath)
@@ -48,7 +30,7 @@ def add_file(db, file_server, filepath, fidelity, tome_type, delete_source):
 
     author_ids = db.find_or_create_authors(metadata.authors, fidelity=fidelity)
 
-    title, subtitle, edition = title_split(metadata.title)
+    title, subtitle, edition = pydb.title.title_split(metadata.title)
 
     if metadata.edition is not None:
         edition = metadata.edition

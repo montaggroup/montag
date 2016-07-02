@@ -10,7 +10,7 @@ Pyro4.config.SERIALIZERS_ACCEPTED = ['serpent', 'json', 'marshal', 'pickle']
 def pydbserver():
     if False:  # trick ide into using the correct code insight
         import maindb
-        return maindb.MainDB(None, None, None, None, None)
+        return maindb.MainDB(None, None, None, None, None, None)
 
     return Pyro4.Proxy('PYRO:pydb_server@localhost:4510')
 
