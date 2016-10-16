@@ -45,8 +45,10 @@ def get_string_option(section, name, default):
         logger.debug('returning default={}'.format(default))
         return default
 
+
 def enable_covers():
     return get_boolean_option('common', 'enable_covers', True)
+
 
 def ignore_rate_limit_in_lan():
     return get_boolean_option('common', 'ignore_rate_limit_in_lan', True)
@@ -82,5 +84,9 @@ def max_file_size_to_request_bytes():
 
 def enable_web_auth():
     return get_boolean_option('web', 'enable_auth', False)
+
+
+def importer_watch_folder():
+    return get_string_option('importer', 'watch_folder', 'import_watch')
 
 

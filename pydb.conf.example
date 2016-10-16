@@ -21,3 +21,7 @@ role_anonymous_all = editor
 role_anonymous_localhost = admin
 role_authenticated_all = editor
 role_authenticated_localhost = admin
+
+[importer]
+; absolute path or path relative to base dir allowed
+watch_folder = import_watch

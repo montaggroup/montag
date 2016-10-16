@@ -1,14 +1,16 @@
 # coding=utf-8
-import pydb.names
-import network_params
 import time
 from collections import defaultdict, namedtuple
 import logging
 import databases
-import pydb
 import copy
 import sqlitedb
+
+import pydb
 import basedb
+import pydb.names
+import network_params
+import file_store
 from basedb import data_fields_equal
 
 logger = logging.getLogger('mergedb')
@@ -732,14 +734,17 @@ class MergeDB(basedb.BaseDB):
                   where_clause="name LIKE '%,%' AND name NOT LIKE '%, Jr.%' AND fidelity < 70 AND fidelity >=?",
                   params=[network_params.Min_Relevant_Fidelity])
 
+        PLAUSIBLE_FILE_EXTENSIONS = ['epub', 'mobi', 'pdf', 'txt', 'pdb', 'jpg', 'html', 'lit', 'djvu', 'rtf', 'azw3',
+                                     'azw4', 'png', 'gif', 'cbr']
+
+        supported_extensions_string = ', '.join(["'" + ext + "'" for ext in PLAUSIBLE_FILE_EXTENSIONS])
         add_check('files_with_strange_extension',
                   from_clause="files INNER JOIN tomes ON tomes.id=files.tome_id",
                   where_clause="file_extension NOT IN "
-                               "('epub', 'mobi', 'pdf', 'txt', 'pdb', 'jpg', 'html', 'lit', "
-                               "'djvu','epub','rtf', 'azw3', 'azw4', 'png', 'gif', 'cbr') "
+                               "(?) "
                                "AND files.fidelity >=?",
                   order_by_clause="files.hash",
-                  params=[network_params.Min_Relevant_Fidelity])
+                  params=[supported_extensions_string, network_params.Min_Relevant_Fidelity])
 
         add_check('authors_with_identical_names',
                   from_clause="authors a1 INNER JOIN authors a2 ON a1.name=a2.name COLLATE NOCASE",
