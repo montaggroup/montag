@@ -4,6 +4,7 @@ import logging
 import pydb.localdb
 import pydb.friendsdb
 import pydb.mergedb
+import pydb.importerdb
 import pydb.foreigndb
 import pydb.maindb
 
@@ -19,12 +20,13 @@ def build_main_db_memory_only(schema_dir):
     merge_db.add_source(local_db)
     friends_db = pydb.friendsdb.FriendsDB(":memory:", schema_dir)
     index_server = mock.MagicMock()
+    importer_db = pydb.importerdb.ImporterDB(":memory:", schema_dir)
 
     def build_foreign_db(friend_id):
         db_ = pydb.foreigndb.ForeignDB(":memory:", schema_dir, friend_id, enable_db_sync=False)
         return db_
 
-    db = pydb.maindb.MainDB(local_db, friends_db, merge_db, build_foreign_db, index_server)
+    db = pydb.maindb.MainDB(local_db, friends_db, merge_db, importer_db, build_foreign_db, index_server)
 
     logger.info("DBs initialized")
     return db

@@ -96,17 +96,22 @@ class SqliteDB(object):
         logger.debug(u'Update query is {} {}'.format(query, repr(parameters)))
         self.cur.execute(query, parameters)
 
-    def insert_object(self, table_name, object_fields):
+    def insert_object(self, table_name, object_fields, allow_replace=False):
         field_string = ', '.join(object_fields.iterkeys())
         question_marks = ', '.join('?' * len(object_fields))
 
         value_list = object_fields.values()
 
-        query = u'INSERT INTO {} ({}) VALUES ({}) '.format(table_name, field_string, question_marks)
+        if allow_replace:
+            query = u'INSERT OR REPLACE INTO {} ({}) VALUES ({}) '.format(table_name, field_string, question_marks)
+        else:
+            query = u'INSERT INTO {} ({}) VALUES ({}) '.format(table_name, field_string, question_marks)
+
         logger.debug(u'Insert query is ' + query + repr(value_list))
         self.cur.execute(query, value_list)
 
         return self.cur.lastrowid
+
 
 
 class Transaction(object):

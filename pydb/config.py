@@ -45,8 +45,22 @@ def get_string_option(section, name, default):
         logger.debug('returning default={}'.format(default))
         return default
 
+
+def get_simple_array_option(section, name, default):
+    try:
+        string_opt = parser.get(section, name).split()
+        if not string_opt:
+            return []
+        result_raw = string_opt.split(',')
+        return [opt.strip() for opt in result_raw]
+    except (ConfigParser.NoOptionError, ConfigParser.NoSectionError, ValueError):
+        logger.debug('returning default={}'.format(default))
+        return default
+
+
 def enable_covers():
     return get_boolean_option('common', 'enable_covers', True)
+
 
 def ignore_rate_limit_in_lan():
     return get_boolean_option('common', 'ignore_rate_limit_in_lan', True)
@@ -84,3 +98,14 @@ def enable_web_auth():
     return get_boolean_option('web', 'enable_auth', False)
 
 
+def importer_watch_folder():
+    return get_string_option('importer', 'watch_folder', 'import_watch')
+
+
+def filter_tome_languages():
+    languages = get_simple_array_option('content', 'filter_tome_languages', [])
+    return [l.lower() for l in languages]
+
+
+def accept_unknown_languages():
+    return get_boolean_option('content', 'accept_unknown_languages', False)
