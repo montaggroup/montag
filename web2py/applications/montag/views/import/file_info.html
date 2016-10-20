@@ -28,6 +28,12 @@
 {{pass}}
 
 <h1> Identification Results </h1>
+
+{{=file_info}}
+{{if 'result_tome_guid' in file_info and file_info['result_tome_guid']:}}
+{{= A('Tome link', _class="tome_link", _href=URL('default', 'view_tome', args=[file_info['result_tome_guid']]))}}
+{{pass}}
+
 <table class='identifier_results'>
 <tr>
     <th>Identifier</th>

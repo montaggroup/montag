@@ -7,7 +7,6 @@ import logging
 import hashlib
 import json
 
-import file_store
 import importerdb
 import ebook_metadata_tools
 

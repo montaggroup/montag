@@ -8,7 +8,8 @@
     <th>Imported</th>
     <th>State</th>
     <th>Since</th>
-    <th>Hash</th>
+    <th>File Hash</th>
+    <th>Tome </th>
 </tr>
 {{for item in items:}}
  <tr>
@@ -20,6 +21,13 @@
     <td class="hash">{{
         =A(html_helpers.short_hash(item['hash'])+'...', _href=URL('file_info', args=[item['hash']]))
         }}</td>
+
+    <td>
+    {{if item['result_tome_guid']:}}
+        {{= A('Tome Link', _class="tome_link", _href=URL('default', 'view_tome', args=[item['result_tome_guid']]))}}
+    {{pass}}
+    </td>
+
  </tr>
  {{pass}}
 </table>
