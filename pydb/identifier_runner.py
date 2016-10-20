@@ -81,8 +81,9 @@ class IdentifierRunner(object):
         if best_identification_fidelity >= network_params.Min_Relevant_Fidelity:
 
             if self.import_filter_accepts_document(best_identification_document):
-                self.import_identification_document(best_identification_document, hash_,
+                guid = self.import_identification_document(best_identification_document, hash_,
                                                     file_facts['file_size'], file_facts['file_extension'])
+                self.importer_db.insert_or_replace_fact(hash_, 'result_tome_guid', guid)
                 self.importer_db.set_file_input_state(hash_, importerdb.STATE_IDENTIFIED)
             else:
                 logger.info('File {} was identified successfully, but import filter rejected it'.format(hash_))
@@ -148,7 +149,7 @@ class IdentifierRunner(object):
                 and 'file_already_added_with_correct_fidelity' in doc \
                 and doc['file_already_added_with_correct_fidelity']:
             # shortcut: we already know that the file is added with the correct fidelity
-            return
+            return doc['guid']
         else:  # we have a document with tome information and one or more authors
             author_docs = doc['authors']
             if not author_docs:
@@ -169,6 +170,9 @@ class IdentifierRunner(object):
 
             self.pydb.link_tome_to_file(tome_id, hash_, file_size, file_extension=file_extension,
                                         file_type=pydb.FileType.Content, fidelity=doc['fidelity'])
+
+            tome = self.pydb.get_tome(tome_id)
+            return tome['guid']
 
             # @todo refactor and move to server together with code from pydb add: pydb.import_tome(tome_import_document)
             # @todo synopsis support

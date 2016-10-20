@@ -66,7 +66,12 @@ class ImporterDB(sqlitedb.SqliteDB):
         return self.get_list_of_objects('SELECT * FROM identifier_files WHERE input_state!=?', [STATE_IDENTIFIED])
 
     def get_recently_identified_files(self):
-        return self.get_list_of_objects('SELECT * FROM identifier_files WHERE input_state=? ORDER BY date_last_state_change DESC LIMIT 100', [STATE_IDENTIFIED])
+        return self.get_list_of_objects('SELECT identifier_files.*, identifier_facts.value as result_tome_guid '
+                                        'FROM identifier_files '
+                                        'LEFT JOIN identifier_facts ON identifier_facts.hash=identifier_files.hash '
+                                        '     AND identifier_facts.key=\'result_tome_guid\' '
+                                        'WHERE input_state=? '
+                                        'ORDER BY date_last_state_change DESC LIMIT 100', [STATE_IDENTIFIED])
 
     def add_fact(self, hash_, key, value):
         return self.insert_object('identifier_facts', {'hash': hash_, 'key': key, 'value': value})
@@ -88,7 +93,11 @@ class ImporterDB(sqlitedb.SqliteDB):
         return {fact['key']: fact['value'] for fact in all_facts}
 
     def get_identifier_results(self, hash_):
-        return self.get_list_of_objects('SELECT * FROM identifier_results WHERE hash=?', [hash_])
+        return self.get_list_of_objects('SELECT identifier_results.*, identifier_facts.value as result_tome_guid '
+                                        'FROM identifier_results '
+                                        'LEFT JOIN identifier_facts ON identifier_facts.hash=identifier_results.hash '
+                                        '     AND identifier_facts.key=\'result_tome_guid\' '
+                                        'WHERE identifier_results.hash=?', [hash_])
 
     def add_identifier_result(self, hash_, identifier_name, fidelity, result):
         self.insert_object('identifier_results', {
