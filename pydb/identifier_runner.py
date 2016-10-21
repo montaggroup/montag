@@ -40,11 +40,9 @@ class IdentifierRunner(object):
 
     def _try_file(self, file_info):
         hash_ = file_info['hash']
-        self.importer_db.set_file_input_state(hash_, importerdb.STATE_PROCESSING)
+        is_processing = False
         file_facts = self.importer_db.get_facts(hash_)
         logger.debug('Trying to identify file %s', hash_)
-
-        self.importer_db.begin()
 
         best_identification_fidelity = 0
         best_identification_document = None
@@ -58,6 +56,11 @@ class IdentifierRunner(object):
             if run_info_key in file_facts and file_facts[run_info_key] == '1':
                 logger.debug('Identifier %s already ran on %s, skipping', identifier_name, hash_)
                 continue
+
+            if not is_processing:
+                self.importer_db.set_file_input_state(hash_, importerdb.STATE_PROCESSING)
+                self.importer_db.begin()
+                is_processing = True
 
             try:
                 results = identifier.identify(file_info, file_facts)
@@ -93,7 +96,9 @@ class IdentifierRunner(object):
             self.importer_db.set_file_input_state(hash_, importerdb.STATE_UNCERTAIN)
         else:
             self.importer_db.set_file_input_state(hash_, importerdb.STATE_UNIDENTIFIED)
-        self.importer_db.commit()
+
+        if is_processing:
+            self.importer_db.commit()
 
     def _run_on_file_infos(self, file_infos):
         if len(file_infos) > 0:
