@@ -1,8 +1,13 @@
 # coding=utf-8
 import sys
-import optparse
+import os
+
+path_to_custom_pypdf = os.path.join(os.path.dirname(__file__), '..', '..', 'libs', 'pypdf2_with_custom_patch')
+
+sys.path.insert(1, path_to_custom_pypdf)
 
 import PyPDF2
+assert(PyPDF2.__version__ == '1.26.0_pydb')
 import PyPDF2.utils
 import logging
 

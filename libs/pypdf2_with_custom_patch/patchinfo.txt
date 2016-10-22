@@ -1,0 +1,4 @@
+This is pypdf2 4fc7f9d14adb2a9b890aea2616955ec54229f48c with a custom bug fix.
+Pull request for this bug fix is https://github.com/mstamy2/PyPDF2/pull/295.
+
+Budling will be removed as soon as bug fix is in master / pip.
