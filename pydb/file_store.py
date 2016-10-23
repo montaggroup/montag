@@ -78,7 +78,6 @@ class FileStore(object):
         if os.path.exists(cache_path):
             os.unlink(cache_path)
 
-
     def _calculate_cache_path(self, file_hash):
         assert file_hash, "Hash must not be none"
         file_hash = file_hash.lower()
@@ -97,7 +96,7 @@ def hash_file(path):
 
 
 def hash_stream(stream):
-    chunk_size_bytes = 100*1000
+    chunk_size_bytes = 100 * 1000
 
     hash_algo = hashlib.sha256()
     buf = stream.read(chunk_size_bytes)
@@ -124,10 +123,14 @@ def strip_file_to_temp(source_path, extension_without_dot, remove_original=False
     logger.info(u"Writing to file {}".format(filename_stripped))
 
     success = False
-    with os.fdopen(handle_stripped, "wb") as target_stream:
-        with open(source_path, 'rb') as source_stream:
-            if strip_file(source_stream, extension_without_dot, target_stream):
-                success = True
+    try:
+        with os.fdopen(handle_stripped, "wb") as target_stream:
+            with open(source_path, 'rb') as source_stream:
+                if strip_file(source_stream, extension_without_dot, target_stream):
+                    success = True
+    except ValueError:
+        os.remove(filename_stripped)  # clean up temp file which after all did not get used
+        raise  # pass the exception along to the higher levels
 
     if success:
         if remove_original:
