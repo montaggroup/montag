@@ -7,15 +7,21 @@ import logging
 import hashlib
 import json
 
+import sqlitedb
 import importerdb
 import ebook_metadata_tools
 
-DELETE_EMPTY_SECONDS_DELAY = 300
-DEFAULT_POLL_INTERVAL = 3
+DELETE_EMPTY_FOLDERS_DELAY = 300  # empty folders will be deleted if they are older than this
+DEFAULT_POLL_INTERVAL = 5  # check import watch every x seconds
+MIN_FILE_STABLE_PERIOD = 30  # if file size remains stable for this number of seconds, begin import
 
 logger = logging.getLogger(__name__)
 
 SUPPORTED_IMPORTER_FILE_EXTENSIONS = ['epub', 'mobi', 'pdf', 'lit', 'djvu', 'azw3', 'azw4', 'cbr']
+
+
+class FileRefusedError(Exception):
+    pass
 
 
 def db_path(db_dir, db_name):
@@ -35,12 +41,12 @@ def build_watcher(importer, watch_folder_path, reactor):
 
 
 class Importer(object):
-    def __init__(self, fileserver, importerDB, import_folder_path, notification_queue):
+    def __init__(self, fileserver, importer_db, import_folder_path, notification_queue):
         """
-        :type importerDB: importerdb.ImporterDB
+        :type importer_db: importerdb.ImporterDB
         """
         self.fileserver = fileserver
-        self.db = importerDB
+        self.db = importer_db
         self.import_folder_path = import_folder_path
         self.notification_queue = notification_queue
 
@@ -51,15 +57,18 @@ class Importer(object):
                 self.import_file(f)
                 logger.info('Imported {}'.format(f))
                 self.notification_queue.put(True)
+                delete_file(f)
+            except FileRefusedError as e:
+                logger.info('File {} refused by import: {}'.format(f, e.message))
+                delete_file(f)
             except Exception as e:
                 logger.error('Unable to import file {}: {}'.format(f, e.message))
-            delete_file(f)
 
     def import_file(self, file_path):
         _, ext_with_dot = os.path.splitext(file_path)
         ext = ext_with_dot[1:].lower()
         if ext not in SUPPORTED_IMPORTER_FILE_EXTENSIONS:
-            raise ValueError('{}: Unsupported file extension'.format(file_path))
+            raise FileRefusedError('Unsupported file extension')
 
         metadata = {}
         with open(file_path, 'rb') as file_stream:
@@ -73,23 +82,44 @@ class Importer(object):
         local_file_id, file_hash, size = self.fileserver.add_file_from_local_disk(file_path, ext, move_file=True)
 
         if self.db.is_file_known(file_hash):
-            raise ValueError('File {} already known'.format(file_hash))
+            raise FileRefusedError('File already known to importer')
 
-        self.db.begin()
-        self.db.add_file(file_hash)
-        self.db.add_fact(file_hash, 'md5', md5sum)
-        self.db.add_fact(file_hash, 'file_extension', ext)
-        self.db.add_fact(file_hash, 'file_size', size)
+        with sqlitedb.Transaction(self.db):
+            self.db.add_file(file_hash)
+            self.db.add_fact(file_hash, 'md5', md5sum)
+            self.db.add_fact(file_hash, 'file_extension', ext)
+            self.db.add_fact(file_hash, 'file_size', size)
 
-        relative_file_path = file_path.replace(self.import_folder_path, "")
-        logger.debug('Relative path of {}: {}'.format(file_path, relative_file_path))
-        self.db.add_fact(file_hash, 'path', relative_file_path)
+            relative_file_path = file_path.replace(self.import_folder_path, '')
+            logger.debug('Relative path of {}: {}'.format(file_path, relative_file_path))
+            self.db.add_fact(file_hash, 'path', relative_file_path)
 
-        _, file_name = os.path.split(file_path)
-        self.db.add_fact(file_hash, 'file_name', file_name)
+            _, file_name = os.path.split(file_path)
+            self.db.add_fact(file_hash, 'file_name', file_name)
 
-        self.db.add_fact(file_hash, 'file_metadata', json.dumps(metadata))
-        self.db.commit()
+            self.db.add_fact(file_hash, 'file_metadata', json.dumps(metadata))
+
+
+class FileStateChecker(object):
+    def __init__(self, file_path):
+        self.file_path = file_path
+
+        self.last_change_timestamp = time.time()
+        self.last_check_timestamp = self.last_change_timestamp
+        self.last_known_size = 0
+
+    def update(self):
+        self.last_check_timestamp = time.time()
+
+        size = os.path.getsize(self.file_path)
+        if size != self.last_known_size:
+            self.last_known_size = size
+            self.last_change_timestamp = self.last_check_timestamp
+
+    def is_file_stable(self):
+        if self.last_check_timestamp - self.last_change_timestamp > MIN_FILE_STABLE_PERIOD:
+            return True
+        return False
 
 
 class DirectoryWatcher(object):
@@ -98,6 +128,7 @@ class DirectoryWatcher(object):
         self.new_files_func = new_files_func
         self.poll_interval = poll_interval
         self.reactor = reactor
+        self.file_change_checks = {}
         if not os.path.exists(folder_path):
             raise IOError('Watch folder "{}" does not exist!'.format(folder_path))
 
@@ -108,7 +139,23 @@ class DirectoryWatcher(object):
     def _check_folder(self):
         self.reactor.callLater(self.poll_interval, self._check_folder)
         all_files = self._list_all_files()
-        self.new_files_func(all_files)
+
+        processable_files = []
+
+        for file_path in all_files:
+            if file_path not in self.file_change_checks:
+                logger.debug('Starting to watch %s', file_path)
+                self.file_change_checks[file_path] = FileStateChecker(file_path)
+            checker = self.file_change_checks[file_path]
+            checker.update()
+            logger.debug('Checking %s', file_path)
+            if checker.is_file_stable():
+                logger.debug('File %s ready for import', file_path)
+                processable_files.append(file_path)
+                del(self.file_change_checks[file_path])
+
+        if processable_files:
+            self.new_files_func(processable_files)
 
     def _list_all_files(self):
         result = []
@@ -117,8 +164,7 @@ class DirectoryWatcher(object):
         for dirname, dirnames, filenames in os.walk(self.folder_path):
             for subdirname in dirnames:
                 dir_path = os.path.join(dirname, subdirname)
-                # @todo: can we make this more elegant?
-                if file_age(dir_path) > DELETE_EMPTY_SECONDS_DELAY:  # we want to remove empty folders to reduce clutter
+                if file_age(dir_path) > DELETE_EMPTY_FOLDERS_DELAY:  # we want to remove empty folders to reduce clutter
                     try:
                         os.rmdir(dir_path)
                     except OSError:

@@ -65,7 +65,7 @@ class IdentifierRunner(object):
             try:
                 results = identifier.identify(file_info, file_facts)
             except Exception as e:
-                logger.exception('Error running identifier %s on file %s: %s',identifier_name, hash_, e.message)
+                logger.exception('Error running identifier %s on file %s: %s', identifier_name, hash_, e.message)
                 continue
             for r in results:
                 self.importer_db.add_identifier_result(
@@ -95,7 +95,8 @@ class IdentifierRunner(object):
         elif best_identification_fidelity > 0:
             self.importer_db.set_file_input_state(hash_, importerdb.STATE_UNCERTAIN)
         else:
-            self.importer_db.set_file_input_state(hash_, importerdb.STATE_UNIDENTIFIED)
+            if is_processing or file_info['input_state'] != importerdb.STATE_UNIDENTIFIED:
+                self.importer_db.set_file_input_state(hash_, importerdb.STATE_UNIDENTIFIED)
 
         if is_processing:
             self.importer_db.commit()
