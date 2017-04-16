@@ -28,10 +28,10 @@ def db_path(db_dir, db_name):
     return os.path.join(db_dir, db_name + ".db")
 
 
-def build_importer(file_server, db_dir, schema_dir, watch_folder_path, notification_queue):
+def build_importer(file_server, db_dir, schema_dir, watch_folder_path, notification_queue, group_name, delete_after_import):
     importer_db_path = db_path(db_dir, 'importer')
     db = importerdb.ImporterDB(importer_db_path, schema_dir)
-    importer = Importer(file_server, db, watch_folder_path, notification_queue)
+    importer = Importer(file_server, db, watch_folder_path, notification_queue, group_name, delete_after_import)
     return importer
 
 
@@ -41,30 +41,36 @@ def build_watcher(importer, watch_folder_path, reactor):
 
 
 class Importer(object):
-    def __init__(self, fileserver, importer_db, import_folder_path, notification_queue):
+    def __init__(self, fileserver, importer_db, import_folder_path, notification_queue, group_name, delete_after_import):
         """
         :type importer_db: importerdb.ImporterDB
+        group_name: Optional group name which will be added as fact, default: None
         """
         self.fileserver = fileserver
         self.db = importer_db
         self.import_folder_path = import_folder_path
         self.notification_queue = notification_queue
+        self.group_name = group_name
+        self.delete_after_import = delete_after_import
 
     def new_files_found(self, full_path_list):
         for f in full_path_list:
             logger.debug('Will import {}'.format(f))
             try:
-                self.import_file(f)
+                self.import_file(f, self.delete_after_import)
                 logger.info('Imported {}'.format(f))
-                self.notification_queue.put(True)
-                delete_file(f)
+                if self.notification_queue:
+                    self.notification_queue.put(True)
+                if self.delete_after_import:
+                    delete_file(f)
             except FileRefusedError as e:
                 logger.info('File {} refused by import: {}'.format(f, e.message))
-                delete_file(f)
+                if self.delete_after_import:
+                    delete_file(f)
             except Exception as e:
                 logger.error('Unable to import file {}: {}'.format(f, e.message))
 
-    def import_file(self, file_path):
+    def import_file(self, file_path, delete_after_import):
         _, ext_with_dot = os.path.splitext(file_path)
         ext = ext_with_dot[1:].lower()
         if ext not in SUPPORTED_IMPORTER_FILE_EXTENSIONS:
@@ -79,7 +85,7 @@ class Importer(object):
 
         md5sum = md5sum_file(file_path)
 
-        local_file_id, file_hash, size = self.fileserver.add_file_from_local_disk(file_path, ext, move_file=True)
+        local_file_id, file_hash, size = self.fileserver.add_file_from_local_disk(file_path, ext, move_file=delete_after_import)
 
         if self.db.is_file_known(file_hash):
             raise FileRefusedError('File already known to importer')
@@ -89,6 +95,8 @@ class Importer(object):
             self.db.add_fact(file_hash, 'md5', md5sum)
             self.db.add_fact(file_hash, 'file_extension', ext)
             self.db.add_fact(file_hash, 'file_size', size)
+            if self.group_name:
+                self.db.add_fact(file_hash, 'group_name', self.group_name)
 
             relative_file_path = file_path.replace(self.import_folder_path, '')
             logger.debug('Relative path of {}: {}'.format(file_path, relative_file_path))

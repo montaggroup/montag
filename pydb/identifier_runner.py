@@ -17,29 +17,43 @@ def db_path(db_dir, db_name):
     return os.path.join(db_dir, db_name + ".db")
 
 
-def build_identifier_runner(db_dir, schema_dir, identifiers_to_use=None):
-    importer_db_path = db_path(db_dir, 'importer')
+def build_identifier_runner(db_dir, schema_dir, importer_db=None, identifiers_to_use=None):
+    if importer_db is None:
+        importer_db_path = db_path(db_dir, 'importer')
+        importer_db = importerdb.ImporterDB(importer_db_path, schema_dir=schema_dir)
 
     pydb_ = pydb.pyrosetup.pydbserver()
+    file_server = pydb.pyrosetup.fileserver()
     if identifiers_to_use is None:
         identifiers_to_use = [
             identifiers.montag_lookup.MontagLookupByHash(pydb_)
         ]
 
-    importer_db = importerdb.ImporterDB(importer_db_path, schema_dir=schema_dir)
-    return IdentifierRunner(pydb_, identifiers_to_use, importer_db)
+    return IdentifierRunner(pydb_, file_server, identifiers_to_use, importer_db)
 
 
 class IdentifierRunner(object):
-    def __init__(self, pydb_, identifiers_to_use, importer_db):
+    def __init__(self, pydb_, file_server, identifiers_to_use, importer_db):
         self.notification_queue = None
         self.pydb = pydb_
+        self.file_server = file_server
+
         self.identifiers_to_use = identifiers_to_use
         self.importer_db = importer_db
         self.stop_requested = False
 
-    def _try_file(self, file_info):
-        hash_ = file_info['hash']
+    def _try_unprocessed_file(self, hash_):
+        got_lock = self.file_server.try_lock_for_identification(hash_)
+        if not got_lock:
+            return False
+
+        # check that it has not yet been identified
+        file_info = self.importer_db.get_file_info(hash_)
+        if file_info is None or file_info['input_state'] != importerdb.STATE_UNPROCESSED:
+            logger.debug('File %s not unidentified', hash_)
+            self.file_server.unlock_for_identification(hash_)
+            return False
+
         is_processing = False
         file_facts = self.importer_db.get_facts(hash_)
         logger.debug('Trying to identify file %s', hash_)
@@ -101,23 +115,21 @@ class IdentifierRunner(object):
         if is_processing:
             self.importer_db.commit()
 
-    def _run_on_file_infos(self, file_infos):
+        # @todo make exception-safe
+        self.file_server.unlock_for_identification(hash_)
+        return True
+
+    def _run_on_unprocessed_files(self, file_infos):
         if len(file_infos) > 0:
             logger.info('%s files to process', len(file_infos))
         for file_info in file_infos:
-            self._try_file(file_info)
+            self._try_unprocessed_file(file_info['hash'])
             if self.stop_requested:
                 return
 
     def run_on_all_unprocessed_files(self):
         file_infos = self.importer_db.get_files_by_state(importerdb.STATE_UNPROCESSED)
-        self._run_on_file_infos(file_infos)
-
-    def run_on_all_pending_files(self):
-        file_infos = self.importer_db.get_files_by_state(importerdb.STATE_UNPROCESSED) + \
-        self.importer_db.get_files_by_state(importerdb.STATE_UNIDENTIFIED) + \
-        self.importer_db.get_files_by_state(importerdb.STATE_UNCERTAIN)
-        self._run_on_file_infos(file_infos)
+        self._run_on_unprocessed_files(file_infos)
 
     def _clear_partially_processed_files(self):
         self.importer_db.begin()
@@ -198,6 +210,5 @@ class IdentifierRunner(object):
         if not filter_languages:
             return True
         return tome_language.lower() in filter_languages
-
 
 
