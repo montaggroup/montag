@@ -51,7 +51,8 @@ if __name__ == "__main__":
 
     notification_queue = Queue.Queue()
     imp = importer.build_importer(pyrosetup.fileserver(), db_dir=db_dir, schema_dir=schema_dir,
-                                  watch_folder_path=watch_folder_path, notification_queue=notification_queue)
+                                  watch_folder_path=watch_folder_path, notification_queue=notification_queue,
+                                  group_name=None, delete_after_import=True)
 
     runner_container = []
 

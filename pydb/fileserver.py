@@ -24,6 +24,7 @@ class FileServer(object):
     def __init__(self, db, file_store_):
         self.db = db
         self.file_store = file_store_
+        self.identification_locks = set()
 
     # noinspection PyMethodMayBeStatic
     def ping(self):
@@ -104,6 +105,16 @@ class FileServer(object):
         local_file_id = self.db.add_local_file_exists(file_hash, extension)
 
         return local_file_id, file_hash, size
+
+    def try_lock_for_identification(self, file_hash):
+        if file_hash in self.identification_locks:
+            return False
+
+        self.identification_locks.add(file_hash)
+        return True
+
+    def unlock_for_identification(self, file_hash):
+        self.identification_locks.remove(file_hash)
 
     def delete_file(self, file_hash):
         file_extension = self.db.get_file_extension(file_hash)
