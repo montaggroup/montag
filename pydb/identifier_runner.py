@@ -1,14 +1,14 @@
 # coding=utf-8
-import os
 import Queue
 import logging
+import os
 
-import identifiers.montag_lookup
-import pydb.pyrosetup
+import importerdb
+import network_params
 import pydb
 import pydb.config
-import network_params
-import importerdb
+import pydb.identifiers.montag_lookup.montag_lookup
+import pydb.pyrosetup
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ def build_identifier_runner(db_dir, schema_dir, importer_db=None, identifiers_to
     file_server = pydb.pyrosetup.fileserver()
     if identifiers_to_use is None:
         identifiers_to_use = [
-            identifiers.montag_lookup.MontagLookupByHash(pydb_)
+            pydb.identifiers.montag_lookup.montag_lookup.MontagLookupByHash(pydb_)
         ]
 
     return IdentifierRunner(pydb_, file_server, identifiers_to_use, importer_db)
@@ -42,22 +42,27 @@ class IdentifierRunner(object):
         self.importer_db = importer_db
         self.stop_requested = False
 
-    def _try_unprocessed_file(self, hash_):
+    def _try_file(self, hash_, accepted_states, group_name_filter=None):
         got_lock = self.file_server.try_lock_for_identification(hash_)
         if not got_lock:
             return False
 
         # check that it has not yet been identified
         file_info = self.importer_db.get_file_info(hash_)
-        if file_info is None or file_info['input_state'] != importerdb.STATE_UNPROCESSED:
+        if file_info is None or file_info['input_state'] not in accepted_states:
             logger.debug('File %s not unidentified', hash_)
             self.file_server.unlock_for_identification(hash_)
             return False
 
         is_processing = False
         file_facts = self.importer_db.get_facts(hash_)
-        logger.debug('Trying to identify file %s', hash_)
+        if group_name_filter:
+            if 'group_name' not in file_facts or file_facts['group_name'] != group_name_filter:
+                logger.debug('File %s not matched by group', hash_)
+                self.file_server.unlock_for_identification(hash_)
+                return False
 
+        logger.debug('Trying to identify file %s', hash_)
         best_identification_fidelity = 0
         best_identification_document = None
 
@@ -119,17 +124,34 @@ class IdentifierRunner(object):
         self.file_server.unlock_for_identification(hash_)
         return True
 
-    def _run_on_unprocessed_files(self, file_infos):
-        if len(file_infos) > 0:
-            logger.info('%s files to process', len(file_infos))
+    def _run_on_files(self, file_infos, accepted_states, group_filter=None):
+        if not file_infos:
+            return
+
+        logger.info('%s files to consider', len(file_infos))
+
+        processed = 0
         for file_info in file_infos:
-            self._try_unprocessed_file(file_info['hash'])
+            if self._try_file(file_info['hash'], accepted_states, group_filter):
+                processed+=1
             if self.stop_requested:
-                return
+                break
+
+        logger.info('%s files processed', processed)
+
+
+
 
     def run_on_all_unprocessed_files(self):
         file_infos = self.importer_db.get_files_by_state(importerdb.STATE_UNPROCESSED)
-        self._run_on_unprocessed_files(file_infos)
+        self._run_on_files(file_infos, set(importerdb.STATE_UNPROCESSED))
+
+    def run_on_pending_files(self, group_filter):
+        file_infos = self.importer_db.get_files_by_state(importerdb.STATE_UNPROCESSED) + \
+                     self.importer_db.get_files_by_state(importerdb.STATE_UNIDENTIFIED) + \
+                     self.importer_db.get_files_by_state(importerdb.STATE_UNCERTAIN)
+        self._run_on_files(file_infos,
+                           {importerdb.STATE_UNPROCESSED, importerdb.STATE_UNIDENTIFIED, importerdb.STATE_UNCERTAIN}, group_filter)
 
     def _clear_partially_processed_files(self):
         self.importer_db.begin()
