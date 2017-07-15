@@ -400,7 +400,7 @@ class MainDB(object):
                                       subtitle=t['subtitle'], tome_type=t['type'])
 
     def add_tome(self, title, principal_language, author_ids, guid=None, publication_year=None, edition=None,
-                 subtitle=None, tome_type=TomeType.Unknown, fidelity=None, tags_values=None):
+                 subtitle=None, tome_type=TomeType.Unknown, fidelity=None, tags_values=None, synopses_contents=None):
         """ adds a new tome, generating a guid. returns a merge db tome_id or none if tome had not enough fidelity
             to be added to merge db
             is_fiction: None => unknown, True => fiction, False=>non_fiction
@@ -433,6 +433,10 @@ class MainDB(object):
 
             if tags_values is not None:
                 self.local_db.add_tags_to_tome(tome_id, tags_values, fidelity)
+
+            if synopses_contents is not None:
+                for s in synopses_contents:
+                    self.local_db.add_synopsis_to_tome(self.generate_guid(), s, tome_id, fidelity)
 
         # notify merge db
         with Transaction(self.merge_db):
@@ -949,7 +953,7 @@ class MainDB(object):
         return author_ids
 
     def find_or_create_tome(self, title, language, author_ids, subtitle, tome_type, fidelity, 
-                            edition=None, publication_year=None, tags_values=None):
+                            edition=None, publication_year=None, tags_values=None, synopses_contents=None):
 
         title = title.strip()
         if subtitle is not None:
@@ -987,7 +991,8 @@ class MainDB(object):
             return tome_candidates[0]['id']
 
         return self.add_tome(title, language, author_ids, subtitle=subtitle, fidelity=fidelity, tome_type=tome_type,
-                             edition=edition, publication_year=publication_year, tags_values=tags_values)
+                             edition=edition, publication_year=publication_year, tags_values=tags_values,
+                             synopses_contents=synopses_contents)
 
     def get_tome_fidelities(self, tome_id):
         """ returns a tuple (effective_fidelity, local_fidelity, min_foreign_fidelity, max_foreign_fidelity) of

@@ -199,6 +199,7 @@ class IdentifierRunner(object):
             author_ids = self.pydb.find_or_create_authors(author_names, fidelity=author_docs[0]['fidelity'])
 
             tag_values = [t['tag_value'] for t in doc['tags']]
+            synopses_contents = [s['content'] for s in doc['synopses']]
 
             language = doc['principal_language']
 
@@ -206,7 +207,7 @@ class IdentifierRunner(object):
                                                     author_ids, doc['subtitle'], tome_type=doc['tome_type'],
                                                     fidelity=doc['fidelity'], edition=doc['edition'],
                                                     publication_year=doc['publication_year'],
-                                                    tags_values=tag_values)
+                                                    tags_values=tag_values, synopses_contents=synopses_contents)
 
             self.pydb.link_tome_to_file(tome_id, hash_, file_size, file_extension=file_extension,
                                         file_type=pydb.FileType.Content, fidelity=doc['fidelity'])
