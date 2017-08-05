@@ -42,7 +42,7 @@ class IdentifierRunner(object):
         self.importer_db = importer_db
         self.stop_requested = False
 
-    def _try_file(self, hash_, accepted_states, group_name_filter=None):
+    def _try_file(self, hash_, accepted_states):
         got_lock = self.file_server.try_lock_for_identification(hash_)
         if not got_lock:
             return False
@@ -55,21 +55,15 @@ class IdentifierRunner(object):
             return False
 
         is_processing = False
-        file_facts = self.importer_db.get_facts(hash_)
-        if group_name_filter:
-            if 'group_name' not in file_facts or file_facts['group_name'] != group_name_filter:
-                logger.debug('File %s not matched by group', hash_)
-                self.file_server.unlock_for_identification(hash_)
-                return False
 
         logger.debug('Trying to identify file %s', hash_)
         best_identification_fidelity = 0
         best_identification_document = None
+        file_facts = self.importer_db.get_facts(hash_)
 
         for identifier in self.identifiers_to_use:
             identifier_name = identifier.__class__.__name__
             logger.debug('Trying identifier %s on file %s', identifier_name, hash_)
-
             run_info_key = identifier_name + '_ran'
 
             if run_info_key in file_facts and file_facts[run_info_key] == '1':
@@ -103,10 +97,10 @@ class IdentifierRunner(object):
             self.importer_db.insert_or_replace_fact(hash_, run_info_key, '1')
 
         if best_identification_fidelity >= network_params.Min_Relevant_Fidelity:
-
-            if self.import_filter_accepts_document(best_identification_document):
+            if import_filter_accepts_document(best_identification_document):
                 guid = self.import_identification_document(best_identification_document, hash_,
-                                                    file_facts['file_size'], file_facts['file_extension'])
+                                                           file_facts['file_size'],
+                                                           file_facts['file_extension'])
                 if guid is None:
                     logger.error('File {} was identified, but did not contain enough '
                                  'information to be inserted. Please check the identifier output.')
@@ -132,40 +126,46 @@ class IdentifierRunner(object):
         self.file_server.unlock_for_identification(hash_)
         return True
 
-    def _run_on_files(self, file_infos, accepted_states, group_filter=None):
-        if not file_infos:
+    def _run_on_files(self, file_hashes, accepted_states, group_filter=None):
+        if not file_hashes:
             return
 
-        logger.info('%s files to consider', len(file_infos))
+        logger.info('%s files to consider before filtering', len(file_hashes))
+
+        if group_filter is not None:
+            after_filter = []
+            for file_hash in file_hashes:
+                if self.importer_db.get_fact_value(file_hash, 'group_name') == group_filter:
+                    after_filter.append(file_hash)
+            file_hashes = after_filter
+            logger.info('%s files to consider after filtering', len(file_hashes))
 
         processed = 0
-        for file_info in file_infos:
-            if self._try_file(file_info['hash'], accepted_states, group_filter):
-                processed+=1
+        for file_hash in file_hashes:
+            if self._try_file(file_hash, accepted_states):
+                processed += 1
             if self.stop_requested:
                 break
 
         logger.info('%s files processed', processed)
 
-
-
-
     def run_on_all_unprocessed_files(self):
-        file_infos = self.importer_db.get_files_by_state(importerdb.STATE_UNPROCESSED)
-        self._run_on_files(file_infos, set(importerdb.STATE_UNPROCESSED))
+        file_hashes = hashes_of(self.importer_db.get_files_by_state(importerdb.STATE_UNPROCESSED))
+        self._run_on_files(file_hashes, set(importerdb.STATE_UNPROCESSED))
 
     def run_on_pending_files(self, group_filter):
-        file_infos = self.importer_db.get_files_by_state(importerdb.STATE_UNPROCESSED) + \
-                     self.importer_db.get_files_by_state(importerdb.STATE_UNIDENTIFIED) + \
-                     self.importer_db.get_files_by_state(importerdb.STATE_UNCERTAIN)
-        self._run_on_files(file_infos,
-                           {importerdb.STATE_UNPROCESSED, importerdb.STATE_UNIDENTIFIED, importerdb.STATE_UNCERTAIN}, group_filter)
+        file_hashes = hashes_of(self.importer_db.get_files_by_state(importerdb.STATE_UNPROCESSED)) + \
+                      hashes_of(self.importer_db.get_files_by_state(importerdb.STATE_UNIDENTIFIED)) + \
+                      hashes_of(self.importer_db.get_files_by_state(importerdb.STATE_UNCERTAIN))
+        self._run_on_files(file_hashes,
+                           {importerdb.STATE_UNPROCESSED, importerdb.STATE_UNIDENTIFIED, importerdb.STATE_UNCERTAIN},
+                           group_filter)
 
     def _clear_partially_processed_files(self):
         self.importer_db.begin()
         processing_files = self.importer_db.get_files_by_state(importerdb.STATE_PROCESSING)
         for f in processing_files:
-            logger.warn("Files %s was in processing state, resetting", f['hash'])
+            logger.warn('File %s was in processing state, resetting', f['hash'])
             self.importer_db.set_file_input_state(f['hash'], importerdb.STATE_UNPROCESSED)
         self.importer_db.commit()
 
@@ -227,20 +227,23 @@ class IdentifierRunner(object):
             # @todo refactor and move to server together with code from pydb add: pydb.import_tome(tome_import_document)
             # @todo synopsis support
 
-    def import_filter_accepts_document(self, best_identification_document):
-        if 'guid' in best_identification_document \
-                and 'file_already_added_with_correct_fidelity' in best_identification_document \
-                and best_identification_document['file_already_added_with_correct_fidelity']:
-            # no need/possibility to filter
-            return True
 
-        tome_language = best_identification_document['principal_language']
-        if tome_language is None:
-            return pydb.config.accept_unknown_languages()
+def import_filter_accepts_document(best_identification_document):
+    if 'guid' in best_identification_document \
+            and 'file_already_added_with_correct_fidelity' in best_identification_document \
+            and best_identification_document['file_already_added_with_correct_fidelity']:
+        # no need/possibility to filter
+        return True
 
-        filter_languages = pydb.config.filter_tome_languages()
-        if not filter_languages:
-            return True
-        return tome_language.lower() in filter_languages
+    tome_language = best_identification_document['principal_language']
+    if tome_language is None:
+        return pydb.config.accept_unknown_languages()
+
+    filter_languages = pydb.config.filter_tome_languages()
+    if not filter_languages:
+        return True
+    return tome_language.lower() in filter_languages
 
 
+def hashes_of(file_infos):
+    return [f['hash'] for f in file_infos]
