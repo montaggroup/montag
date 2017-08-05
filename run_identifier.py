@@ -10,6 +10,7 @@ from pydb import executionenvironment
 from pydb import pyrosetup
 from pydb import importerdb
 from pydb import importer
+from pydb import config
 
 import logging
 
@@ -29,6 +30,8 @@ def main():
         logging.basicConfig(level=logging.DEBUG)
     else:
         logging.basicConfig(level=logging.INFO)
+        
+    config.read_config()
 
     group_filter = build_group_filter(args.filter_string)
 

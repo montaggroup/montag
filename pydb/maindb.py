@@ -445,6 +445,10 @@ class MainDB(object):
 
             if tags_values is not None:
                 self.merge_db.request_tome_tag_update(guid)
+                
+            if synopses_contents is not None:
+                self.merge_db.request_tome_synopsis_update(guid)
+
 
         tome = self.merge_db.get_tome_by_guid(guid)
         if tome:
