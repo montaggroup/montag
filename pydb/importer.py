@@ -86,6 +86,8 @@ class Importer(object):
         md5sum = md5sum_file(file_path)
 
         local_file_id, file_hash, size = self.fileserver.add_file_from_local_disk(file_path, ext, move_file=delete_after_import)
+        if file_hash is None:
+            raise FileRefusedError('File broken.')
 
         if self.db.is_file_known(file_hash):
             raise FileRefusedError('File already known to importer')

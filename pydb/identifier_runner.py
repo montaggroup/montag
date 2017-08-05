@@ -83,6 +83,8 @@ class IdentifierRunner(object):
 
             try:
                 results = identifier.identify(file_info, file_facts)
+                # @todo check results for consistency (e.g. title, authors present)
+                # otherwise log error and skip this result
             except Exception as e:
                 logger.exception('Error running identifier %s on file %s: %s', identifier_name, hash_, e.message)
                 continue
@@ -105,8 +107,14 @@ class IdentifierRunner(object):
             if self.import_filter_accepts_document(best_identification_document):
                 guid = self.import_identification_document(best_identification_document, hash_,
                                                     file_facts['file_size'], file_facts['file_extension'])
-                self.importer_db.insert_or_replace_fact(hash_, 'result_tome_guid', guid)
-                self.importer_db.set_file_input_state(hash_, importerdb.STATE_IDENTIFIED)
+                if guid is None:
+                    logger.error('File {} was identified, but did not contain enough '
+                                 'information to be inserted. Please check the identifier output.')
+                    if is_processing or file_info['input_state'] != importerdb.STATE_UNIDENTIFIED:
+                        self.importer_db.set_file_input_state(hash_, importerdb.STATE_UNIDENTIFIED)
+                else:
+                    self.importer_db.insert_or_replace_fact(hash_, 'result_tome_guid', guid)
+                    self.importer_db.set_file_input_state(hash_, importerdb.STATE_IDENTIFIED)
             else:
                 logger.info('File {} was identified successfully, but import filter rejected it'.format(hash_))
                 self.importer_db.set_file_input_state(hash_, importerdb.STATE_REJECTED)
@@ -189,6 +197,7 @@ class IdentifierRunner(object):
                 and 'file_already_added_with_correct_fidelity' in doc \
                 and doc['file_already_added_with_correct_fidelity']:
             # shortcut: we already know that the file is added with the correct fidelity
+
             return doc['guid']
         else:  # we have a document with tome information and one or more authors
             author_docs = doc['authors']

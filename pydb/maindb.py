@@ -968,8 +968,8 @@ class MainDB(object):
         def filter_tomes(candidates, field_name, value_to_find, strict=False):
             if value_to_find is None and not strict:
                 return candidates
-            value_to_find = unicode(value_to_find)
-            return filter(lambda t: unicode(t[field_name]) == value_to_find, candidates)
+            value_to_find = unicode(value_to_find).lower()
+            return filter(lambda t: unicode(t[field_name]).lower() == value_to_find, candidates)
 
         tome_candidates = self.find_tomes_by_title(title, language, author_ids, subtitle)
         tome_candidates = filter_tomes(tome_candidates, 'edition', edition)
