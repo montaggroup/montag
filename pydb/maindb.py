@@ -22,29 +22,29 @@ import databases
 import config
 
 
-logger = logging.getLogger('database')
+logger = logging.getLogger(u'database')
 
 
 def db_path(db_dir, db_name):
-    return os.path.join(db_dir, db_name + ".db")
+    return os.path.join(db_dir, db_name + '.db')
 
 
 def build(db_dir, schema_dir, enable_db_sync=True):
     if not os.path.exists(db_dir):
         os.makedirs(db_dir)
 
-    foreign_db_dir = os.path.join(db_dir, "foreign")
+    foreign_db_dir = os.path.join(db_dir, 'foreign')
     if not os.path.exists(foreign_db_dir):
         os.makedirs(foreign_db_dir)
 
-    local_db = LocalDB(db_path(db_dir, "local"), schema_dir, enable_db_sync)
-    merge_db = MergeDB(db_path(db_dir, "merge"), schema_dir, local_db=local_db, enable_db_sync=False)
+    local_db = LocalDB(db_path(db_dir, 'local'), schema_dir, enable_db_sync)
+    merge_db = MergeDB(db_path(db_dir, 'merge'), schema_dir, local_db=local_db, enable_db_sync=False)
     merge_db.add_source(local_db)
-    friends_db = FriendsDB(db_path(db_dir, "friends"), schema_dir)
-    importer_db = ImporterDB(db_path(db_dir, "importer"), schema_dir)
+    friends_db = FriendsDB(db_path(db_dir, 'friends'), schema_dir)
+    importer_db = ImporterDB(db_path(db_dir, 'importer'), schema_dir)
 
     def build_foreign_db(friend_id):
-        foreign_db_path = db_path(db_dir, os.path.join("foreign", str(friend_id)))
+        foreign_db_path = db_path(db_dir, os.path.join('foreign', str(friend_id)))
         foreign_db = ForeignDB(foreign_db_path, schema_dir, friend_id, enable_db_sync=enable_db_sync)
         return foreign_db
 
@@ -55,7 +55,7 @@ def build(db_dir, schema_dir, enable_db_sync=True):
 
     merge_db.recalculate_if_neccessary()
 
-    logger.info("DBs initialized")
+    logger.info(u'DBs initialized')
     return db
 
 
@@ -76,7 +76,7 @@ class MainDB(object):
         self.build_foreign_db = build_foreign_db
 
     def _add_foreign_db(self, friend_id):
-        logger.info("Loading foreign db for friend {}".format(friend_id))
+        logger.info(u'Loading foreign db for friend {}'.format(friend_id))
 
         db = self.build_foreign_db(friend_id)
         self.foreign_dbs[friend_id] = db
@@ -101,7 +101,7 @@ class MainDB(object):
     # noinspection PyMethodMayBeStatic
     def ping(self):
         """ returns a simple string to test whether the connection is working and the server is running """
-        return "pong"
+        return 'pong'
 
     def get_merge_statistics(self):
         """ returns a dictionary of merge.db statistics: authors, tomes, files """
@@ -230,7 +230,7 @@ class MainDB(object):
         tome_id = tome['id']
 
         tables = databases.tables_with_tome_link
-        tables.append("tomes")
+        tables.append('tomes')
         change_dates = []
         for t in tables:
             if t == 'tomes':
@@ -344,7 +344,7 @@ class MainDB(object):
         try:
             self.index_server.update_index()
         except Pyro4.errors.CommunicationError, e:
-            logger.error("Unable to connect to index_server: %s" % e)
+            logger.error(u'Unable to connect to index_server: %s' % e)
 
     def add_author(self, name, guid=None, date_of_birth=None, date_of_death=None, fidelity=None):
         """ adds a new author, generating a guid, returns the id of the author """
@@ -405,7 +405,7 @@ class MainDB(object):
             to be added to merge db
             is_fiction: None => unknown, True => fiction, False=>non_fiction
         """
-        logging.debug("Called add_tome")
+        logger.debug(u'Called add_tome')
 
         title = title.strip()
         if subtitle is not None:
@@ -479,7 +479,7 @@ class MainDB(object):
         if file_name is not None:
             f['file_name'] = file_name
         else:
-            logger.warn('No file name for pending file {} found'.format(hash_))
+            logger.warn(u'No file name for pending file {} found'.format(hash_))
             f['file_name'] = ''
 
     def _add_file_extension(self, f):
@@ -488,7 +488,7 @@ class MainDB(object):
         if local_file is not None:
             f['file_extension'] = local_file['file_extension']
         else:
-            logger.warn('No local file for pending file {} found'.format(hash_))
+            logger.warn(u'No local file for pending file {} found'.format(hash_))
             f['file_extension'] = ''
 
     def get_import_file_state(self, file_hash):
@@ -508,14 +508,14 @@ class MainDB(object):
 
         # update local db
         affected_tome_ids = self.local_db.apply_file_hash_translation(source_hash, target_hash)
-        logger.info("%d tomes affected in local db", len(affected_tome_ids))
+        logger.info(u'%d tomes affected in local db', len(affected_tome_ids))
         affected_tome_guids.update([self.local_db.tome_id_to_guid(tome_id) for tome_id in affected_tome_ids])
 
         # update foreign dbs
         for friend_id, db in self.foreign_dbs.iteritems():
             affected_tome_ids = db.apply_file_hash_translation(source_hash, target_hash)
             affected_tome_guids.update([db.tome_id_to_guid(tome_id) for tome_id in affected_tome_ids])
-            logger.info("%d tomes affected in friend db %d", len(affected_tome_ids), friend_id)
+            logger.info(u'%d tomes affected in friend db %d', len(affected_tome_ids), friend_id)
 
         with Transaction(self.merge_db):
             for affected_tome_guid in affected_tome_guids:
@@ -688,28 +688,28 @@ class MainDB(object):
                         s['fidelity'] = _effective_friend_fidelity(s['fidelity'])
 
                     try:
-                        logger.debug("Trying to apply tome %s from friend %d." % (tome_guid, friend_id))
-                        logger.debug("Content: %s", repr(tome_doc))
+                        logger.debug(u'Trying to apply tome %s from friend %d.' % (tome_guid, friend_id))
+                        logger.debug(u'Content: %s', repr(tome_doc))
                         db.apply_tome_document(tome_doc)
                     except KeyError, e:
                         friend = self.get_friend(friend_id)
                         logger.error(
-                            "Caught KeyError %s while trying to insert tome %s from friend %s (%d). """
-                            "Skipping tome import.\nTB %s" % (
+                            'Caught KeyError %s while trying to insert tome %s from friend %s (%d). '
+                            'Skipping tome import.\nTB %s' % (
                                 repr(e), tome_guid, friend['name'], friend_id, traceback.format_exc()))
                     except sqlite.IntegrityError, e:
                         friend = self.get_friend(friend_id)
                         logger.error(
-                            "Caught IntegrityError %s while trying to insert tome %s from friend %s (%d). """
-                            "Skipping tome import.\nTB %s" % (
+                            'Caught IntegrityError %s while trying to insert tome %s from friend %s (%d). '
+                            'Skipping tome import.\nTB %s' % (
                                 repr(e), tome_guid, friend['name'], friend_id, traceback.format_exc()))
                         raise
 
         with Transaction(self.merge_db):
             for tome_doc in tome_docs:
                 tome_guid = tome_doc['guid']
-                logger.info("Triggering merge db update update for tome %s" % tome_guid)
-                logger.debug("Content: %s", repr(tome_doc))
+                logger.info(u'Triggering merge db update update for tome %s' % tome_guid)
+                logger.debug(u'Content: %s', repr(tome_doc))
                 self.merge_db.request_complete_tome_update(tome_guid, include_fusion_source_update=True)
 
         self._update_search_index()
@@ -741,7 +741,7 @@ class MainDB(object):
                     if author_merge:
                         self._merge_db_author_id_to_local_db_author_id(author_merge['id'])  # create the author in local
                     else:
-                        raise KeyError("No author with guid %s for tome %s found, skipping tome edit " %
+                        raise KeyError(u'No author with guid %s for tome %s found, skipping tome edit ' %
                                        (author_guid, tome_guid))
 
             self.local_db.apply_tome_document(prepared_tome_doc)
@@ -787,16 +787,16 @@ class MainDB(object):
 
     def rebuild_merge_db(self):
         with Transaction(self.merge_db):
-            logger.info("Deleting old merge db contents")
+            logger.info(u'Deleting old merge db contents')
             self.merge_db.delete_all()
 
-            logger.info("Rebuilding local file cache")
+            logger.info(u'Rebuilding local file cache')
             for local_file in self.local_db.get_all_local_files():
                 self.merge_db.insert_local_file(local_file)
 
             dbs = [self.local_db] + self.foreign_dbs.values()
 
-            logger.info("Rebuilding authors")
+            logger.info(u'Rebuilding authors')
             all_author_guids = set()
 
             for db in dbs:
@@ -805,7 +805,7 @@ class MainDB(object):
             for author_guid in all_author_guids:
                 self.merge_db.request_author_update(author_guid)
 
-            logger.info("Rebuilding tomes")
+            logger.info(u'Rebuilding tomes')
             processed_tome_guids = set()
 
             for db in dbs:
@@ -816,7 +816,7 @@ class MainDB(object):
                         processed_tome_guids.add(guid)
                         self.merge_db.request_complete_tome_update(guid, include_fusion_source_update=True)
 
-            logger.info("Committing")
+            logger.info(u'Committing')
 
         self._update_search_index()
 
@@ -825,14 +825,14 @@ class MainDB(object):
         self._update_search_index()
 
     def hard_commit_all(self):
-        with collect_transaction_errors("local"):
+        with collect_transaction_errors('local'):
             self.local_db.commit()
-        with collect_transaction_errors("merge"):
+        with collect_transaction_errors('merge'):
             self.merge_db.commit()
         for db in self.foreign_dbs.itervalues():
-            with collect_transaction_errors("foreign"):
+            with collect_transaction_errors('foreign'):
                 db.commit()
-        with collect_transaction_errors("friend"):
+        with collect_transaction_errors('friend'):
             self.friends_db.commit()
 
     def get_file_hashes_to_request(self, max_results=100000):
@@ -969,31 +969,47 @@ class MainDB(object):
             if value_to_find is None and not strict:
                 return candidates
             value_to_find = unicode(value_to_find).lower()
-            return filter(lambda t: unicode(t[field_name]).lower() == value_to_find, candidates)
+            if strict:
+                return filter(lambda t: unicode(t[field_name]).lower() == value_to_find, candidates)
+            else:
+                return filter(lambda t: t[field_name] is None or unicode(t[field_name]).lower() == value_to_find, candidates)
 
+        logger.debug(u'Looking for: {} {} by {}'.format(title, language, author_ids))
         tome_candidates = self.find_tomes_by_title(title, language, author_ids, subtitle)
+        logger.debug(u'Initial candidates: {}'.format(tome_candidates))
+
         tome_candidates = filter_tomes(tome_candidates, 'edition', edition)
         tome_candidates = filter_tomes(tome_candidates, 'publication_year', publication_year)
+        
+        logger.debug(u'Filtered candidates: {}'.format(tome_candidates))
 
         if len(tome_candidates) == 1:  # one tome, use it
+            logger.debug(u'Single candidate found, returning it: {}'.format(tome_candidates[0]))
             return tome_candidates[0]['id']
 
         if len(tome_candidates) > 1:  # multiple candidates left, try to filter more strict
-                tome_candidates = filter_tomes(tome_candidates, 'edition', edition, strict=True)
+            logger.debug(u'More than one candidate found, checking edition')
+            tome_candidates = filter_tomes(tome_candidates, 'edition', edition, strict=True)
 
-                if len(tome_candidates) == 1:  # one tome now left, use it
-                    return tome_candidates[0]['id']
+            if len(tome_candidates) == 1:  # one tome now left, use it
+                logger.debug(u'Only one candidate matches edition, returning it: {}'.format(tome_candidates[0]))
+                return tome_candidates[0]['id']
 
         if len(tome_candidates) > 1:  # multiple candidates left, try to filter more strict
-                tome_candidates = filter_tomes(tome_candidates, 'publication_year', publication_year, strict=True)
+            logger.debug(u'More than one candidate left, checking pub year')
 
-                if len(tome_candidates) == 1:  # one tome now left, use it
-                    return tome_candidates[0]['id']
+            tome_candidates = filter_tomes(tome_candidates, 'publication_year', publication_year, strict=True)
+
+            if len(tome_candidates) == 1:  # one tome now left, use it
+                logger.debug(u'Only one candidate matches pub year, returning it: {}'.format(tome_candidates[0]))
+                return tome_candidates[0]['id']
 
         if len(tome_candidates) > 1:  # multiple candidates left, choose one based on guid
+            logger.debug(u'More than one candidate left, using smaller guid')
             tome_candidates.sort(key=lambda t: t['guid'])
             return tome_candidates[0]['id']
 
+        logger.debug(u'Creating a new tome')
         return self.add_tome(title, language, author_ids, subtitle=subtitle, fidelity=fidelity, tome_type=tome_type,
                              edition=edition, publication_year=publication_year, tags_values=tags_values,
                              synopses_contents=synopses_contents)
