@@ -105,4 +105,3 @@ class ImporterDB(sqlitedb.SqliteDB):
             'identifier_name': identifier_name,
             'fidelity': fidelity,
             'tome_document': json.dumps(result)})
-
