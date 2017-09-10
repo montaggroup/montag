@@ -217,15 +217,14 @@ class IdentifierRunner(object):
                                                     fidelity=doc['fidelity'], edition=doc['edition'],
                                                     publication_year=doc['publication_year'],
                                                     tags_values=tag_values, synopses_contents=synopses_contents)
-
+                                                    
             self.pydb.link_tome_to_file(tome_id, hash_, file_size, file_extension=file_extension,
                                         file_type=pydb.FileType.Content, fidelity=doc['fidelity'])
 
             tome = self.pydb.get_tome(tome_id)
+            # todo: if import doc has pub year or edition and base doc doesn't, store them
             return tome['guid']
-
             # @todo refactor and move to server together with code from pydb add: pydb.import_tome(tome_import_document)
-            # @todo synopsis support
 
 
 def import_filter_accepts_document(best_identification_document):

@@ -7,7 +7,7 @@ import pydb.testing
 from pydb.testing.integration_tests import helpers
 
 logger = logging.getLogger('test_tome_add')
-logging.basicConfig(level=logging.WARN)
+logging.basicConfig(level=logging.DEBUG)
 
 
 class TestAddTome(unittest.TestCase):
@@ -95,7 +95,7 @@ class TestFindOrCreateTome(unittest.TestCase):
 
     def test_in_the_presence_of_a_specific_tome_find_or_create_will_use_the_generic_tome_if_new_tome_is_generic(self):
         tome_id_1 = self._add_tome(edition=None)
-        tome_id_2_specific = self._add_tome(edition='spec')
+        tome_id_2_specific = self._add_tome(publication_year=1234, edition='spec')
         tome_id_3 = self._add_tome(edition=None)
 
         self.assertNotEqual(tome_id_1, tome_id_2_specific)
