@@ -4,6 +4,7 @@ import os
 import getpass
 import pydb.executionenvironment as executionenvironment
 import psutil
+import signal
 
 # configuration options
 
@@ -11,27 +12,18 @@ log_path = tempfile.gettempdir()
 
 # end of configuration options
 
-DEFAULT_LOG_LEVEL = 'INFO' 
-
-service_prefix = 'montag-'
-basenames = ["pydbserver", "comserver", "comservice", "indexserver", "fileserver", "web2py", "importer"]
-
-extension = executionenvironment.script_extension()
-
-PSUTIL2 = psutil.version_info >= (2, 0)
+SERVICE_WAIT_TIMEOUT = 10
+DEFAULT_LOG_LEVEL = 'INFO'
+SERVICE_PREFIX = 'montag-'
+BASENAMES = ["pydbserver", "comserver", "comservice", "indexserver", "fileserver", "web2py", "importer"]
+SCRIPT_EXTENSION = executionenvironment.script_extension()
 
 
 def service_name(base_name):
-    return service_prefix + base_name + "." + extension
-
-names = [service_name(basename) for basename in basenames]
+    return SERVICE_PREFIX + base_name + "." + SCRIPT_EXTENSION
 
 
-def pidlist():
-    if PSUTIL2:
-        return psutil.pids()
-    else:
-        return psutil.get_pid_list()
+names = [service_name(basename) for basename in BASENAMES]
 
 
 def _get_default_services_status():
@@ -41,8 +33,7 @@ def _get_default_services_status():
     return services_status
 
 
-# noinspection PyDefaultArgument
-def as_dict_for_monkey_patching_old_psutils(self, attrs=[], ad_value=None):
+def as_dict_for_monkey_patching_old_psutils(self, attrs=None, ad_value=None):
     """Utility method returning process information as a hashable
     dictionary.
 
@@ -89,23 +80,33 @@ def as_dict_for_monkey_patching_old_psutils(self, attrs=[], ad_value=None):
                 name = 'cwd'
         retdict[name] = ret
     return retdict
-                                                                                                                                                                                                                                                                                                
+
+
 if not hasattr(psutil.Process, 'as_dict'):
     psutil.Process.as_dict = as_dict_for_monkey_patching_old_psutils
 
 
+def maybe_parent_service_process(service_process):
+    try:
+        while executionenvironment.is_montag_process(
+                service_process.parent().as_dict(attrs=['name', 'username', 'cmdline']), names):
+            service_process = service_process.parent()
+    except psutil.AccessDenied:
+        pass
+
+    return service_process
+
+
 def get_current_services_status():
     services_status = _get_default_services_status()
-    for pid in pidlist():
-        try:
-            p = psutil.Process(pid)
-            pinfo = p.as_dict(attrs=['name', 'exe', 'username', 'status', 'cmdline'])
-
-            detected_service_name = executionenvironment.is_montag_process(pinfo, names)
+    try:
+        for p in psutil.process_iter(attrs=['name', 'exe', 'username', 'status', 'cmdline']):
+            detected_service_name = executionenvironment.is_montag_process(p.info, names)
             if detected_service_name is not None:
-                services_status[detected_service_name] = {'status': pinfo['status'], 'pid': pid, 'process': p}
-        except psutil.AccessDenied:
-            pass
+                p = maybe_parent_service_process(p)
+                services_status[detected_service_name] = {'status': p.status(), 'pid': p.pid, 'process': p}
+    except psutil.AccessDenied:
+        pass
 
     return services_status
 
@@ -137,12 +138,39 @@ def start(service_name_, log_level=DEFAULT_LOG_LEVEL, base_dir_path=None, log_fi
         raise EnvironmentError("Unable to start service {}".format(service_name_))
 
 
+def kill_process_tree(pid, sig=signal.SIGTERM, include_parent=True,
+                      timeout=None, on_terminate=None):
+    """Kill a process tree (including grandchildren) with signal
+    "sig" and return a (gone, still_alive) tuple.
+    "on_terminate", if specified, is a callaback function which is
+    called as soon as a child terminates.
+    Taken from psutil receipes
+    """
+    assert pid != os.getpid(), "won't kill myself"
+    parent = psutil.Process(pid)
+    children = parent.children(recursive=True)
+    if include_parent:
+        children.append(parent)
+    for p in children:
+        p.send_signal(sig)
+    gone, alive = psutil.wait_procs(children, timeout=timeout,
+                                    callback=on_terminate)
+    return gone, alive
+
+
 def stop(service_process):
     """ service_process is the content of the 'process' key in service status dict of the service to stop
     this function may throw a (yet) unspecified exception
     """
-    service_process.terminate()
-    service_process.wait(timeout=5)
+
+    gone, alive = kill_process_tree(service_process.pid, timeout=SERVICE_WAIT_TIMEOUT)
+    if alive:
+        for p in alive:
+            try:
+                p.kill()
+            except psutil.NoSuchProcess:
+                pass
+    psutil.wait_procs(alive, timeout=SERVICE_WAIT_TIMEOUT)
 
 
 def stop_all_ignoring_exceptions(verbose=False, name_filter_fct=lambda x: True):
@@ -154,5 +182,5 @@ def stop_all_ignoring_exceptions(verbose=False, name_filter_fct=lambda x: True):
             # noinspection PyBroadException
             try:
                 stop(services_status[name]['process'])
-            except Exception:
-                print 'could not stop service {}' .format(name)
+            except Exception as e:
+                print 'could not stop service {}: {}'.format(name, e)
