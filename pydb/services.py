@@ -2,9 +2,10 @@
 import tempfile
 import os
 import getpass
-import pydb.executionenvironment as executionenvironment
 import psutil
 import signal
+
+import pydb.executionenvironment as executionenvironment
 
 # configuration options
 
@@ -17,79 +18,29 @@ DEFAULT_LOG_LEVEL = 'INFO'
 SERVICE_PREFIX = 'montag-'
 BASENAMES = ["pydbserver", "comserver", "comservice", "indexserver", "fileserver", "web2py", "importer"]
 SCRIPT_EXTENSION = executionenvironment.script_extension()
+DEFAULT_ATTRIBUTES_FOR_PSUTIL_AS_DICT = ['name', 'exe', 'username', 'status', 'cmdline']
 
 
 def service_name(base_name):
     return SERVICE_PREFIX + base_name + "." + SCRIPT_EXTENSION
 
 
-names = [service_name(basename) for basename in BASENAMES]
+all_service_names = [service_name(basename) for basename in BASENAMES]
 
 
 def _get_default_services_status():
     services_status = dict()
-    for service in names:
-        services_status[service] = {'status': 'not running', 'pid': 0}
+
+    for service in all_service_names:
+        services_status[service] = {'status': 'not running', 'pid': None, 'process': None}
+
     return services_status
-
-
-def as_dict_for_monkey_patching_old_psutils(self, attrs=None, ad_value=None):
-    """Utility method returning process information as a hashable
-    dictionary.
-
-    If 'attrs' is specified it must be a list of strings reflecting
-    available Process class's attribute names (e.g. ['get_cpu_times',
-    'name']) else all public (read only) attributes are assumed.
-
-    'ad_value' is the value which gets assigned to a dict key in case
-    AccessDenied exception is raised when retrieving that particular
-    process information.
-    """
-    excluded_names = {'send_signal', 'suspend', 'resume', 'terminate', 'kill', 'wait', 'is_running', 'as_dict',
-                      'parent', 'get_children', 'nice', 'get_rlimit'}
-    retdict = dict()
-    for name in set(attrs or dir(self)):
-        if name.startswith('_'):
-            continue
-        if name.startswith('set_'):
-            continue
-        if name in excluded_names:
-            continue
-        try:
-            attr = getattr(self, name)
-            if callable(attr):
-                if name == 'get_cpu_percent':
-                    ret = attr(interval=0)
-                else:
-                    ret = attr()
-            else:
-                ret = attr
-        except psutil.AccessDenied:
-            ret = ad_value
-        except NotImplementedError:
-            # in case of not implemented functionality (may happen
-            # on old or exotic systems) we want to crash only if
-            # the user explicitly asked for that particular attr
-            if attrs:
-                raise
-            continue
-        if name.startswith('get'):
-            if name[3] == '_':
-                name = name[4:]
-            elif name == 'getcwd':
-                name = 'cwd'
-        retdict[name] = ret
-    return retdict
-
-
-if not hasattr(psutil.Process, 'as_dict'):
-    psutil.Process.as_dict = as_dict_for_monkey_patching_old_psutils
 
 
 def maybe_parent_service_process(service_process):
     try:
         while executionenvironment.is_montag_process(
-                service_process.parent().as_dict(attrs=['name', 'username', 'cmdline']), names):
+                service_process.parent().as_dict(attrs=DEFAULT_ATTRIBUTES_FOR_PSUTIL_AS_DICT), all_service_names):
             service_process = service_process.parent()
     except psutil.AccessDenied:
         pass
@@ -99,12 +50,15 @@ def maybe_parent_service_process(service_process):
 
 def get_current_services_status():
     services_status = _get_default_services_status()
+    already_seen = set()
     try:
-        for p in psutil.process_iter(attrs=['name', 'exe', 'username', 'status', 'cmdline']):
-            detected_service_name = executionenvironment.is_montag_process(p.info, names)
+        for p in psutil.process_iter(attrs=DEFAULT_ATTRIBUTES_FOR_PSUTIL_AS_DICT):
+            detected_service_name = executionenvironment.is_montag_process(p.info, all_service_names)
             if detected_service_name is not None:
-                p = maybe_parent_service_process(p)
-                services_status[detected_service_name] = {'status': p.status(), 'pid': p.pid, 'process': p}
+                if detected_service_name not in already_seen:
+                    p = maybe_parent_service_process(p)
+                    services_status[detected_service_name] = {'status': p.status(), 'pid': p.pid, 'process': p}
+                    already_seen.add(detected_service_name)
     except psutil.AccessDenied:
         pass
 
@@ -144,7 +98,7 @@ def kill_process_tree(pid, sig=signal.SIGTERM, include_parent=True,
     "sig" and return a (gone, still_alive) tuple.
     "on_terminate", if specified, is a callaback function which is
     called as soon as a child terminates.
-    Taken from psutil receipes
+    Taken from psutil recipes
     """
     assert pid != os.getpid(), "won't kill myself"
     parent = psutil.Process(pid)
@@ -158,29 +112,28 @@ def kill_process_tree(pid, sig=signal.SIGTERM, include_parent=True,
     return gone, alive
 
 
-def stop(service_process):
-    """ service_process is the content of the 'process' key in service status dict of the service to stop
-    this function may throw a (yet) unspecified exception
-    """
-
-    gone, alive = kill_process_tree(service_process.pid, timeout=SERVICE_WAIT_TIMEOUT)
+def stop(pid):
+    gone, alive = kill_process_tree(pid, timeout=SERVICE_WAIT_TIMEOUT)
     if alive:
+
         for p in alive:
             try:
                 p.kill()
             except psutil.NoSuchProcess:
                 pass
-    psutil.wait_procs(alive, timeout=SERVICE_WAIT_TIMEOUT)
+
+        psutil.wait_procs(alive, timeout=SERVICE_WAIT_TIMEOUT)
 
 
 def stop_all_ignoring_exceptions(verbose=False, name_filter_fct=lambda x: True):
     services_status = get_current_services_status()
-    for name in filter(name_filter_fct, names[::-1]):
-        if services_status[name]['status'] != 'not running':
+    for name in filter(name_filter_fct, all_service_names[::-1]):
+        status = services_status[name]
+        if status['status'] != 'not running':
             if verbose:
                 print 'stopping service {}'.format(name)
             # noinspection PyBroadException
             try:
-                stop(services_status[name]['process'])
+                stop(status['pid'])
             except Exception as e:
                 print 'could not stop service {}: {}'.format(name, e)
