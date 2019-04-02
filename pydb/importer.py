@@ -81,7 +81,7 @@ class Importer(object):
             try:
                 metadata = ebook_metadata_tools.extract_metadata(file_stream, ext)
             except Exception as e:
-                logger.warning('Unable to parse metadata from {}: {}', file_path, e.message)
+                logger.warning('Unable to parse metadata from {}: {}'.format(file_path, e.message))
 
         md5sum = md5sum_file(file_path)
 
