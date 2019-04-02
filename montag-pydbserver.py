@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 # coding=utf-8
-import logging
 import argparse
+import logging
 import os
 import time
 import atexit
@@ -14,7 +14,7 @@ import pydb.commdatastore
 import pydb.config
 import pydb.logconfig
 
-logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger('pydbserver')
 
 if __name__ == "__main__":
     import pydb.pyrosetup
@@ -36,7 +36,6 @@ if __name__ == "__main__":
 
     pydb.logconfig.set_log_level(args.loglevel)
 
-    logger = logging.getLogger('pydbserver')
     logger.info('### logging started at %s local time. ###', time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime()))
 
     pydb.config.read_config()

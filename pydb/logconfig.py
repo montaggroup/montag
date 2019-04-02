@@ -1,6 +1,8 @@
 # coding=utf-8
 import logging
 
+logging.basicConfig(level=logging.INFO, format='%(asctime)-15s %(level)s [%(name)s] %(message)s')
+
 
 def set_log_level(loglevel_string):
     # from the python logging howto

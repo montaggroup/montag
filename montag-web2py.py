@@ -1,6 +1,5 @@
 #!/usr/bin/env python2.7
 # coding=utf-8
-import logging
 import argparse
 import os
 import sys
@@ -8,8 +7,6 @@ import sys
 from pydb.executionenvironment import using_py2exe
 import pydb.config
 import pydb.logconfig
-
-logging.basicConfig(level=logging.INFO)
 
 
 def get_main_dir():

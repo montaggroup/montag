@@ -1,17 +1,13 @@
 #!/usr/bin/env python2.7
 # coding=utf-8
 
-import logging
 import argparse
 
 from twisted.internet import reactor
 
 from pydb.com.server import Server
 import pydb.config as config
-import pydb.config
 import pydb.logconfig
-
-logging.basicConfig(level=logging.INFO)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,5 @@
 #!/usr/bin/env python2.7
 # coding=utf-8
-import logging
 import argparse
 import sys
 import time
@@ -12,11 +11,8 @@ import pydb.services as services
 import pydb.pyrosetup
 import pydb.config
 
-logging.basicConfig(level=logging.INFO)
 
-
-# noinspection PyUnusedLocal
-def do_list_services(args):
+def do_list_services(_):
     services_status = services.get_current_services_status()
     for name in services_status.keys():
         print 'service %s is %s (pid=%d)' % (name, services_status[name]['status'], services_status[name]['pid'])
@@ -27,7 +23,7 @@ def do_start_services(args, name_filter_fct=lambda x: True):
     services.log_path = args.log_path
 
     services_status = services.get_current_services_status()
-    for name in filter(name_filter_fct, services.names):
+    for name in filter(name_filter_fct, services.all_service_names):
         if services_status[name]['status'] == 'not running':
             print 'starting service {}, log {}'.format(name, services.logfile_path(name))
             try:
@@ -58,14 +54,11 @@ def _wait_for_db_ping_ok():
     return db_ok
 
 
-# noinspection PyUnusedLocal
-def do_stop_services(args, name_filter_fct=lambda x: True):
+def do_stop_services(_, name_filter_fct=lambda x: True):
     services.stop_all_ignoring_exceptions(verbose=True, name_filter_fct=name_filter_fct)
 
 
-# noinspection PyShadowingNames
 def do_restart_services(args):
-    # @todo handle situation where one service does not stop
     if args.web2py_only:
         do_stop_services(args, name_filter_fct=lambda x: 'web2py' in x)
         do_start_services(args, name_filter_fct=lambda x: 'web2py' in x)
@@ -102,5 +95,7 @@ def main():
 
     args.func(args)
 
+
 if __name__ == "__main__":
     main()
+

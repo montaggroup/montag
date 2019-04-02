@@ -10,9 +10,6 @@ import pydb.comservice
 import pydb.config
 import pydb.logconfig
 
-logging.basicConfig(level=logging.INFO)
-
-
 pydb.config.read_config()
 pydb.logconfig.catch_twisted_log_messages()
 

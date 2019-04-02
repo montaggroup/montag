@@ -1,7 +1,7 @@
 #!/usr/bin/env python2.7
 # coding=utf-8
-import logging
 import argparse
+import logging
 import time
 
 import Pyro4
@@ -11,8 +11,7 @@ import pydb.indexserver
 import pydb.config
 import pydb.logconfig
 
-logging.basicConfig(level=logging.INFO)
-
+logger = logging.getLogger('indexserver')
 
 if __name__ == "__main__":
     import pydb.pyrosetup
@@ -29,7 +28,6 @@ if __name__ == "__main__":
 
     pydb.logconfig.set_log_level(args.loglevel)
 
-    logger = logging.getLogger('indexserver')
     logger.info('### logging started at %s local time. ###', time.strftime("%a, %d %b %Y %H:%M:%S", time.localtime()))
 
     db_dir = determine_database_directory(args.basepath)
