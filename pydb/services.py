@@ -104,7 +104,7 @@ def get_current_services_status():
             detected_service_name = executionenvironment.is_montag_process(pinfo, names)
             if detected_service_name is not None:
                 services_status[detected_service_name] = {'status': pinfo['status'], 'pid': pid, 'process': p}
-        except psutil.AccessDenied:
+        except (psutil.AccessDenied, psutil.NoSuchProcess):
             pass
 
     return services_status
