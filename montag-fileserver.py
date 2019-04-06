@@ -9,12 +9,9 @@ import Pyro4
 
 import pydb.fileserver
 from pydb.executionenvironment import get_main_dir
-import pydb.commdatastore
 import pydb.pyrosetup
 import pydb.config
 import pydb.logconfig
-
-logging.basicConfig(level=logging.INFO)
 
 
 def determine_file_store_dir(override_base_path=None):

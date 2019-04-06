@@ -1,7 +1,6 @@
 #!/usr/bin/env python2.7
 # coding=utf-8
 
-import logging
 import argparse
 import os
 
@@ -14,9 +13,6 @@ import pydb.identifier_runner as identifier_runner
 import pydb.config as config
 import Queue
 import pydb.logconfig
-
-
-logging.basicConfig(level=logging.INFO)
 
 
 def determine_import_watch_folder_path(override_base_path=None):
