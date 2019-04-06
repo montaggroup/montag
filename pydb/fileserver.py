@@ -83,6 +83,8 @@ class FileServer(object):
                              (only_allowed_hash, file_hash))
                 return None, file_hash, None
 
+        file_to_delete_in_tmp = None
+
         if strip_file:
             try:
                 new_hash, new_path = self._execute_strip_file(source_path, extension, file_hash,
@@ -91,20 +93,26 @@ class FileServer(object):
                     move_file = True  # remove the temp file later
                     source_path = new_path
                     file_hash = new_hash
+                    file_to_delete_in_tmp = new_path
 
             except ValueError:
                 logger.warning(u"Could not strip file {}, seems to be broken".format(source_path))
                 return None, None, None
 
-        if len(extension) == 0:
-            existing_extension = self.db.get_file_extension(file_hash)
-            if existing_extension is not None:
-                extension = existing_extension
+        try:
+            if len(extension) == 0:
+                existing_extension = self.db.get_file_extension(file_hash)
+                if existing_extension is not None:
+                    extension = existing_extension
 
-        size = self.file_store.add_file(source_path, file_hash, extension, move_file)
-        local_file_id = self.db.add_local_file_exists(file_hash, extension)
+            size = self.file_store.add_file(source_path, file_hash, extension, move_file)
+            local_file_id = self.db.add_local_file_exists(file_hash, extension)
 
-        return local_file_id, file_hash, size
+            return local_file_id, file_hash, size
+        finally:
+            if file_to_delete_in_tmp is not None and os.path.exists(file_to_delete_in_tmp):
+                logger.warning(u"Temp file {} was not correctly cleaned up, removing now.", file_to_delete_in_tmp)
+                os.unlink(file_to_delete_in_tmp)
 
     def try_lock_for_identification(self, file_hash):
         if file_hash in self.identification_locks:
