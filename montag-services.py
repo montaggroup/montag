@@ -23,7 +23,7 @@ def do_start_services(args, name_filter_fct=lambda x: True):
     services.log_path = args.log_path
 
     services_status = services.get_current_services_status()
-    for name in filter(name_filter_fct, services.all_service_names):
+    for name in filter(name_filter_fct, services.names):
         if services_status[name]['status'] == 'not running':
             print 'starting service {}, log {}'.format(name, services.logfile_path(name))
             try:
