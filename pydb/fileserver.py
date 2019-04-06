@@ -111,7 +111,7 @@ class FileServer(object):
             return local_file_id, file_hash, size
         finally:
             if file_to_delete_in_tmp is not None and os.path.exists(file_to_delete_in_tmp):
-                logger.warning(u"Temp file {} was not correctly cleaned up, removing now.", file_to_delete_in_tmp)
+                logger.warning(u"Temp file {} was not correctly cleaned up, removing now.".format(file_to_delete_in_tmp))
                 os.unlink(file_to_delete_in_tmp)
 
     def try_lock_for_identification(self, file_hash):
