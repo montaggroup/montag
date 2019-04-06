@@ -80,7 +80,7 @@ class IdentifierRunner(object):
                 # @todo check results for consistency (e.g. title, authors present)
                 # otherwise log error and skip this result
             except Exception as e:
-                logger.exception('Error running identifier %s on file %s: %s', identifier_name, hash_, e.message)
+                logger.exception('Error running identifier %s on file %s: %s', identifier_name, hash_, str(e))
                 continue
             for r in results:
                 self.importer_db.add_identifier_result(

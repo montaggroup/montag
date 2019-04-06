@@ -551,7 +551,7 @@ def do_unlock_comm_data(args, db):
     try:
         cds.unlock(password)
     except Exception as e:
-        print >> sys.stderr, u'Unable to unlock comm data, error was {}'.format(e.message)
+        print >> sys.stderr, u'Unable to unlock comm data, error was {}'.format(str(e))
         sys.exit(-1)
 
 
