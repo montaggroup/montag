@@ -1,7 +1,7 @@
 # coding=utf-8
 import logging
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)-15s %(level)s [%(name)s] %(message)s')
+logging.basicConfig(level=logging.INFO, format='%(asctime)-15s %(levelname)s [%(name)s] %(message)s')
 
 
 def set_log_level(loglevel_string):
