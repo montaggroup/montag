@@ -48,7 +48,7 @@ def add_metadata(source_stream, output_stream, author_docs, tome_doc, tome_file)
         merger.write(output_stream)
         return True
     except (PyPDF2.utils.PdfReadError, TypeError, AssertionError, IOError, RuntimeError) as e:
-        logger.error("Caught an pypdf error: {}, skipping metadata add".format(e.message))
+        logger.error("Caught an pypdf error: {}, skipping metadata add".format(str(e)))
         return False
 
 
@@ -61,7 +61,7 @@ def get_metadata(instream):
         pdf = PyPDF2.PdfFileReader(instream)
         doc_info = pdf.getDocumentInfo()
     except (PyPDF2.utils.PdfReadError, TypeError, AssertionError, IOError, RuntimeError) as e:
-        logger.error("Caught an pypdf error: {}, skipping metadata read".format(e.message))
+        logger.error("Caught an pypdf error: {}, skipping metadata read".format(str(e)))
         return result
 
     if doc_info is None:
@@ -94,7 +94,7 @@ def clear_metadata(source_stream, output_stream):
         merger.write(output_stream)
         return True
     except (PyPDF2.utils.PdfReadError, TypeError, AssertionError, IOError, RuntimeError) as e:
-        logger.error("Caught an pypdf error: {}, skipping metadata erase".format(e.message))
+        logger.error("Caught an pypdf error: {}, skipping metadata erase".format(str(e)))
         return False
 
 

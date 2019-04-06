@@ -68,7 +68,7 @@ class Importer(object):
                 if self.delete_after_import:
                     delete_file(f)
             except Exception as e:
-                logger.error('Unable to import file {}: {}'.format(f, e.message))
+                logger.error('Unable to import file {}: {}'.format(f, str(e)))
 
     def import_file(self, file_path, delete_after_import):
         _, ext_with_dot = os.path.splitext(file_path)
@@ -81,7 +81,7 @@ class Importer(object):
             try:
                 metadata = ebook_metadata_tools.extract_metadata(file_stream, ext)
             except Exception as e:
-                logger.warning('Unable to parse metadata from {}: {}'.format(file_path, e.message))
+                logger.warning('Unable to parse metadata from {}: {}'.format(file_path, str(e)))
 
         md5sum = md5sum_file(file_path)
 
@@ -200,7 +200,7 @@ def delete_file(file_path):
     try:
         os.unlink(file_path)
     except Exception as e:
-        logger.error('Could not delete {}: {}'.format(file_path, e.message))
+        logger.error('Could not delete {}: {}'.format(file_path, str(e)))
 
 
 def md5sum_file(path):
