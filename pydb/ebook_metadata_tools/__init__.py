@@ -68,7 +68,7 @@ def get_cover_image(source_stream, extension):
     """ returns a cStringIO stream with the contents of the cover file """
     # write into a temp file as to prevent ebook_convert from accessing the file store directly
     # and this way we can make sure that the file has the correct extension
-    input_file_fd, input_file_path = tempfile.mkstemp(prefix = 'pydb_get_cover', suffix = '.' + extension)
+    input_file_fd, input_file_path = tempfile.mkstemp(prefix = 'pydb_get_cover', suffix='.' + extension)
     input_file_in_tmp = os.fdopen(input_file_fd, 'wb')
     input_file_in_tmp.write(source_stream.read())
     input_file_in_tmp.close()
