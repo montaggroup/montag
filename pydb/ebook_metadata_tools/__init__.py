@@ -73,7 +73,7 @@ def get_cover_image(source_stream, extension):
     input_file_in_tmp.write(source_stream.read())
     input_file_in_tmp.close()
 
-    fd_target, path_cover_target = tempfile.mkstemp(prefix = 'pydb_cover', suffix = '.jpg')
+    fd_target, path_cover_target = tempfile.mkstemp(prefix = 'pydb_cover', suffix='.jpg')
     os.close(fd_target)
 
     subprocess.call(['ebook-meta', input_file_path, '--get-cover', path_cover_target])
