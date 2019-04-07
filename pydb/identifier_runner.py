@@ -50,7 +50,8 @@ class IdentifierRunner(object):
         # check that it has not yet been identified
         file_info = self.importer_db.get_file_info(hash_)
         if file_info is None or file_info['input_state'] not in accepted_states:
-            logger.debug('File %s not unidentified', hash_)
+            logger.debug('File %s in one of the expected states: %s vs (%s)', hash_,
+                         file_info['input_state'], ', '.join(accepted_states))
             self.file_server.unlock_for_identification(hash_)
             return False
 
@@ -151,7 +152,7 @@ class IdentifierRunner(object):
 
     def run_on_all_unprocessed_files(self):
         file_hashes = hashes_of(self.importer_db.get_files_by_state(importerdb.STATE_UNPROCESSED))
-        self._run_on_files(file_hashes, set(importerdb.STATE_UNPROCESSED))
+        self._run_on_files(file_hashes, set([importerdb.STATE_UNPROCESSED]))
 
     def run_on_pending_files(self, group_filter):
         file_hashes = hashes_of(self.importer_db.get_files_by_state(importerdb.STATE_UNPROCESSED)) + \
