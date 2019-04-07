@@ -128,7 +128,7 @@ def strip_file_to_temp(source_path, extension_without_dot, remove_original=False
             with open(source_path, 'rb') as source_stream:
                 if strip_file(source_stream, extension_without_dot, target_stream):
                     success = True
-    except ValueError:
+    except Exception:
         os.remove(filename_stripped)  # clean up temp file which after all did not get used
         raise  # pass the exception along to the higher levels
 
