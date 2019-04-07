@@ -80,11 +80,11 @@ def _convert_ebook(contents, source_extension, target_extension):
 
     # write into a temp file as to prevent ebook_convert from accessing the file store directly
     # this way we are sure that the file has the correct extension
-    fd_orig, path_orig = tempfile.mkstemp(prefix = 'pydb_convert_in', suffix='.' + source_extension)
+    fd_orig, path_orig = tempfile.mkstemp(prefix='pydb_convert_in', suffix='.' + source_extension)
     with os.fdopen(fd_orig, 'wb') as orig_file:
         orig_file.write(contents)
 
-    fd_target, path_converted = tempfile.mkstemp(prefix = 'pydb_convert_out', suffix='.' + target_extension)
+    fd_target, path_converted = tempfile.mkstemp(prefix='pydb_convert_out', suffix='.' + target_extension)
     os.close(fd_target)
     
     subprocess.call(['ebook-convert', path_orig, path_converted])
