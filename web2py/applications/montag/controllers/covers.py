@@ -88,7 +88,7 @@ def set_cover_from_content():
             return
 
         file_extension = 'jpg'
-        fd_cover, path_cover = tempfile.mkstemp('.' + file_extension)
+        fd_cover, path_cover = tempfile.mkstemp(prefix='pydb_upload_cover', suffix='.' + file_extension)
         with os.fdopen(fd_cover, 'wb') as cover_file:
             cover_file.write(cover_contents.getvalue())
 

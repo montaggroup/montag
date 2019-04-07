@@ -119,8 +119,8 @@ def strip_file_to_temp(source_path, extension_without_dot, remove_original=False
         None, None if stripping not possible or not leading to a new file
         and raises an exception if the source file is broken
     """
-    (handle_stripped, filename_stripped) = tempfile.mkstemp(suffix='.' + extension_without_dot)
-    logger.info(u"Writing to file {}".format(filename_stripped))
+    (handle_stripped, filename_stripped) = tempfile.mkstemp(prefix='pydb_strip', suffix='.' + extension_without_dot)
+    logger.debug(u"Stripping to file {}".format(filename_stripped))
 
     success = False
     try:

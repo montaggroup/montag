@@ -175,7 +175,7 @@ class FileInTransfer(object):
         if self.file_extension is not None:
             self.file_extension = self.file_extension.encode('ascii', errors='ignore')
 
-        (handle, self.file_name) = mkstemp(suffix='.' + self.file_extension)
+        (handle, self.file_name) = mkstemp(prefix='pydb_transfer', suffix='.' + self.file_extension)
 
         logger.info(u"Creating file: {}".format(self.file_name))
         self.file_object = os.fdopen(handle, "wb")

@@ -158,7 +158,7 @@ class DirectoryWatcher(object):
                 self.file_change_checks[file_path] = FileStateChecker(file_path)
             checker = self.file_change_checks[file_path]
             checker.update()
-            logger.debug('Checking %s', file_path)
+            logger.debug('Checking size of %s', file_path)
             if checker.is_file_stable():
                 logger.debug('File %s ready for import', file_path)
                 processable_files.append(file_path)

@@ -223,7 +223,7 @@ def do_import_self(args, db):
 
 
 def let_user_edit_document(doc, always_discard=False, detect_unchanged=True):
-    (fd, filename) = tempfile.mkstemp()
+    (fd, filename) = tempfile.mkstemp(prefix='pydb_edit')
 
     with os.fdopen(fd, "wb") as doc_file:
         text_content = json.dumps(doc, indent=json_indent, separators=json_separators)
