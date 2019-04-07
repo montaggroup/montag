@@ -15,7 +15,7 @@ DEFAULT_ADD_FIDELITY = 60.0
 def _insert_file(file_stream, original_file_name):
     (_, extension_with_dot) = os.path.splitext(original_file_name)
 
-    (handle, file_path) = tempfile.mkstemp(suffix=extension_with_dot)
+    (handle, file_path) = tempfile.mkstemp(prefix='pydb_upload_file', suffix=extension_with_dot)
 
     with os.fdopen(handle, "wb") as f:
         f.write(file_stream.read())

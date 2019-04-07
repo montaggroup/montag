@@ -74,12 +74,12 @@ def clear_metadata(instream, outstream):
                 with zipfile.ZipFile(outstream, 'w') as outzip:
                     try:
                         _copy_zip_contents(inzip, outzip, [opf_path])
-                    except zipfile.BadZipfile, e:
+                    except zipfile.BadZipfile as e:
                         raise ValueError("Caught a BadZipFile exception: %s" % repr(e))
 
                     new_content = ElementTree.tostring(root)
                     _write_content_opf(outzip, opf_path, new_content)
-    except zipfile.BadZipfile:
+    except (zipfile.BadZipfile, IOError):  # some older zipfile implementations may throw IO errors:
         raise ValueError("Unable to open epub zip")
     except KeyError:
         raise ValueError("Could not find all required files in epub")
@@ -194,7 +194,7 @@ def get_metadata(instream):
             opf_content = _read_content_opf(inzip, opf_path)
 
             result = get_metadata_from_opf_string(opf_content)
-    except zipfile.BadZipfile:
+    except (zipfile.BadZipfile, IOError):  # some older zipfile implementations may throw IO errors
         raise ValueError("Unable to open epub zip")
     instream.seek(0)
     return result
