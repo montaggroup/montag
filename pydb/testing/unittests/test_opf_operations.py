@@ -39,7 +39,7 @@ class TestOpfOperations(unittest.TestCase):
         self.assertEquals(metadata.publication_year, 2012)
 
     def test_reading_metadata_from_file(self):
-        fd, filename = tempfile.mkstemp(prefix = 'pydb_test_opf')
+        fd, filename = tempfile.mkstemp(prefix='pydb_test_opf')
         os.write(fd, self.reference_opf_string)
         os.close(fd)
 
