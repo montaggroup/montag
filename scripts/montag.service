@@ -1,0 +1,13 @@
+[Unit]
+Description=Montag
+
+[Service]
+Type=forking
+
+# enter correct path here
+ExecStart=/usr/bin/python /home/pydb/pydb/montag-services.py start
+# enter use to run as here
+User=pydb
+
+[Install]
+WantedBy=multi-user.target
