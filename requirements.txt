@@ -1,5 +1,5 @@
 Pyro4==4.31
-Twisted==14.0.2
+Twisted==19.7.0
 Whoosh==2.6.0
 argparse==1.2.1
 ijson==2.0
