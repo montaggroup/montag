@@ -3,7 +3,7 @@ MAINTAINER dsk7
 
 # Base setup
 RUN apt-get -y update && \
-    apt-get install -q -y --no-install-recommends git python-pip python-virtualenv virtualenv libz-dev python-dev build-essential joe && \
+    apt-get install -q -y --no-install-recommends git python-pip python-virtualenv virtualenv libz-dev python-dev build-essential joe calibre && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
