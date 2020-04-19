@@ -17,14 +17,14 @@ image from it.
 To persist books and database, use docker volume mounts.
 Pass the following commands to docker run
 
-`  -v /var/lib/montag/data:/srv/montag/data` 
+`  -v /var/lib/montag/metadata:/srv/montag/metadata` 
 
-This puts all metadata to /var/lib/montag/data
+This puts all metadata to /var/lib/montag/metadata
 
 
 `  -v /large_volume/books:/srv/montag/books`
 
-This puts all books to /var/lib/montag/books
+This puts all books to /large_volume/books
 
 For more examples, see `start-container.sh`.
 
