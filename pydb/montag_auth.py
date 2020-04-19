@@ -24,6 +24,9 @@ class MontagAuth(object):
         self.web2py_request = request
         self.settings = web2py_auth.settings
 
+    def logout(self):
+        return self.web2py_auth.logout()
+
     def is_user_logged_in(self):
         return bool(self.web2py_auth.user)
 
@@ -55,10 +58,7 @@ class MontagAuth(object):
         return self._require('administer')
 
     def __call__(self, *args, **kwargs):
-        if self.is_user_logged_in():
-            return "Please ask the system owner to grant you permission for this action."
-        else:
-            return self.web2py_auth()
+        return self.web2py_auth()
 
 
 def determine_role(role_config, is_local_session, is_user_logged_in):

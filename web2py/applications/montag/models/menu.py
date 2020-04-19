@@ -41,5 +41,8 @@ if auth.has_privilege('friends_view'):
 if auth.has_privilege('friends_view') or auth.has_privilege('statistics_view') or auth.has_privilege('data_view'):
     response.menu.append((T('More...'), False, URL('default', 'more_actions'), []))
 
-if pydb.config.enable_web_auth() and auth.is_user_logged_in():
-    response.menu.append((T('Logout'), False, URL('default', 'user', args='logout'), []))
+if pydb.config.enable_web_auth():
+    if auth.is_user_logged_in():
+        response.menu.append((T('Logout'), False, URL('default', 'user', args='logout'), []))
+    else:
+        response.menu.append((T('Log In'), False, URL('default', 'user'), []))
