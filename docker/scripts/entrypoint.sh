@@ -1,7 +1,7 @@
 #!/bin/bash
 
 mkdir -p /srv/montag/books/{file_store,import_watch}
-mkdir -p /srv/montag/metadata/{db,config,logs}
+mkdir -p /srv/montag/metadata/{db,config,logs,web2py_db}
 
 if [ ! -f /srv/montag/metadata/config/pydb.conf ]
 then
