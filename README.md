@@ -7,6 +7,9 @@ If knowledge can create problems, it is not through ignorance that we can solve 
                                                                         
 Installation
 ============
+See [here](docker/README.md) for a quick guide on how to get montag running
+using docker.
+
 see [here](docs/INSTALL_BANANAPI.md) for instructions for installation on a banana pi running ubuntu.  
 Instructions for other systems running debian/ubuntu should not differ much.
 

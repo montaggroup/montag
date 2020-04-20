@@ -1,0 +1,24 @@
+[common]
+enable_covers=True
+
+[comserver]
+port=8451
+upload_rate_limit_kbytes_per_second=0
+request_files_on_incoming_connection=True
+max_file_size_to_request_bytes=200000000
+keep_alive_send_interval_seconds=120
+read_timeout_seconds=1200
+
+[permissions]
+; valid roles: viewer, editor, admin
+; set to empty to prevent access
+
+role_anonymous_all = admin
+role_anonymous_localhost = admin
+role_authenticated_all = admin
+role_authenticated_localhost = admin
+
+[importer]
+watch_folder = /srv/montag/books/import_watch/
+
+

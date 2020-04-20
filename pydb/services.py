@@ -110,7 +110,9 @@ def get_current_services_status():
     return services_status
 
 
-def logfile_path(service_name_, log_file_base_path=log_path):
+def logfile_path(service_name_, log_file_base_path=None):
+    if log_file_base_path is None:
+        log_file_base_path = log_path
     return os.path.join(log_file_base_path, getpass.getuser() + '-' + service_name_.replace('.py', '.log').
                         replace('.exe', '.log'))
 
