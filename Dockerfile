@@ -3,7 +3,7 @@ MAINTAINER dsk7
 
 # Base setup
 RUN apt-get -y update && \
-    apt-get install -q -y --no-install-recommends git python-pip python-virtualenv virtualenv libz-dev python-dev build-essential joe calibre && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -q -y --no-install-recommends python-pip python-virtualenv virtualenv libz-dev python-dev build-essential calibre && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
@@ -17,6 +17,7 @@ RUN cd /opt/montag/montag && \
     ln -s /srv/montag/books/file_store . && \
     ln -s /srv/montag/metadata/db . && \
     ln -s /srv/montag/metadata/config/pydb.conf . && \
+    mkdir -p ./web2py/applications/montag && \
     ln -s /srv/montag/web2py_databases ./web2py/applications/montag/databases
 
 COPY . /opt/montag/montag

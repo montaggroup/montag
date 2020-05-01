@@ -1,5 +1,80 @@
-.git
+# Montag runtime created files
+db
+filestore
+
+# Byte-compiled / optimized / DLL files
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# C extensions
+**/*.so
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
+# Translations
+**/*.mo
+**/*.pot
+
+# logs and pids
+**/*.log
+**/*.pid
+
+# Editor Backup files
+**/*~
+**/*.bak
+
+web2py/applications/admin/sessions/
+web2py/applications/montag/databases/
+web2py/applications/montag/errors/
+web2py/applications/montag/sessions/
+web2py/parameters_*.py
+web2py/welcome.w2p
+web2py/**/errors/
+web2py/applications/montag/private/auth.key
+
+import_watch/
+
+# Config file
+pydb.conf
+
+# virtual environment
+**/venv/
+
+
+# pycharm config
+.idea
+
+# git and repo stuff not needed in docker image
+**/.git
 installer
-import_watch
 scripts
-*~
+
