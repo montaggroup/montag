@@ -27,7 +27,7 @@ def do_start_services(args, name_filter_fct=lambda x: True):
         if services_status[name]['status'] == 'not running':
             print 'starting service {}, log {}'.format(name, services.logfile_path(name))
             try:
-                services.start(name, log_level=args.log_level)
+                services.start(name, log_level=args.log_level, log_file_base_path=services.log_path)
                 if 'pydbserver' in name:  # allow service to start up
                     _wait_for_db_ping_ok()
             except EnvironmentError as e:
