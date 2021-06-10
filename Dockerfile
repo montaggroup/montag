@@ -14,11 +14,11 @@ RUN cd /opt/montag/montag && \
     virtualenv venv && \
     source venv/bin/activate && \
     pip install -r requirements.txt && \
-    ln -s /srv/montag/books/file_store . && \
+    ln -s /srv/montag/books/filestore . && \
     ln -s /srv/montag/metadata/db . && \
     ln -s /srv/montag/metadata/config/pydb.conf . && \
     mkdir -p ./web2py/applications/montag && \
-    ln -s /srv/montag/web2py_databases ./web2py/applications/montag/databases
+    ln -s /srv/montag/metadata/web2py_databases ./web2py/applications/montag/databases
 
 COPY . /opt/montag/montag
 COPY docker/scripts/entrypoint.sh docker/config/pydb.conf.template /opt/montag/

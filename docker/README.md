@@ -7,7 +7,7 @@
 ## Build the image yourself
 run 
 
-`./build_image.sh`
+`./build.sh`
 
 This downloads the current montag master from github and builds a docker
 image from it.
@@ -24,7 +24,7 @@ This puts all metadata to /var/lib/montag/metadata
 
 `  -v /large_volume/books:/srv/montag/books`
 
-This puts all books to /large_volume/books
+This puts all books to /large_volume/books into the subdirectory `filestore`.
 
 For more examples, see `start-container.sh`.
 
