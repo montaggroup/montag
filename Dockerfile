@@ -22,7 +22,12 @@ RUN cd /opt/montag/montag && \
 
 COPY . /opt/montag/montag
 COPY docker/scripts/entrypoint.sh docker/config/pydb.conf.template /opt/montag/
-    
+
+# Store web2py auth in /srv/docker volume
+RUN cd /opt/montag/montag && \
+	rm -rf ./web2py/applications/montag/private && \
+    ln -s /srv/montag/metadata/web2py_private ./web2py/applications/montag/private
+
 CMD ["bash", "/opt/montag/entrypoint.sh"]
     
 EXPOSE 8000/tcp
