@@ -10,6 +10,7 @@ from ... import config
 
 WaitingForLength = 0
 WaitingForData = 1
+Disconnected = 2
 
 # This needs to be long enough so a slow client can insert 10000 entries without timing out the server
 READ_TIMEOUT = 1200
@@ -96,8 +97,9 @@ class TcpTransportProtocol(protocol.Protocol, object):
         return self.number_of_jobs_cache
 
     def update_number_of_jobs(self):
-        self.number_of_jobs_cache = self.comservice.get_number_of_running_jobs()
-        self.reactor.callLater(NUMBER_OF_JOBS_UPDATE_INTERVAL_SECONDS, self.update_number_of_jobs)
+        if self.state != Disconnected:
+            self.number_of_jobs_cache = self.comservice.get_number_of_running_jobs()
+            self.reactor.callLater(NUMBER_OF_JOBS_UPDATE_INTERVAL_SECONDS, self.update_number_of_jobs)
 
     # noinspection PyPep8Naming
     def pauseProducing(self):
@@ -220,8 +222,8 @@ class TcpTransportProtocol(protocol.Protocol, object):
                 self.reactor.callLater(0, self.dataReceived)
 
     def connectionLost(self, reason=protocol.connectionDone):
+        self.state = Disconnected
         self.upper_layer.transport_channel_lost(reason)
-
 
 def package_and_split_message(message):
     """ splits the message into evenly sized chunks and prepend message size header to first chunk """
