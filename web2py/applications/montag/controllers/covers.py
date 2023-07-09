@@ -151,7 +151,7 @@ def _stream_image(file_hash, extension):
     plain_file = open(fp, 'rb')
 
     # \todo determine mime type and other image params
-    # response.headers['Content-Type'] = 'image/jpeg'
+    response.headers['Content-Type'] = 'image/jpeg'
 
     return response.stream(plain_file, chunk_size=20000)
 
