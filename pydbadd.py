@@ -1,6 +1,4 @@
-#!/usr/bin/env python2.7
-# coding=utf-8
-
+#!/usr/bin/env python3
 import Pyro4
 import argparse
 import os
@@ -24,7 +22,7 @@ def read_metadata(filepath):
 
 
 def add_file(db, file_server, filepath, fidelity, tome_type, delete_source):
-    print u"Adding {}".format(filepath)
+    print("Adding {}".format(filepath))
     filepath = os.path.abspath(filepath)
     metadata = read_metadata(filepath)
 
@@ -35,7 +33,7 @@ def add_file(db, file_server, filepath, fidelity, tome_type, delete_source):
     if metadata.edition is not None:
         edition = metadata.edition
 
-    print u'Metadata tags: {}'.format(metadata.tags)
+    print('Metadata tags: {}'.format(metadata.tags))
     tome_id = db.find_or_create_tome(title, metadata.language, author_ids,
                                      subtitle, tome_type=tome_type,
                                      fidelity=fidelity, edition=edition,
@@ -53,7 +51,7 @@ def add_file(db, file_server, filepath, fidelity, tome_type, delete_source):
         db.link_tome_to_file(tome_id, file_hash, size, file_extension=extension, file_type=FileType.Content,
                              fidelity=fidelity)
     else:
-        print u"Unable to add file '{}' to db - check whether it might be defective".format(filepath)
+        print("Unable to add file '{}' to db - check whether it might be defective".format(filepath))
 
 
 def add_file_only(file_server, filepath, delete_source):
@@ -92,7 +90,7 @@ def main():
     db = pydb.pyrosetup.pydbserver()
 
     if db.ping() != "pong":
-        print >> sys.stderr, "Unable to talk to server, is it running?`"
+        print("Unable to talk to server, is it running?", file=sys.stderr)
         sys.exit(-1)
 
     file_server = pydb.pyrosetup.fileserver()
@@ -106,7 +104,6 @@ def main():
         assert not args.tome_type, 'Invalid tome type selected: ' + str(tome_type)
 
     for filepath in args.filepaths:
-        filepath = unicode(filepath.decode(sys.stdin.encoding))  # decode stuff coming in from command line
 
         if args.add_file_only:
             if args.only_if_file_known:
@@ -115,15 +112,15 @@ def main():
                 extension = extension[1:]  # remove period
                 if not file_server.is_file_known(abspath, extension):
                     if args.verbose:
-                        print >> sys.stderr, u"File {} not known to database, skipping".format(filepath)
+                        print("File {} not known to database, skipping".format(filepath), file=sys.stderr)
                         continue
 
             if args.verbose:
-                print >> sys.stderr, u"Adding file {}".format(filepath)
+                print("Adding file {}".format(filepath), file=sys.stderr)
             add_file_only(file_server, filepath, args.delete)
         else:
             if args.verbose:
-                print >> sys.stderr, u"Adding file with tome {}".format(filepath)
+                print("Adding file with tome {}".format(filepath), file=sys.stderr)
             add_file(db, file_server, filepath, args.fidelity, tome_type, args.delete)
 
 

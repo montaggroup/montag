@@ -1,4 +1,3 @@
-# coding=utf-8
 import copy
 import logging
 from pydb import network_params
@@ -15,7 +14,7 @@ def _prepare_fusion_sources(document, guid):
             if source_guid > guid:
                 logger.error("Document {} has a fusion source {} "
                              "which has a greater guid than the target - "
-                             "this is a protocol violation, ignoring fusion source").format(guid, source_guid)
+                             "this is a protocol violation, ignoring fusion source".format(guid, source_guid))
             else:
                 new_fusion_sources.append(i)
     return new_fusion_sources
@@ -113,7 +112,7 @@ def document_export_filter(items, ignore_fidelity_filter):
 
 
 def _without_ids_and_mod_date(a_dict):
-    return {k: v for k, v in a_dict.iteritems() if
+    return {k: v for k, v in a_dict.items() if
             k != 'id' and k != 'tome_id' and k != 'last_modification_date' and
             k != 'link_last_modification_date' and k != 'local_file_exists'}
 

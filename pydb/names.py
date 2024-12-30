@@ -1,9 +1,7 @@
-# coding=utf-8
 import unicodedata
 
 
 def calc_author_name_key(author_name):
-    author_name = unicode(author_name)
     elements = author_name.split(',')
     swapped = ''.join(reversed(elements))
     lower = swapped.lower()

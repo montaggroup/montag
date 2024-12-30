@@ -1,5 +1,3 @@
-# coding=utf-8
-# coding=utf-8
 import unittest
 import pydb.com.strategies.early_requester
 import mock

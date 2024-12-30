@@ -1,17 +1,14 @@
-# coding=utf-8
+import copy
 import time
 from collections import defaultdict, namedtuple
 import logging
-import databases
-import copy
-import sqlitedb
-
 import pydb
-import basedb
 import pydb.names
-import network_params
-import file_store
-from basedb import data_fields_equal
+from pydb import basedb
+from pydb import databases
+from pydb import network_params
+from pydb import sqlitedb
+
 
 logger = logging.getLogger('mergedb')
 
@@ -64,7 +61,7 @@ class MergeDB(basedb.BaseDB):
 
     def delete_all(self):
         for table in (databases.data_tables + databases.local_tables):
-            logger.debug(u"deleting contents of table {}".format(table))
+            logger.debug("deleting contents of table {}".format(table))
             self.cur.execute("DELETE FROM {}".format(table))
 
     def _unipolar_opinion_sources(self):
@@ -104,7 +101,7 @@ class MergeDB(basedb.BaseDB):
             self.insert_object('tomes', tome_data)
             self.update_document_modification_date_by_guid('tome', guid)
         else:
-            if not data_fields_equal(old_tome, new_tome_fields):
+            if not basedb.data_fields_equal(old_tome, new_tome_fields):
                 logger.debug("Updating tome with guid %s in merge db" % guid)
                 self.update_object('tomes', {'guid': doc['guid']}, tome_data)
                 self.update_document_modification_date_by_guid('tome', guid)
@@ -141,7 +138,7 @@ class MergeDB(basedb.BaseDB):
             self.insert_object('authors', author_data)
             self.update_document_modification_date_by_guid('author', guid)
         else:
-            if not data_fields_equal(old_author, new_author_fields):
+            if not basedb.data_fields_equal(old_author, new_author_fields):
                 self.update_object('authors', {'guid': guid}, author_data)
                 self.update_document_modification_date_by_guid('author', guid)
             else:
@@ -232,7 +229,7 @@ class MergeDB(basedb.BaseDB):
         if not old_item_data:
             need_update = True
         else:
-            if not data_fields_equal(old_item_data, new_item_data):
+            if not basedb.data_fields_equal(old_item_data, new_item_data):
                 need_update = True
             else:
                 logger.info("%s information does not differ" % item_name)
@@ -354,7 +351,7 @@ class MergeDB(basedb.BaseDB):
         if not old_item_data:
             need_update = True
         else:
-            if not data_fields_equal(old_item_data, new_item_data):
+            if not basedb.data_fields_equal(old_item_data, new_item_data):
                 need_update = True
             else:
                 logger.info("{} information does not differ".format(item_name))
@@ -851,19 +848,19 @@ def merge_items_bipolar(local_opinions, foreign_opinions, group_fun):
     for item in local_opinions:
         if item is None:
             continue
-        logger.debug(u"Calling group on {}".format(str(item)))
+        logger.debug("Calling group on {}".format(str(item)))
         group_id = group_fun(item)
         groups[group_id].local_opinions.append(item)
 
     for item in foreign_opinions + local_opinions:
         if item is None:
             continue
-        logger.debug(u"Calling group on {}".format(str(item)))
+        logger.debug("Calling group on {}".format(str(item)))
         group_id = group_fun(item)
         groups[group_id].all_opinions.append(item)
 
     group_winners = {}
-    for group_id, group in groups.iteritems():
+    for group_id, group in groups.items():
         group_winners[group_id] = item_with_best_opinion_bipolar(group)
 
     return group_winners
@@ -875,7 +872,7 @@ def extract_authoritative_local_opinion(local_opinions):
 
     if len(local_opinions) > 1:
         result = max(local_opinions, key=lambda o: o['last_modification_date'])
-        logger.warning(u"Local opinion group has more than 1 entry: {} - using {}".format(local_opinions, result))
+        logger.warning("Local opinion group has more than 1 entry: {} - using {}".format(local_opinions, result))
         return result
 
     return local_opinions[0]

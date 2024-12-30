@@ -1,4 +1,3 @@
-# coding=utf-8
 import reisa_window
 from PySide import QtCore, QtGui
 import os
@@ -59,7 +58,7 @@ class Reisa(QtGui.QMainWindow):
 
         file_path = os.path.join(self.dir_name, item['filename'])
 
-        print "Inserting: %s" % file_path
+        print("Inserting: %s" % file_path)
 
         author_ids = self.db.find_or_create_authors(list(authors), fidelity=DEFAULT_FIDELITY)
 
@@ -155,7 +154,7 @@ def apply_regex(file_list, regex, author_list_is_comma_separated, manual_tags=li
                 "tags": tags,
                 "filename": filename
             }
-            print "a_r: item=%s" % repr(item)
+            print("a_r: item=%s" % repr(item))
             result.append(item)
     return result
 
@@ -187,7 +186,7 @@ def launch_reisa():
     db = pyrosetup.pydbserver()
 
     if db.ping() != "pong":
-        print >> sys.stderr, "Unable to talk to server, is it running?`"
+        print("Unable to talk to server, is it running?`", file=sys.stderr)
         sys.exit(-1)
 
     file_server = pyrosetup.fileserver()
@@ -197,7 +196,7 @@ def launch_reisa():
     # noinspection PyArgumentList
     cmdline_args = QtCore.QCoreApplication.arguments()
     ui = Reisa(db, file_server)
-    print "args:", cmdline_args
+    print("args:", cmdline_args)
     cmdline_args = cmdline_args[1:]
     if cmdline_args:
         if "reisa.py" in cmdline_args[0]:  # quick fix for windows, here we have command line starting with the python file

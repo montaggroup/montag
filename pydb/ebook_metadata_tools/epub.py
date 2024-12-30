@@ -1,4 +1,3 @@
-# coding=utf-8
 import pydb.zipfile.zipfile as zipfile
 import xml.etree.ElementTree as ElementTree
 import defusedxml.ElementTree as defused_etree
@@ -65,7 +64,7 @@ def clear_metadata(instream, outstream):
                             logger.debug("Removing node %s" % node_to_remove.tag)
                             main_element.remove(node_to_remove)
                             removed_a_node = True
-            except defused_etree.ParseError, e:
+            except defused_etree.ParseError as e:
                 logger.error("Caught a parse error while trying to clear epub metadata: %s" % repr(e))
                 raise ValueError("Invalid EPUB syntax")
 

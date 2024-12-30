@@ -1,5 +1,3 @@
-# coding=utf-8
-# coding=utf-8
 import unittest
 import pydb.com.securechannel.aeshmac_common
 import pydb.com.jsonsession
@@ -27,7 +25,7 @@ class TestSecureChannelServerMode(unittest.TestCase):
 
     @patch(used_module+'.get_nonce_512')
     def test_accept_client_send_generated_nonce(self, mock_get_nonce):
-        fake_nonce = "0" * 64
+        fake_nonce = b"0" * 64
         mock_get_nonce.return_value = fake_nonce
 
         self.sc.transport_channel_established()
@@ -35,7 +33,7 @@ class TestSecureChannelServerMode(unittest.TestCase):
 
     def test_accept_client_no_friends_invalid_nonce(self):
         self.sc.transport_channel_established()
-        self.assertRaises(Exception, self.sc.message_received, "a" * 64)
+        self.assertRaises(Exception, self.sc.message_received, b"a" * 64)
 
 
 class TestSecureChannelClientMode(unittest.TestCase):
@@ -165,7 +163,7 @@ class TestClientServerInteraction(unittest.TestCase):
     @patch(used_module+'.get_nonce_512')
     def _setup_server_client_communcation_with_fake_nonce(self, fake_get_nonce):
         # fake the nonces so the key remains static
-        fake_get_nonce.return_value = "0"*64
+        fake_get_nonce.return_value = b"0"*64
 
         self._setup_client("a")
         friend_id = 4
@@ -190,13 +188,13 @@ class TestClientServerInteraction(unittest.TestCase):
         self._setup_server_client_communcation_with_fake_nonce()
 
         # send a message
-        self.client_sc.send_message("a")
+        self.client_sc.send_message(b"a")
 
         # expect an encrypted message on the wire
-        self.assertEquals(len(self.messages_for_server), 1)
+        self.assertEqual(len(self.messages_for_server), 1)
         encrypted_maced_message = self.messages_for_server.pop()
 
-        self.assertEqual(encrypted_maced_message.encode('hex'),
+        self.assertEqual(encrypted_maced_message.hex(),
                          '54f13f72384dd414afcc39af91b5692ce8cf0d4a670a468b79b1d9b907e871249'
                          '05a8ca13dcae7c9b2751024fb32ce95f8888d53ae5780197e53a1566dc9999f2815')
 
@@ -204,7 +202,7 @@ class TestClientServerInteraction(unittest.TestCase):
         self.server_sc.message_received(encrypted_maced_message)
 
         # expect the decrypted message again
-        self.server_upper_layer.message_received.assert_called_once_with("a")
+        self.server_upper_layer.message_received.assert_called_once_with(b"a")
 
 
 if __name__ == '__main__':

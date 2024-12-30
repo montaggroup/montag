@@ -1,4 +1,3 @@
-# coding=utf-8
 import tempfile
 import os
 import getpass
@@ -152,9 +151,9 @@ def stop_all_ignoring_exceptions(verbose=False, name_filter_fct=lambda x: True):
     for name in filter(name_filter_fct, names[::-1]):
         if services_status[name]['status'] != 'not running':
             if verbose:
-                print 'stopping service {}'.format(name)
+                print('stopping service {}'.format(name))
             # noinspection PyBroadException
             try:
                 stop(services_status[name]['process'])
             except Exception:
-                print 'could not stop service {}' .format(name)
+                print('could not stop service {}' .format(name))

@@ -1,8 +1,8 @@
-# coding=utf-8
+import base64
 import json
 import time
 import logging
-from .. import config
+from pydb import config
 
 logger = logging.getLogger('session')
 KEEP_ALIVE_SEND_INTERVAL_SECONDS = 120
@@ -45,7 +45,7 @@ class JsonSession(object):
         self._send_message({'command': 'requestFile', 'args': [file_hash]})
 
     def deliver_file(self, file_hash, extension, content, more_parts_follow=False):
-        encoded_content = content.encode('base64')
+        encoded_content = base64.b64encode(content).decode('ascii')
         self._send_message({'command': 'deliverFile', 'args':
                            [file_hash, extension, encoded_content, more_parts_follow]})
 
@@ -63,7 +63,7 @@ class JsonSession(object):
             self._send_keep_alive()
 
     def _send_message(self, object_to_send):
-        self.lower_layer.send_message(json.dumps(object_to_send))
+        self.lower_layer.send_message(json.dumps(object_to_send).encode('utf-8'))
         self._last_message_sent = time.time()
 
     def message_received(self, message):
@@ -100,7 +100,7 @@ class JsonSession(object):
         elif command == "deliverFile":
             file_hash = args[0]
             extension = args[1]
-            content = args[2].decode('base64')
+            content = base64.b64decode(args[2])
             more_parts_follow = args[3]
             del msg
             self.upper_layer.command_deliver_file_received(file_hash, extension, content, more_parts_follow)

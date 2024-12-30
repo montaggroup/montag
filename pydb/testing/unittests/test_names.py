@@ -1,4 +1,3 @@
-# coding=utf-8
 
 import unittest
 from pydb.names import calc_author_name_key

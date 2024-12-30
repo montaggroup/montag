@@ -1,4 +1,3 @@
-# coding=utf-8
 import logging
 import re
 from collections import deque
@@ -90,7 +89,7 @@ class TcpTransportProtocol(protocol.Protocol, object):
         self.upper_layer_paused = False
 
     def do_timeout(self):
-        logger.warn("Timeout on network connection, closing.")
+        logger.warning("Timeout on network connection, closing.")
         self.lose_transport_channel("Read timeout")
 
     def current_number_of_jobs(self):
@@ -200,8 +199,8 @@ class TcpTransportProtocol(protocol.Protocol, object):
             return
 
         if self.state == WaitingForLength:
-            if "\n" in self.data:
-                (length_text, remainder) = self.data.split("\n", 1)
+            if b"\n" in self.data:
+                (length_text, remainder) = self.data.split(b"\n", 1)
                 self.data = remainder
 
                 try:

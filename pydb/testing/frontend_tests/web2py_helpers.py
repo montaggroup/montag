@@ -1,4 +1,3 @@
-# coding=utf-8
 import os
 import sys
 import pydb.config
@@ -47,8 +46,8 @@ class Web2pyRequest(object):
         if self.result is None:
             self.execute()
 
-        for key, value in self.result.iteritems():
-            print u'{}: {}'.format(key, value)
+        for key, value in self.result.items():
+            print(u'{}: {}'.format(key, value))
 
     def render_result(self):
         if self.result is None:

@@ -1,6 +1,5 @@
-# coding=utf-8
 from twisted.internet.protocol import Factory
-from tcptransportprotocol import build_tcp_transport_protocol
+from pydb.com.transport.tcptransportprotocol import build_tcp_transport_protocol
 
 
 class TcpServer(Factory, object):

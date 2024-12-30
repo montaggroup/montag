@@ -83,3 +83,4 @@ venv/
 
 # pycharm config
 .idea
+.aider*

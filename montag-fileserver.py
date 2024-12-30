@@ -1,5 +1,4 @@
-#!/usr/bin/env python2.7
-# coding=utf-8
+#!/usr/bin/env python3
 import logging
 import argparse
 import os
@@ -14,7 +13,7 @@ import pydb.config
 import pydb.logconfig
 
 
-def determine_file_store_dir(override_base_path=None):
+def determine_file_store_dir(args, override_base_path=None):
     if override_base_path is None:
         base_path = get_main_dir()
     else:

@@ -1,4 +1,3 @@
-# coding=utf-8
 import hashlib
 import os
 import hmac
@@ -7,7 +6,7 @@ KeyExchangeMaxMessageLength = 500
 
 
 def get_nonce_512():
-    entropy = os.urandom(512 / 8)
+    entropy = os.urandom(512 // 8)
     return hashlib.sha512(entropy).digest()
 
 
@@ -28,7 +27,7 @@ def preshared_secrets(friend_data):
 
 
 def preshared_secrets_from_passphrase(pass_phrase):
-    preshared_secret = sha512d(pass_phrase)
+    preshared_secret = sha512d(pass_phrase.encode("utf-8"))
     preshared_secret_kex_cipher = preshared_secret[:32]
     preshared_secret_kex_hmac = preshared_secret[32:]
 

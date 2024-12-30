@@ -1,7 +1,6 @@
-# coding=utf-8
 import os
 import logging
-import title
+from pydb import title
 
 from whoosh.index import create_in, open_dir
 from whoosh.fields import *

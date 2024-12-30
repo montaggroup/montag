@@ -1,4 +1,3 @@
-# coding=utf-8
 import subprocess
 import tempfile
 import Pyro4
@@ -38,7 +37,7 @@ def create_server(data_dir=None, port="4510", sync_mode=True, debug=False, based
         # noinspection PyBroadException
         try:
             if db.ping() != "pong":
-                print >> sys.stderr, "Unable to talk"
+                print("Unable to talk", file=sys.stderr)
                 sys.exit(-1)
             return db
         except Exception:

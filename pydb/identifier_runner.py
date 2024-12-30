@@ -1,10 +1,9 @@
-# coding=utf-8
-import Queue
+import queue
 import logging
 import os
 
-import importerdb
-import network_params
+from . import importerdb
+from . import network_params
 import pydb
 import pydb.config
 import pydb.identifiers.montag_lookup.montag_lookup
@@ -175,7 +174,7 @@ class IdentifierRunner(object):
             try:
                 while True:
                     q.get(False, 0)
-            except Queue.Empty:
+            except queue.Empty:
                 pass
 
         self.notification_queue = notification_queue

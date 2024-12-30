@@ -1,8 +1,7 @@
-# coding=utf-8
 import sqlite3 as sqlite
 import logging
 import json
-import sqlitedb
+from pydb import sqlitedb
 
 logger = logging.getLogger('friendsdb')
 
@@ -17,7 +16,7 @@ class FriendsDB(sqlitedb.SqliteDB):
             self._execute_sql_file("db-schema-friends.sql")
             logger.debug("Done loading schemas")
         except sqlite.IntegrityError as e:
-            logger.info(u"Before rollback due to {}".format(e))
+            logger.info("Before rollback due to {}".format(e))
             self.rollback()
             pass
 
@@ -66,10 +65,10 @@ class FriendsDB(sqlitedb.SqliteDB):
         return is_locked == 1
 
     def set_locking_active(self, locked, salt, iteration_count, encrypted_canary):
-        self.cur.execute(u"INSERT OR REPLACE INTO format_info "
+        self.cur.execute("INSERT OR REPLACE INTO format_info "
                          u"(is_locked, salt, iteration_count, encrypted_canary, id) "
                          u"VALUES(?, ?, ?, ?, 1)",
-                         [1 if locked else 0, buffer(salt), iteration_count, buffer(encrypted_canary)])
+                         [1 if locked else 0, salt, iteration_count, encrypted_canary])
 
     def get_locking_info(self):
         return self.get_single_object("SELECT * FROM format_info")

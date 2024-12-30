@@ -1,14 +1,13 @@
-# coding=utf-8
 import sqlite3 as sqlite
 import logging
 import time
 import re
 
-import databases
-import network_params
+from pydb import databases
+from pydb import network_params
 import pydb
 from pydb.documents import document_export_filter
-import sqlitedb
+from pydb import sqlitedb
 
 logger = logging.getLogger('basedb')
 
@@ -26,7 +25,7 @@ class BaseDB(sqlitedb.SqliteDB):
             self._execute_sql_file(init_sql_file)
             logger.debug("Done loading schemas")
         except sqlite.IntegrityError as e:
-            logger.info(u"Before rollback due to {}".format(e))
+            logger.info("Before rollback due to {}".format(e))
             self.rollback()
         if not enable_db_sync:
             self.cur.execute("PRAGMA synchronous = OFF ")

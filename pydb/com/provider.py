@@ -1,11 +1,10 @@
-# coding=utf-8
 import logging
 
 from twisted.internet import defer
 from twisted.internet import reactor
 from twisted.internet.task import deferLater
 
-import file_send_queue
+from pydb.com import file_send_queue
 
 logger = logging.getLogger("com.provider")
 

@@ -1,4 +1,3 @@
-# coding=utf-8
 import sys
 import os
 
@@ -67,9 +66,9 @@ def get_metadata(instream):
     if doc_info is None:
         return result
 
-    for key, value in doc_info.iteritems():
+    for key, value in doc_info.items():
         key = key.lower()
-        value = unicode(value).strip()
+        value = value.strip()
         if not value:
             continue
 

@@ -1,4 +1,3 @@
-# coding=utf-8
 import unittest
 import time
 import logging
@@ -11,7 +10,7 @@ import pydb.com.jsonsession
 import pydb.com.json_and_binary_session
 import pydb.com.session
 from pydb.testing.test_data import get_book_path
-from cStringIO import StringIO
+from io import BytesIO
 
 logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger("test_file_transfer_performance")
@@ -22,9 +21,9 @@ FILE_DELIVERY_REPETITIONS = 10
 class TestFileTransferPerformance(unittest.TestCase):
     def setUp(self):
         self.test_file_contents = open(get_book_path('pg1661.epub'), "rb").read()
-        self.file_stream = StringIO(self.test_file_contents)
+        self.file_stream = BytesIO(self.test_file_contents)
 
-        self.received_file_contents = ""
+        self.received_file_contents = b""
 
         # noinspection PyUnusedLocal
         def file_received(file_hash, extension, content, more_parts_follow):
@@ -48,12 +47,12 @@ class TestFileTransferPerformance(unittest.TestCase):
     def _run_benchmark(self, secure_channel_name, client_secure_channel, server_session):
         client_secure_channel.initiate_secure_channel()
         start_wire_byte_count = self.server_transport.bytes_sent()
-        start_time = time.clock()
-        for i in xrange(FILE_DELIVERY_REPETITIONS):
-            self.received_file_contents = ""
+        start_time = time.time()
+        for i in range(FILE_DELIVERY_REPETITIONS):
+            self.received_file_contents = b""
             server_session.deliver_file('a_hash', 'epub', self.file_stream.read(), more_parts_follow=False)
             self.file_stream.seek(0)
-        stop_time = time.clock()
+        stop_time = time.time()
         self.assertEqual(self.received_file_contents, self.test_file_contents)
 
         duration = stop_time - start_time
@@ -65,8 +64,8 @@ class TestFileTransferPerformance(unittest.TestCase):
         bytes_sent_by_server = (stop_wire_byte_count-start_wire_byte_count) / FILE_DELIVERY_REPETITIONS
         overhead_bytes = bytes_sent_by_server-len(self.test_file_contents)
 
-        print("Loopback results {:>60}: {:8} kbps, {:7.1f} ms, encoding overhead: {:7} bytes"
-              .format(secure_channel_name, int(payload_bandwidth_kbps), round(duration * 1000, 1),  overhead_bytes))
+        print(("Loopback results {:>60}: {:8} kbps, {:7.1f} ms, encoding overhead: {:7} bytes"
+              .format(secure_channel_name, int(payload_bandwidth_kbps), round(duration * 1000, 1),  overhead_bytes)))
 
     def test_01_json_session_with_aeshmac_secure_channel(self):
         client_session = pydb.com.jsonsession.JsonSession(self.client_control)

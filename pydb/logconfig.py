@@ -1,4 +1,3 @@
-# coding=utf-8
 import logging
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)-15s %(levelname)s [%(name)s] %(message)s')

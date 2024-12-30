@@ -1,4 +1,3 @@
-# coding=utf-8
 import Pyro4
 
 Pyro4.config.SERVERTYPE = "multiplex"

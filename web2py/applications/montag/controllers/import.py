@@ -1,4 +1,3 @@
-# coding=utf-8
 if False:
     from pydb_helpers.ide_fake import *
 

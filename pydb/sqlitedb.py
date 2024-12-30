@@ -1,4 +1,3 @@
-# coding=utf-8
 import sqlite3 as sqlite
 import logging
 import os
@@ -44,7 +43,7 @@ class SqliteDB(object):
         self.in_transaction = False
 
     def count_rows(self, from_clause, where_clause="1", params=()):
-        for row in self.cur.execute(u"SELECT COUNT(*) AS count FROM " + from_clause + " WHERE " + where_clause, params):
+        for row in self.cur.execute("SELECT COUNT(*) AS count FROM " + from_clause + " WHERE " + where_clause, params):
             fields = {key: row[key] for key in row.keys()}
             return fields['count']
 
@@ -84,23 +83,23 @@ class SqliteDB(object):
             return row[0]
 
     def update_object(self, table_name, filter_dict, object_fields):
-        assignments = [u'{} = ?'.format(field_name) for field_name in object_fields.iterkeys()]
+        assignments = [u'{} = ?'.format(field_name) for field_name in object_fields.keys()]
         set_string = ', '.join(assignments)
 
-        filter_conditions = [u'{} = ?'.format(field_name) for field_name in filter_dict.iterkeys()]
+        filter_conditions = [u'{} = ?'.format(field_name) for field_name in filter_dict.keys()]
         filter_string = " AND ".join(filter_conditions)
 
-        parameters = object_fields.values() + filter_dict.values()
+        parameters = list(object_fields.values()) + list(filter_dict.values())
 
         query = u'UPDATE {} SET {} WHERE {}'.format(table_name, set_string, filter_string)
         logger.debug(u'Update query is {} {}'.format(query, repr(parameters)))
         self.cur.execute(query, parameters)
 
     def insert_object(self, table_name, object_fields, allow_replace=False):
-        field_string = ', '.join(object_fields.iterkeys())
+        field_string = ', '.join(object_fields.keys())
         question_marks = ', '.join('?' * len(object_fields))
 
-        value_list = object_fields.values()
+        value_list = list(object_fields.values())
 
         if allow_replace:
             query = u'INSERT OR REPLACE INTO {} ({}) VALUES ({}) '.format(table_name, field_string, question_marks)
@@ -111,7 +110,6 @@ class SqliteDB(object):
         self.cur.execute(query, value_list)
 
         return self.cur.lastrowid
-
 
 
 class Transaction(object):

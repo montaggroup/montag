@@ -1,4 +1,3 @@
-# coding=utf-8
 import unittest
 import copy
 import logging
@@ -99,7 +98,6 @@ class TestAuthorFusion(unittest.TestCase):
         all_authors = self.main_db.get_all_authors()
         author = all_authors[0]
         self.assertEqual(author['name'], 'another body')
-        print author
 
 
 class TestAuthorFusionTomeChanges(unittest.TestCase):

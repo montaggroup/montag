@@ -1,5 +1,4 @@
-#!/usr/bin/env python
-# coding=utf-8
+#!/usr/bin/env python3
 
 """
 Return disk usage statistics about the given path as a (total, used, free)
@@ -23,15 +22,11 @@ if hasattr(os, 'statvfs'):  # POSIX
 
 elif os.name == 'nt':  # Windows
     import ctypes
-    import sys
 
     def disk_usage(path):
         _, total, free = ctypes.c_ulonglong(), ctypes.c_ulonglong(), \
                          ctypes.c_ulonglong()
-        if sys.version_info >= (3,) or isinstance(path, unicode):
-            fun = ctypes.windll.kernel32.GetDiskFreeSpaceExW
-        else:
-            fun = ctypes.windll.kernel32.GetDiskFreeSpaceExA
+        fun = ctypes.windll.kernel32.GetDiskFreeSpaceExW
         ret = fun(path, ctypes.byref(_), ctypes.byref(total), ctypes.byref(free))
         if ret == 0:
             raise ctypes.WinError()
@@ -43,4 +38,4 @@ else:
 disk_usage.__doc__ = __doc__
 
 if __name__ == '__main__':
-    print disk_usage(os.getcwd())
+    print(disk_usage(os.getcwd()))

@@ -1,4 +1,3 @@
-# coding=utf-8
 import unittest
 import service_helpers
 import web2py_helpers

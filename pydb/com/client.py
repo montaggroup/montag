@@ -1,13 +1,12 @@
-# coding=utf-8
 import logging
 
 from twisted.internet import reactor
 
-from json_and_binary_session import JsonAndBinarySession
-from securechannel.aeshmacsecurechannel import AesHmacSecureChannel
-from transport.tcpclient import TcpClient
-import bulk_inserter
-from .. import config
+from pydb.com.json_and_binary_session import JsonAndBinarySession
+from pydb.com.securechannel.aeshmacsecurechannel import AesHmacSecureChannel
+from pydb.com.transport.tcpclient import TcpClient
+from pydb.com import bulk_inserter
+from pydb import config
 
 logger = logging.getLogger("com.client")
 

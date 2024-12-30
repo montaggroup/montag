@@ -1,8 +1,7 @@
-# coding=utf-8
 import os
 import logging
-import file_store
-import cStringIO
+from pydb import file_store
+import io
 
 logger = logging.getLogger('fileserver')
 
@@ -96,7 +95,7 @@ class FileServer(object):
                     file_to_delete_in_tmp = new_path
 
             except ValueError:
-                logger.warning(u"Could not strip file {}, seems to be broken".format(source_path))
+                logger.warning("Could not strip file {}, seems to be broken".format(source_path))
                 return None, None, None
 
         try:
@@ -111,7 +110,7 @@ class FileServer(object):
             return local_file_id, file_hash, size
         finally:
             if file_to_delete_in_tmp is not None and os.path.exists(file_to_delete_in_tmp):
-                logger.warning(u"Temp file {} was not correctly cleaned up, removing now.".format(file_to_delete_in_tmp))
+                logger.warning("Temp file {} was not correctly cleaned up, removing now.".format(file_to_delete_in_tmp))
                 os.unlink(file_to_delete_in_tmp)
 
     def try_lock_for_identification(self, file_hash):
@@ -195,7 +194,7 @@ class FileServer(object):
 
 
 def _calculate_effective_hash(source_path, extension_without_dot):
-    strip_output = cStringIO.StringIO()
+    strip_output = io.BytesIO()
 
     with open(source_path, 'rb') as source_stream:
         if file_store.strip_file(source_stream, extension_without_dot, strip_output):
