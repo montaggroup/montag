@@ -1,0 +1,40 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches:
+      - montag-2025
+
+  pull_request:
+    branches:
+      - montag-2025
+
+concurrency:
+  group: ${{ format('ci-{0}', github.ref) }}
+  cancel-in-progress: true
+
+jobs:
+  Tests:
+    runs-on: ubuntu-latest
+    container:
+      image: "ghcr.io/montaggroup/montag-github-python-3.10:v1"
+
+    steps:
+      - name: Checkout
+        uses: classabbyamp/treeless-checkout-action@v1
+
+      - name: Setup virtual environment
+        run: |
+          python3 -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Run unittests
+        run: |
+          source venv/bin/activate
+          ./run_unittests.sh
+
+      - name: Run integration-tests
+        run: |
+          source venv/bin/activate
+          ./run_integration_tests.sh
