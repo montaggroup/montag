@@ -1,7 +1,7 @@
-FROM debian:bookworm
+FROM ubuntu:22.04
 
 RUN apt-get -y update && \
-    DEBIAN_FRONTEND=noninteractive apt-get install -q -y --no-install-recommends python3-pip python3-virtualenv virtualenv libz-dev python3-dev build-essential calibre && \
+    DEBIAN_FRONTEND=noninteractive apt-get install -q -y --no-install-recommends bash git python3-pip python3.10-venv libz-dev python3-dev build-essential calibre && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
