@@ -4,7 +4,6 @@ Whoosh
 argparse
 ijson
 psutil
-pycryptopp
 serpent
 defusedxml
 zope.interface
