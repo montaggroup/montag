@@ -6,14 +6,14 @@ class TestStrategyPackage(unittest.TestCase):
     def test_strategy_phase_id_valid(self):
         name = 'requesting_metadata'
         strategy_id = strategies.strategy_phase_id(name)
-        self.assertEquals(21, strategy_id)
+        self.assertEqual(21, strategy_id)
 
     def test_strategy_phase_name_valid(self):
         name = 'requesting_metadata'
         strategy_id = 21
 
         strategy_name = strategies.strategy_phase_name(strategy_id)
-        self.assertEquals(name, strategy_name)
+        self.assertEqual(name, strategy_name)
 
     def test_strategy_phase_name_invalid_raises_key_error(self):
         with self.assertRaises(KeyError):

@@ -45,7 +45,7 @@ class TestBulkInserter(unittest.TestCase):
             mock.call.load_tome_documents_from_friend(self.friend_id, [self.tome1])
         ]
 
-        self.assertEquals(expected_calls, self.main_db.mock_calls)
+        self.assertEqual(expected_calls, self.main_db.mock_calls)
 
     def test_queue_limit_max(self):
         self.inserter.set_queue_limit(2)
@@ -79,4 +79,4 @@ class TestBulkInserter(unittest.TestCase):
         self.inserter.do_insert()
 
         call_count_load_document_after = len(self.main_db.load_tome_documents_from_friend.mock_calls)
-        self.assertEquals(call_count_load_document, call_count_load_document_after)
+        self.assertEqual(call_count_load_document, call_count_load_document_after)

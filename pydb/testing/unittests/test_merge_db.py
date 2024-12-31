@@ -22,7 +22,7 @@ class TestCalculateItemsDifference(unittest.TestCase):
         self.assertFalse(keys_to_check)
 
         self.assertIn('a', keys_to_remove)
-        self.assertEquals(len(keys_to_remove), 1)
+        self.assertEqual(len(keys_to_remove), 1)
 
     def test_add_one(self):
         old_items = {'b': 'b_content'}
@@ -33,7 +33,7 @@ class TestCalculateItemsDifference(unittest.TestCase):
         self.assertFalse(keys_to_remove)
 
         self.assertIn('a', keys_to_add)
-        self.assertEquals(len(keys_to_add), 1)
+        self.assertEqual(len(keys_to_add), 1)
 
     def test_check_one(self):
         old_items = {'b': 'b_content'}
@@ -42,7 +42,7 @@ class TestCalculateItemsDifference(unittest.TestCase):
         keys_to_add, keys_to_remove, keys_to_check = mergedb.calculate_items_difference(old_items, new_items)
 
         self.assertIn('b', keys_to_check)
-        self.assertEquals(len(keys_to_check), 1)
+        self.assertEqual(len(keys_to_check), 1)
 
 
 class TestDeleteAll(unittest.TestCase):
@@ -95,7 +95,7 @@ class TestGetHighFidelityTomeFileHashesWithoutLocalFile(unittest.TestCase):
         hashes = self.merge_db.get_high_fidelity_tome_file_hashes_without_local_file(
             min_tome_fidelity=0, min_file_fidelity=0, max_file_size_to_request_bytes=100000, max_items=10)
         hashes = list(hashes)
-        self.assertEquals(len(hashes), 0)
+        self.assertEqual(len(hashes), 0)
 
     def test_single_tome_allowed(self):
         _insert_tome_with_file(self.merge_db, tome_fidelity=30, file_fidelity=30)
@@ -104,9 +104,9 @@ class TestGetHighFidelityTomeFileHashesWithoutLocalFile(unittest.TestCase):
             min_tome_fidelity=0, min_file_fidelity=0, max_file_size_to_request_bytes=100000, max_items=10)
         hashes = list(hashes)
 
-        self.assertEquals(len(hashes), 1)
+        self.assertEqual(len(hashes), 1)
         a = hashes[0]
-        self.assertEquals(a, 'hashf1')
+        self.assertEqual(a, 'hashf1')
 
     def test_single_tome_with_file_fidelity_to_low(self):
         _insert_tome_with_file(self.merge_db, tome_fidelity=30, file_fidelity=30)
@@ -115,7 +115,7 @@ class TestGetHighFidelityTomeFileHashesWithoutLocalFile(unittest.TestCase):
             min_tome_fidelity=0, min_file_fidelity=31, max_file_size_to_request_bytes=100000, max_items=10)
         hashes = list(hashes)
 
-        self.assertEquals(len(hashes), 0)
+        self.assertEqual(len(hashes), 0)
 
     def test_single_tome_with_tome_fidelity_to_low(self):
         _insert_tome_with_file(self.merge_db, tome_fidelity=30, file_fidelity=30)
@@ -124,7 +124,7 @@ class TestGetHighFidelityTomeFileHashesWithoutLocalFile(unittest.TestCase):
             min_tome_fidelity=31, min_file_fidelity=0, max_file_size_to_request_bytes=100000, max_items=10)
         hashes = list(hashes)
 
-        self.assertEquals(len(hashes), 0)
+        self.assertEqual(len(hashes), 0)
 
     def test_two_tomes_allowed(self):
         _insert_tome_with_file(self.merge_db, tome_fidelity=30, file_fidelity=30, tome_id=1, tome_guid="ag",
@@ -136,7 +136,7 @@ class TestGetHighFidelityTomeFileHashesWithoutLocalFile(unittest.TestCase):
             min_tome_fidelity=0, min_file_fidelity=0, max_file_size_to_request_bytes=100000, max_items=10)
         hashes = list(hashes)
 
-        self.assertEquals(len(hashes), 2)
+        self.assertEqual(len(hashes), 2)
 
     def test_max_items_reduces_output_size(self):
         _insert_tome_with_file(self.merge_db, tome_fidelity=30, file_fidelity=30, tome_id=1, tome_guid="ag",
@@ -148,7 +148,7 @@ class TestGetHighFidelityTomeFileHashesWithoutLocalFile(unittest.TestCase):
             min_tome_fidelity=0, min_file_fidelity=0, max_file_size_to_request_bytes=100000, max_items=1)
         hashes = list(hashes)
 
-        self.assertEquals(len(hashes), 1)
+        self.assertEqual(len(hashes), 1)
 
     def test_local_available_file_not_returned(self):
         _insert_tome_with_file(self.merge_db, tome_fidelity=30, file_fidelity=30, file_hash="h1")
@@ -159,7 +159,7 @@ class TestGetHighFidelityTomeFileHashesWithoutLocalFile(unittest.TestCase):
             min_tome_fidelity=0, min_file_fidelity=0, max_file_size_to_request_bytes=100000, max_items=10)
         hashes = list(hashes)
 
-        self.assertEquals(len(hashes), 0)
+        self.assertEqual(len(hashes), 0)
 
 
 class TestGetTomeDocument(unittest.TestCase):

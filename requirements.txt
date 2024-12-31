@@ -1,9 +1,11 @@
+argparse
+cryptography
+defusedxml
+ijson
+lxml
+psutil
 Pyro4
+serpent
 Twisted
 Whoosh
-argparse
-ijson
-psutil
-serpent
-defusedxml
 zope.interface

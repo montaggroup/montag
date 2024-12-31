@@ -23,7 +23,7 @@ class TestFileSendQueue(unittest.TestCase):
 
     def test_when_queue_is_empty_an_enqueue_call_leads_to_a_deliver_file_call(self):
         self.send_queue.enqueue('aaa')
-        self.assertEquals(self.session_mock.deliver_file.call_count, 1)
+        self.assertEqual(self.session_mock.deliver_file.call_count, 1)
 
     def test_when_sending_paused_on_an_empty_queue_an_enqueue_call_does_not_lead_to_a_deliver_file_call(self):
         self.send_queue.pause_sending()
