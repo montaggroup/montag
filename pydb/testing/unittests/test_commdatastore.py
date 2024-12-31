@@ -43,7 +43,7 @@ class TestCommDataActivateLocking(unittest.TestCase):
         self.cds.set_comm_data(self.a_friend_id, comm_data_dict)
         comm_data = self.cds.get_comm_data(self.a_friend_id)
         self.assertIn('secret', comm_data)
-        self.assertEquals(comm_data['secret'], u'öther_secret')
+        self.assertEqual(comm_data['secret'], u'öther_secret')
 
 
 class TestCommDataStoreUnlockWithoutLockingActive(unittest.TestCase):
@@ -90,7 +90,7 @@ class TestCommDataStoreUnlock(unittest.TestCase):
         self.cds.unlock(self.passphrase)
         comm_data = self.cds.get_comm_data(self.a_friend_id)
         self.assertIn('secret', comm_data)
-        self.assertEquals(comm_data['secret'], 'secret_comm_data')
+        self.assertEqual(comm_data['secret'], 'secret_comm_data')
         self.assertFalse(self.cds.is_locked())
 
     def test_unlock_wrong_secret(self):
@@ -103,7 +103,7 @@ class TestCommDataStoreUnlock(unittest.TestCase):
         self.cds.set_comm_data(self.a_friend_id, comm_data_dict)
         comm_data = self.cds.get_comm_data(self.a_friend_id)
         self.assertIn('secret', comm_data)
-        self.assertEquals(comm_data['secret'], u'öther_secret')
+        self.assertEqual(comm_data['secret'], u'öther_secret')
 
     def test_set_comm_data_without_unlock(self):
         comm_data_dict = {"secret": "öther_secret", "hostname": "ötherhost.org", "type": "tcp_aes", "port": 5678}

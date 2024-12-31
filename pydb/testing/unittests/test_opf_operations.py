@@ -29,13 +29,13 @@ class TestOpfOperations(unittest.TestCase):
         pass
 
     def _assert_is_metadata_correct(self, metadata):
-        self.assertEquals(metadata.title, "a title for test")
-        self.assertEquals(metadata.authors, ["one author", "another author"])
-        self.assertEquals(metadata.series, "a series for tests!")
-        self.assertEquals(metadata.series_index, "451")
-        self.assertEquals(metadata.title_sort, "title for test, a")
-        self.assertEquals(metadata.tags, ["tag1", "tag team"])
-        self.assertEquals(metadata.publication_year, 2012)
+        self.assertEqual(metadata.title, "a title for test")
+        self.assertEqual(metadata.authors, ["one author", "another author"])
+        self.assertEqual(metadata.series, "a series for tests!")
+        self.assertEqual(metadata.series_index, "451")
+        self.assertEqual(metadata.title_sort, "title for test, a")
+        self.assertEqual(metadata.tags, ["tag1", "tag team"])
+        self.assertEqual(metadata.publication_year, 2012)
 
     def test_reading_metadata_from_file(self):
         fd, filename = tempfile.mkstemp(prefix='pydb_test_opf')

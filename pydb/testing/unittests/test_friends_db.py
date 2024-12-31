@@ -17,13 +17,13 @@ class TestDeleteFriends(unittest.TestCase):
         self.friends_db.add_friend("a friend")
         f = self.friends_db.get_friend_by_name("a friend")
         self.assertIsNotNone(f)
-        self.assertEquals(f['name'], 'a friend')
+        self.assertEqual(f['name'], 'a friend')
 
     def test_add_returns_friend_id(self):
         friend_id = self.friends_db.add_friend("a friend")
         f = self.friends_db.get_friend(friend_id)
         self.assertIsNotNone(f)
-        self.assertEquals(f['name'], 'a friend')
+        self.assertEqual(f['name'], 'a friend')
 
     def test_remove_one(self):
         friend_id = self.friends_db.add_friend("a friend")

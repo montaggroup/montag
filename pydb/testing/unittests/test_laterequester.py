@@ -58,7 +58,7 @@ class TestLateRequester(unittest.TestCase):
         self.assertFalse(self.completion_callback.called)
         self.assertFalse(self.metadata_requester.activate.called)
         self.assertTrue(self.provider.activate.called)
-        self.assertEquals('providing', self.strategy_progress_tracker.reported_current_phase_name)
+        self.assertEqual('providing', self.strategy_progress_tracker.reported_current_phase_name)
 
     def test_provider_complete_triggers_metadata_requester(self):
         session = mock.MagicMock()
@@ -74,7 +74,7 @@ class TestLateRequester(unittest.TestCase):
                                                                  self.bulk_inserter,
                                                                  self.last_query_date_authors,
                                                                  self.last_query_date_tomes)
-        self.assertEquals('requesting_metadata', self.strategy_progress_tracker.reported_current_phase_name)
+        self.assertEqual('requesting_metadata', self.strategy_progress_tracker.reported_current_phase_name)
 
     def test_metadata_requester_complete_triggers_file_requester(self):
         session = mock.MagicMock()
@@ -87,7 +87,7 @@ class TestLateRequester(unittest.TestCase):
         self.file_requester.activate.assert_called_once_with(session, self.friend_id,
                                                              self.strategy.file_requester_completed,
                                                              self.strategy.any_requester_failed)
-        self.assertEquals('requesting_files', self.strategy_progress_tracker.reported_current_phase_name)
+        self.assertEqual('requesting_files', self.strategy_progress_tracker.reported_current_phase_name)
 
     def test_all_complete_triggers_completion_callback(self):
         session = mock.MagicMock()
@@ -98,7 +98,7 @@ class TestLateRequester(unittest.TestCase):
         self.strategy.file_requester_completed()
 
         self.completion_callback.assert_called_once_with()
-        self.assertEquals('completed', self.strategy_progress_tracker.reported_current_phase_name)
+        self.assertEqual('completed', self.strategy_progress_tracker.reported_current_phase_name)
 
     def test_all_complete_triggers_stop_providing_message(self):
         session = mock.MagicMock()
