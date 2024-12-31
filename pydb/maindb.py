@@ -1,4 +1,3 @@
-# coding=utf-8
 import os
 import uuid
 import time
@@ -8,18 +7,18 @@ import sqlite3 as sqlite
 import Pyro4
 import Pyro4.errors
 
-from mergedb import MergeDB
-from localdb import LocalDB
-from friendsdb import FriendsDB
-from foreigndb import ForeignDB
-from importerdb import ImporterDB
+from pydb.mergedb import MergeDB
+from pydb.localdb import LocalDB
+from pydb.friendsdb import FriendsDB
+from pydb.foreigndb import ForeignDB
+from pydb.importerdb import ImporterDB
 from pydb import FileType, TomeType, pyrosetup
-from sqlitedb import Transaction
+from pydb.sqlitedb import Transaction
 from contextlib import contextmanager
-from network_params import *
-import documents
-import databases
-import config
+from pydb.network_params import *
+from pydb import documents
+from pydb import databases
+from pydb import config
 
 
 logger = logging.getLogger(u'database')
@@ -88,7 +87,7 @@ class MainDB(object):
         del self.foreign_dbs[friend_id]
 
     def load_foreign_dbs(self):
-        for db in self.foreign_dbs.itervalues():
+        for db in self.foreign_dbs.values():
             self.merge_db.remove_source(db)
             db.close()
 
@@ -244,7 +243,7 @@ class MainDB(object):
 
         # @todo: this is not right as we have to distinguish between many items linked to the tome and not only one
         items = []
-        for friend_id, foreign_db in self.foreign_dbs.iteritems():
+        for friend_id, foreign_db in self.foreign_dbs.items():
             tome = foreign_db.get_tome_by_guid(tome_guid)
             if tome:
                 tome_id = tome['id']
@@ -288,7 +287,7 @@ class MainDB(object):
         local_doc = self.local_db.get_tome_document_by_guid(tome_guid, ignore_fidelity_filter=True)
 
         friends_docs = {}
-        for friend_id, foreign_db in self.foreign_dbs.iteritems():
+        for friend_id, foreign_db in self.foreign_dbs.items():
             friends_docs[friend_id] = foreign_db.get_tome_document_by_guid(tome_guid, ignore_fidelity_filter=True)
 
         result = {
@@ -306,7 +305,7 @@ class MainDB(object):
         local_doc = self.local_db.get_author_document_by_guid(author_guid, ignore_fidelity_filter=True)
 
         friends_docs = {}
-        for friend_id, foreign_db in self.foreign_dbs.iteritems():
+        for friend_id, foreign_db in self.foreign_dbs.items():
             friends_docs[friend_id] = foreign_db.get_author_document_by_guid(author_guid, ignore_fidelity_filter=True)
 
         result = {
@@ -343,7 +342,7 @@ class MainDB(object):
     def _update_search_index(self):
         try:
             self.index_server.update_index()
-        except Pyro4.errors.CommunicationError, e:
+        except Pyro4.errors.CommunicationError as e:
             logger.error(u'Unable to connect to index_server: %s' % e)
 
     def add_author(self, name, guid=None, date_of_birth=None, date_of_death=None, fidelity=None):
@@ -479,7 +478,7 @@ class MainDB(object):
         if file_name is not None:
             f['file_name'] = file_name
         else:
-            logger.warn(u'No file name for pending file {} found'.format(hash_))
+            logger.warning(u'No file name for pending file {} found'.format(hash_))
             f['file_name'] = ''
 
     def _add_file_extension(self, f):
@@ -488,7 +487,7 @@ class MainDB(object):
         if local_file is not None:
             f['file_extension'] = local_file['file_extension']
         else:
-            logger.warn(u'No local file for pending file {} found'.format(hash_))
+            logger.warning(u'No local file for pending file {} found'.format(hash_))
             f['file_extension'] = ''
 
     def get_import_file_state(self, file_hash):
@@ -512,7 +511,7 @@ class MainDB(object):
         affected_tome_guids.update([self.local_db.tome_id_to_guid(tome_id) for tome_id in affected_tome_ids])
 
         # update foreign dbs
-        for friend_id, db in self.foreign_dbs.iteritems():
+        for friend_id, db in self.foreign_dbs.items():
             affected_tome_ids = db.apply_file_hash_translation(source_hash, target_hash)
             affected_tome_guids.update([db.tome_id_to_guid(tome_id) for tome_id in affected_tome_ids])
             logger.info(u'%d tomes affected in friend db %d', len(affected_tome_ids), friend_id)
@@ -691,13 +690,13 @@ class MainDB(object):
                         logger.debug(u'Trying to apply tome %s from friend %d.' % (tome_guid, friend_id))
                         logger.debug(u'Content: %s', repr(tome_doc))
                         db.apply_tome_document(tome_doc)
-                    except KeyError, e:
+                    except KeyError as e:
                         friend = self.get_friend(friend_id)
                         logger.error(
                             'Caught KeyError %s while trying to insert tome %s from friend %s (%d). '
                             'Skipping tome import.\nTB %s' % (
                                 repr(e), tome_guid, friend['name'], friend_id, traceback.format_exc()))
-                    except sqlite.IntegrityError, e:
+                    except sqlite.IntegrityError as e:
                         friend = self.get_friend(friend_id)
                         logger.error(
                             'Caught IntegrityError %s while trying to insert tome %s from friend %s (%d). '
@@ -794,7 +793,7 @@ class MainDB(object):
             for local_file in self.local_db.get_all_local_files():
                 self.merge_db.insert_local_file(local_file)
 
-            dbs = [self.local_db] + self.foreign_dbs.values()
+            dbs = [self.local_db] + list(self.foreign_dbs.values())
 
             logger.info(u'Rebuilding authors')
             all_author_guids = set()
@@ -829,7 +828,7 @@ class MainDB(object):
             self.local_db.commit()
         with collect_transaction_errors('merge'):
             self.merge_db.commit()
-        for db in self.foreign_dbs.itervalues():
+        for db in self.foreign_dbs.values():
             with collect_transaction_errors('foreign'):
                 db.commit()
         with collect_transaction_errors('friend'):
@@ -855,7 +854,7 @@ class MainDB(object):
             'local_db': self.local_db.check_for_consistency_problems()
         }
 
-        for friend_id, db in self.foreign_dbs.iteritems():
+        for friend_id, db in self.foreign_dbs.items():
             friend = self.get_friend(friend_id)
             friend_key = 'friend_{}'.format(friend['name'])
             result[friend_key] = db.check_for_consistency_problems()
@@ -968,11 +967,12 @@ class MainDB(object):
         def filter_tomes(candidates, field_name, value_to_find, strict=False):
             if value_to_find is None and not strict:
                 return candidates
-            value_to_find = unicode(value_to_find).lower()
+            if value_to_find is not None:
+                value_to_find = str(value_to_find).lower()
             if strict:
-                return filter(lambda t: unicode(t[field_name]).lower() == value_to_find, candidates)
+                return list(filter(lambda t: t[field_name] == value_to_find or str(t[field_name]).lower() == value_to_find, candidates))
             else:
-                return filter(lambda t: t[field_name] is None or unicode(t[field_name]).lower() == value_to_find, candidates)
+                return list(filter(lambda t: t[field_name] is None or str(t[field_name]).lower() == value_to_find, candidates))
 
         logger.debug(u'Looking for: {} {} by {}'.format(title, language, author_ids))
         tome_candidates = self.find_tomes_by_title(title, language, author_ids, subtitle)
@@ -1030,7 +1030,7 @@ class MainDB(object):
         min_foreign_fidelity = None
         max_foreign_fidelity = None
 
-        for friend_id, db in self.foreign_dbs.iteritems():
+        for friend_id, db in self.foreign_dbs.items():
             friend_tome = db.get_tome_by_guid(tome_guid)
 
             if friend_tome:
@@ -1053,7 +1053,7 @@ class MainDB(object):
         item_guid = merge_db_item['guid']
 
         items_from_friends = []
-        for friend_id, foreign_db in self.foreign_dbs.iteritems():
+        for friend_id, foreign_db in self.foreign_dbs.items():
             friend_item = foreign_db.get_tome_by_guid(item_guid)
             if friend_item:
                 items_from_friends.append(friend_item)
@@ -1067,7 +1067,7 @@ class MainDB(object):
         item_guid = merge_db_item['guid']
 
         items_from_friends = []
-        for friend_id, foreign_db in self.foreign_dbs.iteritems():
+        for friend_id, foreign_db in self.foreign_dbs.items():
             friend_item = foreign_db.get_author_by_guid(item_guid)
             if friend_item:
                 items_from_friends.append(friend_item)
@@ -1098,7 +1098,7 @@ class MainDB(object):
         new_tome_doc = self.get_tome_document_by_guid(target_guid, hide_private_tags=False)
 
         if data_tome != target_tome:  # copy data from data tome over
-            for key, value in data_tome.iteritems():
+            for key, value in data_tome.items():
                 if key in new_tome_doc:
                     if key.lower() != "guid":
                         new_tome_doc[key] = data_tome[key]
@@ -1125,7 +1125,7 @@ class MainDB(object):
         new_author_doc = self.get_author_document_by_guid(target_guid)
 
         if data_author != target_author:  # copy data from data author over
-            for key, value in data_author.iteritems():
+            for key, value in data_author.items():
                 if key in new_author_doc:
                     if key.lower() != "guid":
                         new_author_doc[key] = data_author[key]

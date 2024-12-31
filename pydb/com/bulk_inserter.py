@@ -1,4 +1,3 @@
-# coding=utf-8
 default_queue_limit = 1000
 
 

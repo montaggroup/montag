@@ -1,4 +1,3 @@
-# coding=utf-8
 import whooshindex
 import indexthread
 import os

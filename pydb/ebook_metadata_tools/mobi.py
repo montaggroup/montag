@@ -1,4 +1,3 @@
-# coding=utf-8
 #  0.1 - based on code from exthupd.py 0.26
 # which is based on mobiunpack http://www.mobileread.com/forums/showthread.php?t=61986
 
@@ -59,7 +58,7 @@ def _write_new_header(outstream, sect, diff, new_exthhdr, new_mobihdr, palmdoc):
     index, = sect.indices[0:1]
     outstream.write(struct.pack('>L', before))
     outstream.write(struct.pack('>L', index))
-    for i in xrange(1, sect.num_sections):
+    for i in range(1, sect.num_sections):
         before, after = sect.sections[i:i + 2]
         index, = sect.indices[i:i + 1]
         outstream.write(struct.pack('>L', before + diff))
@@ -68,7 +67,7 @@ def _write_new_header(outstream, sect, diff, new_exthhdr, new_mobihdr, palmdoc):
     outstream.write(palmdoc)
     outstream.write(new_mobihdr)
     outstream.write(new_exthhdr)
-    for i in xrange(1, sect.num_sections):
+    for i in range(1, sect.num_sections):
         data = sect.load_section(i)
         outstream.write(data)
 
@@ -140,8 +139,8 @@ def clear_metadata(instream, outstream, new_title=""):
 
 
 def clear_metadata_from_file(infile, outfile, new_title=""):
-    instream = file(infile, 'rb')
-    outstream = file(outfile, 'wb')
+    instream = open(infile, 'rb')
+    outstream = open(outfile, 'wb')
     clear_metadata(instream, outstream, new_title)
 
     instream.close()
@@ -192,8 +191,8 @@ if __name__ == "__main__":
         try:
             clear_metadata_from_file(infile, outfile, "some_short_title")
 
-        except ValueError, e:
-            print "error: {}".format(e)
+        except ValueError as e:
+            print("error: {}".format(e))
             return 1
 
         return 0

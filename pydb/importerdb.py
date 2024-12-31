@@ -1,7 +1,6 @@
-# coding=utf-8
 import sqlite3 as sqlite
 import logging
-import sqlitedb
+from pydb import sqlitedb
 import time
 import json
 

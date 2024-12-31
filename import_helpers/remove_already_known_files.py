@@ -1,4 +1,4 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3
 
 import argparse
 import logging
@@ -22,7 +22,7 @@ def already_known_book(filepath):
     try:
         return file_server.is_file_known(abspath, extension)
     except ValueError:
-        print "Ex"
+        print("Ex")
         return False
 
 

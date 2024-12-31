@@ -1,7 +1,6 @@
-# coding=utf-8
 from twisted.internet.protocol import Factory
 from twisted.internet.endpoints import TCP4ClientEndpoint
-from tcptransportprotocol import build_tcp_transport_protocol
+from pydb.com.transport.tcptransportprotocol import build_tcp_transport_protocol
 import logging
 
 logger = logging.getLogger('tcpclient')

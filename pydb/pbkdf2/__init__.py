@@ -77,11 +77,12 @@ def pbkdf2_hmac(hash_name, password, salt, iterations, dklen=None):
     if not isinstance(hash_name, _string_type):
         raise TypeError(hash_name)
 
+    # todo PYTHON3: replace with current one
     # explicit unicode conversion, otherwise error on 2.7.3
-    if isinstance(password, unicode):
+    if isinstance(password, str):
         password = password.encode('utf-8')
 
-    if isinstance(salt, unicode):
+    if isinstance(salt, str):
         salt = salt.encode('utf-8')
 
     # no unicode, memoryview and other bytes-like objects are too hard to

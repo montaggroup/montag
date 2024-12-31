@@ -1,4 +1,3 @@
-# coding=utf-8
 import unittest
 import pydb.com.strategies.only_requester
 import mock

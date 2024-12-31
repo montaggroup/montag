@@ -1,4 +1,3 @@
-# coding=utf-8
 import unittest
 import logging
 import mock
@@ -27,7 +26,7 @@ def build_friend(id_, name, add_secret=False, secret=None):
 
 
 def build_message(nonce_a, secret):
-    message_first_64 = '0' * 64
+    message_first_64 = b'0' * 64
     _, preshared_secret_kex_hmac = aeshmacsecurechannel.preshared_secrets_from_passphrase(secret)
     message_second_64 = aeshmacsecurechannel.calc_hmac(preshared_secret_kex_hmac, nonce_a + message_first_64)
 

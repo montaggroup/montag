@@ -1,4 +1,3 @@
-# coding=utf-8
 import unittest
 from pydb import opf
 import os
@@ -8,7 +7,7 @@ import tempfile
 class TestOpfOperations(unittest.TestCase):
     def setUp(self):
         self.reference_opf_string = \
-            """<?xml version='1.0' encoding='utf-8'?>
+            b"""<?xml version='1.0' encoding='utf-8'?>
                <package xmlns="http://www.idpf.org/2007/opf" unique-identifier="uuid_id">
                    <metadata xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:opf="http://www.idpf.org/2007/opf">
                        <dc:identifier opf:scheme="opf" id="opf_id">123</dc:identifier>
@@ -56,7 +55,7 @@ class TestOpfReadBack(unittest.TestCase):
     def test_read_back_edition(self):
         self.md.edition = 'my edition'
         xml = self.md.to_opf_string()
-        print xml
+        print(xml)
 
         read_back = opf.read_metadata_from_string(xml)
         self.assertEqual(read_back.edition, 'my edition')

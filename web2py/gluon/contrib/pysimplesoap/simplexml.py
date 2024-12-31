@@ -333,7 +333,7 @@ class SimpleXMLElement(object):
             if not elements:
                 #log.debug(self._element.toxml())
                 if error:
-                    raise AttributeError(u"No elements found")
+                    raise AttributeError("No elements found")
                 else:
                     return
             return SimpleXMLElement(
@@ -343,7 +343,7 @@ class SimpleXMLElement(object):
                 prefix=self.__prefix,
                 namespaces_map=self.__namespaces_map)
         except AttributeError, e:
-            raise AttributeError(u"Tag not found: %s (%s)" % (tag, unicode(e)))
+            raise AttributeError("Tag not found: %s (%s)" % (tag, unicode(e)))
 
     def __getattr__(self, tag):
         "Shortcut for __call__"
@@ -445,7 +445,7 @@ class SimpleXMLElement(object):
                     xsd_type = node['xsi:type'].split(":")[1]
                     fn = REVERSE_TYPE_MAP[xsd_type]
                 elif strict:
-                    raise TypeError(u"Tag: %s invalid (type not found)" % (name,))
+                    raise TypeError("Tag: %s invalid (type not found)" % (name,))
                 else:
                     # if not strict, use default type conversion
                     fn = unicode
@@ -496,7 +496,7 @@ class SimpleXMLElement(object):
                         else:
                             value = fn(unicode(node))
                     except (ValueError, TypeError), e:
-                        raise ValueError(u"Tag: %s: %s" % (name, unicode(e)))
+                        raise ValueError("Tag: %s: %s" % (name, unicode(e)))
                 else:
                     value = None
             d[name] = value

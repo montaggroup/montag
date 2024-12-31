@@ -1,12 +1,11 @@
-# coding=utf-8
 import logging
 
-from json_and_binary_session import JsonAndBinarySession
-from transport.tcpserver import TcpServer
-from securechannel.aeshmacsecurechannel import AesHmacSecureChannel
-import master_strategy
-import bulk_inserter
-from .. import pyrosetup
+from pydb.com.json_and_binary_session import JsonAndBinarySession
+from pydb.com.transport.tcpserver import TcpServer
+from pydb.com.securechannel.aeshmacsecurechannel import AesHmacSecureChannel
+from pydb.com import master_strategy
+from pydb.com import bulk_inserter
+from pydb import pyrosetup
 
 logger = logging.getLogger("com.server")
 

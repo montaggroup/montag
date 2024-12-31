@@ -1,9 +1,8 @@
-# coding=utf-8
 import threading
 import os
 from pydb import mergedb
-from network_params import relevant_items, relevant_links
-import whooshindex
+from pydb.network_params import relevant_items, relevant_links
+from pydb import whooshindex
 import json
 import logging
 
@@ -154,5 +153,5 @@ class ProgressFile(object):
     def persist_mod_dates(self, min_mod_date_tomes, min_mod_date_authors):
         wp = {'min_mod_date_tomes': min_mod_date_tomes,
               'min_mod_date_authors': min_mod_date_authors}
-        json.dump(wp, open(self.progress_file_name, 'wb'))
+        json.dump(wp, open(self.progress_file_name, 'w'))
 

@@ -98,7 +98,7 @@ class SoapClient(object):
         if cacert and cacert.startswith("-----BEGIN CERTIFICATE-----"):
             fd, filename = tempfile.mkstemp()
             f = os.fdopen(fd, 'w+b', -1)
-            if self.trace: log.info(u"Saving CA certificate to %s" % filename)
+            if self.trace: log.info("Saving CA certificate to %s" % filename)
             f.write(cacert)
             cacert = filename
             f.close()

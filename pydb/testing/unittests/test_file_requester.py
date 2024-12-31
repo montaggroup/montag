@@ -1,4 +1,3 @@
-# coding=utf-8
 import unittest
 import pydb.com.file_requester
 import mock
@@ -43,26 +42,26 @@ class TestFileRequester(unittest.TestCase):
         self.requester.activate(self.session, self.friend_id, self.callback, self.failure_callback)
 
         self.session.request_file.assert_any_call('hash1')
-        self.requester.command_deliver_file_received('hash1', 'ext1', 'c1', False)
+        self.requester.command_deliver_file_received('hash1', 'ext1', b'c1', False)
 
         self.session.request_file.assert_any_call('hash2')
-        self.requester.command_deliver_file_received('hash2', 'ext1', 'c1', False)
+        self.requester.command_deliver_file_received('hash2', 'ext1', b'c1', False)
 
         self.session.request_file.assert_any_call('hash3')
-        self.requester.command_deliver_file_received('hash3', 'ext1', 'c1', False)
+        self.requester.command_deliver_file_received('hash3', 'ext1', b'c1', False)
 
         self.session.request_file.assert_any_call('hash4')
-        self.requester.command_deliver_file_received('hash4', 'ext1', 'c1', False)
+        self.requester.command_deliver_file_received('hash4', 'ext1', b'c1', False)
 
         self.session.request_file.assert_any_call('hash5')
-        self.requester.command_deliver_file_received('hash5', 'ext1', 'c1', False)
+        self.requester.command_deliver_file_received('hash5', 'ext1', b'c1', False)
 
         self.session.request_file.assert_any_call('hash6')
-        self.requester.command_deliver_file_received('hash6', 'ext1', 'c1', False)
+        self.requester.command_deliver_file_received('hash6', 'ext1', b'c1', False)
 
         self.assertFalse(self.callback.call_count)
         self.session.request_file.assert_any_call('hash7')
-        self.requester.command_deliver_file_received('hash7', 'ext1', 'c1', False)
+        self.requester.command_deliver_file_received('hash7', 'ext1', b'c1', False)
         self.callback.assert_called_once_with()
 
 
@@ -101,7 +100,7 @@ class TestFileRequesterLocking(unittest.TestCase):
         self.requester.activate(self.session, self.friend_id, self.callback, self.failure_callback)
 
         for hash_ in hashes:
-            self.requester.command_deliver_file_received(hash_, 'ext1', 'c1', False)
+            self.requester.command_deliver_file_received(hash_, 'ext1', b'c1', False)
 
         for hash_ in hashes:
             self.comservice.lock_file_for_fetching.assert_any_call(hash_)
@@ -116,7 +115,7 @@ class TestFileRequesterLocking(unittest.TestCase):
         self.requester.activate(self.session, self.friend_id, self.callback, self.failure_callback)
 
         for hash_ in hashes[0:3]:
-            self.requester.command_deliver_file_received(hash_, 'ext1', 'c1', False)
+            self.requester.command_deliver_file_received(hash_, 'ext1', b'c1', False)
         self.requester.session_failed('aborted')
 
         for hash_ in hashes[0:3]:
@@ -133,7 +132,7 @@ class TestFileRequesterLocking(unittest.TestCase):
         self.requester.activate(self.session, self.friend_id, self.callback, self.failure_callback)
 
         for hash_ in hashes:
-            self.requester.command_deliver_file_received(hash_, 'ext1', "", False)
+            self.requester.command_deliver_file_received(hash_, 'ext1', b"", False)
 
         for hash_ in hashes:
             self.comservice.release_file_after_fetching.assert_any_call(hash_, success=False)

@@ -1,14 +1,13 @@
-# coding=utf-8
 import logging
 import os
 import shutil
 import hashlib
-import ebook_metadata_tools
+from pydb import ebook_metadata_tools
 import tempfile
 
 logger = logging.getLogger('file_store')
 
-import disk_usage
+from pydb import disk_usage
 from pydb import assert_hash
 
 
@@ -32,14 +31,14 @@ class FileStore(object):
         if size == 0:
             raise ValueError("File to add is zero bytes large")
 
-        logger.debug(u"Hash is " + file_hash)
+        logger.debug("Hash is " + file_hash)
 
         cache_path = self._calculate_cache_path(file_hash) + '.' + extension
-        logger.debug(u"Cache path is " + cache_path)
+        logger.debug("Cache path is " + cache_path)
 
         if move_file:
             if not os.path.exists(cache_path):
-                logger.debug(u"move from {} to {} .".format(source_path, cache_path))
+                logger.debug("move from {} to {} .".format(source_path, cache_path))
                 # noinspection PyBroadException
                 try:
                     shutil.move(source_path, cache_path)
@@ -48,23 +47,23 @@ class FileStore(object):
             else:
                 old_hash = hash_file(cache_path)
                 if old_hash != file_hash:
-                    logger.info(u"Old hash in file_store {} doesn't match the actual hash {} overwriting."
+                    logger.info("Old hash in file_store {} doesn't match the actual hash {} overwriting."
                                 .format(old_hash, file_hash))
                     os.remove(cache_path)
                     shutil.move(source_path, cache_path)
         else:
             if not os.path.exists(cache_path):
-                logger.debug(u"copy from {} to {} .".format(source_path, cache_path))
+                logger.debug("copy from {} to {} .".format(source_path, cache_path))
                 shutil.copyfile(source_path, cache_path)
             else:
                 old_hash = hash_file(cache_path)
                 if old_hash != file_hash:
-                    logger.info(u"Old hash in file_store {} doesn't match the actual hash {} overwriting."
+                    logger.info("Old hash in file_store {} doesn't match the actual hash {} overwriting."
                                 .format(old_hash, file_hash))
                     shutil.copyfile(source_path, cache_path)
 
         if size != os.path.getsize(cache_path):
-            raise ValueError(u"File sizes after insert do not match: {} bytes in file to insert, "
+            raise ValueError("File sizes after insert do not match: {} bytes in file to insert, "
                              "{} bytes in store. Cache path is {}"
                              .format(size, os.path.getsize(cache_path), cache_path))
 
@@ -92,7 +91,8 @@ class FileStore(object):
 
 
 def hash_file(path):
-    return hash_stream(open(path, 'rb'))
+    with open(path, "rb") as stream:
+        return hash_stream(stream)
 
 
 def hash_stream(stream):
@@ -120,7 +120,7 @@ def strip_file_to_temp(source_path, extension_without_dot, remove_original=False
         and raises an exception if the source file is broken
     """
     (handle_stripped, filename_stripped) = tempfile.mkstemp(prefix='pydb_strip', suffix='.' + extension_without_dot)
-    logger.debug(u"Stripping to file {}".format(filename_stripped))
+    logger.debug("Stripping to file {}".format(filename_stripped))
 
     success = False
     try:

@@ -1,4 +1,3 @@
-# coding=utf-8
 import pydb
 import pydb.basedb
 import time

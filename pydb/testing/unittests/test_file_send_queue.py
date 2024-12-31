@@ -1,4 +1,3 @@
-# coding=utf-8
 import unittest
 import pydb.com.file_send_queue
 import mock

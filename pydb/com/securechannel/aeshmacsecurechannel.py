@@ -1,14 +1,13 @@
-# coding=utf-8
 import zlib
 import pydb.crypto
 
 import logging
-from aeshmac_common import *
+from pydb.com.securechannel.aeshmac_common import *
 
 logger = logging.getLogger('secure_channel')
 
-FLAG_COMPRESSED = 'C'
-FLAG_UNCOMPRESSED = 'U'
+FLAG_COMPRESSED = b'C'
+FLAG_UNCOMPRESSED = b'U'
 
 
 # NOT YET EXTERNALLY REVIEWED FOR HIGH LEVEL SECURITY!
@@ -97,7 +96,7 @@ class AesHmacSecureChannel(object):
             if calculated_hmac != contained_hmac:
                 raise Exception("Message HMAC verification failed!")
 
-            compression_flag = message_payload[0]
+            compression_flag = bytes([message_payload[0]])
             if compression_flag == FLAG_UNCOMPRESSED:
                 decompressed_message = message_payload[1:]
             else:
@@ -122,7 +121,7 @@ class AesHmacSecureChannel(object):
     def transport_channel_lost(self, reason):
         self.upper_layer.secure_channel_lost(reason)
 
-    def _client_message_received(self, message):
+    def _client_message_received(self, message:bytes):
         if self.state == "kex_waiting_on_nonceA":
             self.nonce_a = message
             self.nonce_b = get_nonce_512()
@@ -202,7 +201,7 @@ class AesHmacSecureChannel(object):
         self.session_cipher_incoming = pydb.crypto.AesCtr(session_secret_cipher_incoming)
 
         logger.info(u'Established@{} session_cipher_secret: {}... '.format(
-            self.role, session_secret_cipher.encode('hex_codec')[:4]))
+            self.role, session_secret_cipher.hex()[:4]))
 
     def pause_producing(self):
         self.upper_layer.pause_producing()

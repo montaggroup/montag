@@ -1,4 +1,3 @@
-# coding=utf-8
 import imp
 import sys
 import re

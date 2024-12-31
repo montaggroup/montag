@@ -1,14 +1,13 @@
-# coding=utf-8
-import friendsdb
+from pydb import friendsdb
 import os
-import pbkdf2
-import com.securechannel.aeshmac_common
-import crypto
+from pydb import pbkdf2
+import pydb.com.securechannel.aeshmac_common
+import pydb.crypto
 import json
 import base64
 
-_canary_clear_text = "birdie"
-_canary_friend_id = -1  # should not clash with an existing friend id
+_canary_clear_text = b"birdie"
+_canary_friend_id = "-1"  # should not clash with an existing friend id
 
 hash_fcn = 'sha512'
 default_iteration_count = 60000
@@ -85,7 +84,7 @@ class CommDataStore(object):
         locking_info = self._friends_db.get_locking_info()
         salt = locking_info['salt']
         iteration_count = locking_info['iteration_count']
-        encrypted_canary = str(locking_info['encrypted_canary'])
+        encrypted_canary = locking_info['encrypted_canary']
 
         key = _derive_key(passphrase, salt, iteration_count)
         encrypted_canary_test = _encrypt(_canary_clear_text, key, _canary_friend_id)
@@ -98,14 +97,14 @@ class CommDataStore(object):
 
 
 def _encrypt(content, key, friend_id):
-    effective_key = com.securechannel.aeshmac_common.calc_hmac(key, str(friend_id))
-    aes_ctr_instance = crypto.AesCtr(effective_key[:32])
+    effective_key = pydb.com.securechannel.aeshmac_common.calc_hmac(key, str(friend_id).encode('utf-8'))
+    aes_ctr_instance = pydb.crypto.AesCtr(effective_key[:32])
     return aes_ctr_instance.encrypt(content)
 
 
 def _decrypt(ciphertext, key, friend_id):
-    effective_key = com.securechannel.aeshmac_common.calc_hmac(key, str(friend_id))
-    aes_ctr_instance = crypto.AesCtr(effective_key[:32])
+    effective_key = pydb.com.securechannel.aeshmac_common.calc_hmac(key, str(friend_id).encode('utf-8'))
+    aes_ctr_instance = pydb.crypto.AesCtr(effective_key[:32])
     return aes_ctr_instance.decrypt(ciphertext)
 
 

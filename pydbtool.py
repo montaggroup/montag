@@ -1,7 +1,5 @@
-#!/usr/bin/env python2.7
-# coding=utf-8
+#!/usr/bin/env python3
 
-import Pyro4
 import Pyro4.util
 import argparse
 import os
@@ -11,13 +9,14 @@ import ijson
 import tempfile
 import subprocess
 import shutil
-import pydb.title
 import pydb.com.client
-import pydb.serverlauncher as server
-import logging
-import pydb.pyrosetup
-import getpass
 import pydb.com.master_strategy
+import pydb.pyrosetup
+import pydb.serverlauncher as server
+import pydb.title
+import logging
+
+import getpass
 
 logging.basicConfig(level=logging.DEBUG)
 sys.excepthook = Pyro4.util.excepthook
@@ -31,49 +30,49 @@ INSERT_BATCH_SIZE = 50
 # noinspection PyUnusedLocal
 def do_print_stats(args, db):
     merge_stats = db().get_merge_statistics()
-    print "\nmerge.db contains:"
-    print "=================="
+    print("\nmerge.db contains:")
+    print("==================")
     for key in merge_stats:
-        print u'{1} {0}.'.format(key, merge_stats[key])
+        print('{1} {0}.'.format(key, merge_stats[key]))
 
     local_stats = db().get_local_statistics()
-    print "\nlocal.db contains:"
-    print "=================="
+    print("\nlocal.db contains:")
+    print("==================")
     for key in local_stats:
-        print u'{1} {0}.'.format(key, local_stats[key])
+        print('{1} {0}.'.format(key, local_stats[key]))
 
 
 def do_add_friend(args, db):
     friend_name = args.friend_name
     db().add_friend(friend_name)
-    print u'Friend {} added'.format(friend_name)
+    print('Friend {} added'.format(friend_name))
 
 
 def do_remove_friend(args, db):
     friend_name = args.friend_name
     friend = db().get_friend_by_name(friend_name)
     if not friend:
-        print >> sys.stderr, "No friend by that name, check your spelling or create a new friend using add_friend"
+        print("No friend by that name, check your spelling or create a new friend using add_friend", file=sys.stderr)
         return False
     friend_id = friend['id']
 
     db().remove_friend(friend_id)
 
-    print u'Friend {} removed'.format(friend_name)
+    print('Friend {} removed'.format(friend_name))
 
 
 # noinspection PyUnusedLocal
 def do_list_friends(args, db):
     friends = db().get_friends()
     for friend in friends:
-        print "%-3d %-20s" % (friend['id'], friend['name'])
+        print("%-3d %-20s" % (friend['id'], friend['name']))
 
 
 def print_tome_details(tome_fields):
     title = pydb.title.coalesce_title(tome_fields['title'], tome_fields['subtitle'])
-    print title
-    print "   " + "  ".join(
-        ["%s: %s" % (k, v) for (k, v) in tome_fields.iteritems() if k != 'title' and k != 'subtitle' and v])
+    print(title)
+    print("   " + "  ".join(
+        ["%s: %s" % (k, v) for (k, v) in list(tome_fields.items()) if k != 'title' and k != 'subtitle' and v]))
 
 
 def do_db_search(args, db):
@@ -84,7 +83,7 @@ def do_db_search(args, db):
         for tome_fields in result_tomes:
             tomes[tome_fields['id']] = tome_fields
 
-    for tome_id in tomes.keys():
+    for tome_id in list(tomes.keys()):
         print_tome_details(tomes[tome_id])
 
 
@@ -109,23 +108,23 @@ def do_service_fetch_updates(args, db):
     friend_name = args.friend_name
     friend = db().get_friend_by_name(friend_name)
     if not friend:
-        print >> sys.stderr, "No friend by that name, check your spelling or create a new friend using add_friend"
+        print("No friend by that name, check your spelling or create a new friend using add_friend", file=sys.stderr)
         return False
     friend_id = friend['id']
 
     com_service = pydb.pyrosetup.comservice()
     job_id = com_service.fetch_updates_from_friend(friend_id)
-    print u'Update started, job id is {}'.format(job_id)
+    print('Update started, job id is {}'.format(job_id))
 
 
 # noinspection PyUnusedLocal
 def do_service_list_jobs(args, db):
     com_service = pydb.pyrosetup.comservice()
     number = com_service.get_number_of_running_jobs()
-    print u'{} jobs running'.format(number)
+    print('{} jobs running'.format(number))
 
     job_information_list = com_service.get_job_list()
-    print "ID  Name                      Friend            Running  Current Phase    Progress"
+    print("ID  Name                      Friend            Running  Current Phase    Progress")
     for job_info in job_information_list:
         job_id = job_info['id']
         friend = db().get_friend(job_info['friend_id'])
@@ -133,10 +132,10 @@ def do_service_list_jobs(args, db):
 
         progress = "Unknown"
         if items_to_do >= 0:
-            progress = u'{}/{}'.format(items_done, items_to_do)
+            progress = '{}/{}'.format(items_done, items_to_do)
 
-        print u'{:<3} {:<25} {:<17} {:<7} {:<16} {}'.format(job_id, job_info['name'], friend['name'],
-                                                            job_info['is_running'], job_info['current_phase'], progress)
+        print('{:<3} {:<25} {:<17} {:<7} {:<16} {}'.format(job_id, job_info['name'], friend['name'],
+                                                            job_info['is_running'], job_info['current_phase'], progress))
 
 
 # noinspection PyUnusedLocal
@@ -150,31 +149,31 @@ def do_import(args, db):
     friend_name = args.friend_name
     friend = pdb.get_friend_by_name(friend_name)
     if not friend:
-        print >> sys.stderr, "No friend by that name, check your spelling or create a new friend using add_friend"
+        print("No friend by that name, check your spelling or create a new friend using add_friend", file=sys.stderr)
         return False
     friend_id = friend['id']
 
-    print "Importing Authors"
+    print("Importing Authors")
     with open(args.file_name) as import_file:
         authors_to_insert = []
         author_docs = ijson.items(import_file, 'authors.item')
         for author_doc in author_docs:
             authors_to_insert.append(author_doc)
             if len(authors_to_insert) >= INSERT_BATCH_SIZE:
-                print "."
+                print(".")
                 pdb.load_author_documents_from_friend(friend_id, authors_to_insert)
                 authors_to_insert = []
         if authors_to_insert:
             pdb.load_author_documents_from_friend(friend_id, authors_to_insert)
 
-    print "Importing Tomes"
+    print("Importing Tomes")
     with open(args.file_name) as import_file:
         tomes_to_insert = []
         tome_docs = ijson.items(import_file, 'tomes.item')
         for tome_doc in tome_docs:
             tomes_to_insert.append(tome_doc)
             if len(tomes_to_insert) >= INSERT_BATCH_SIZE:
-                print "."
+                print(".")
                 pdb.load_tome_documents_from_friend(friend_id, tomes_to_insert)
                 tomes_to_insert = []
 
@@ -187,7 +186,7 @@ def do_set_comm_data_tcp_plain(args, db):
     friend_name = args.friend_name
     friend = db().get_friend_by_name(friend_name)
     if not friend:
-        print >> sys.stderr, "No friend by that name, check your spelling or create a new friend using add_friend"
+        print("No friend by that name, check your spelling or create a new friend using add_friend", file=sys.stderr)
         return False
     friend_id = friend['id']
 
@@ -200,7 +199,7 @@ def do_set_comm_data_tcp_aes(args, db):
     friend_name = args.friend_name
     friend = db().get_friend_by_name(friend_name)
     if not friend:
-        print >> sys.stderr, "No friend by that name, check your spelling or create a new friend using add_friend"
+        print("No friend by that name, check your spelling or create a new friend using add_friend", file=sys.stderr)
         return False
     friend_id = friend['id']
 
@@ -212,20 +211,20 @@ def do_import_self(args, db):
     with open(args.file_name) as import_file:
         author_docs = ijson.items(import_file, 'authors.item')
         for author_doc in author_docs:
-            print "Author: ", author_doc
+            print("Author: ", author_doc)
             db().load_own_author_document(author_doc)
 
     with open(args.file_name) as import_file:
         tome_docs = ijson.items(import_file, 'tomes.item')
         for tome_doc in tome_docs:
-            print "Tome: ", tome_doc
+            print("Tome: ", tome_doc)
             db().load_own_tome_document(tome_doc)
 
 
 def let_user_edit_document(doc, always_discard=False, detect_unchanged=True):
     (fd, filename) = tempfile.mkstemp(prefix='pydb_edit')
 
-    with os.fdopen(fd, "wb") as doc_file:
+    with os.fdopen(fd, "w") as doc_file:
         text_content = json.dumps(doc, indent=json_indent, separators=json_separators)
         doc_file.write(text_content)
 
@@ -236,16 +235,16 @@ def let_user_edit_document(doc, always_discard=False, detect_unchanged=True):
             with open(filename) as doc_file:
                 file_content = doc_file.read()
                 if always_discard or (file_content.strip() == text_content.strip() and detect_unchanged):
-                    print "Document unchanged, aborting edit"
+                    print("Document unchanged, aborting edit")
                     return None
 
                 edited_doc = json.loads(file_content)
-                raw_input("Parsed successfully. Hit Enter to save, ctrl-c to abort... ")
-                print "Saved."
+                input("Parsed successfully. Hit Enter to save, ctrl-c to abort... ")
+                print("Saved.")
                 return edited_doc
-        except ValueError, e:
-            print "Json error: ", e
-            raw_input("Hit Enter to edit, ctrl-c to abort... ")
+        except ValueError as e:
+            print("Json error: ", e)
+            input("Hit Enter to edit, ctrl-c to abort... ")
 
 
 def do_edit_author(args, db):
@@ -276,19 +275,19 @@ def do_merge_db_tome_update(args, db):
 def do_show_tome_debug_info(args, db):
     doc = db().get_debug_info_for_tome_by_guid(args.guid)
 
-    print json.dumps(doc, indent=json_indent, separators=json_separators)
+    print(json.dumps(doc, indent=json_indent, separators=json_separators))
 
 
 def do_show_author_debug_info(args, db):
     doc = db().get_debug_info_for_author_by_guid(args.guid)
 
-    print json.dumps(doc, indent=json_indent, separators=json_separators)
+    print(json.dumps(doc, indent=json_indent, separators=json_separators))
 
 
 def do_get_latest_tome_related_change(args, db):
     doc = db().get_latest_tome_related_change(args.guid)
 
-    print json.dumps(doc, indent=json_indent, separators=json_separators)
+    print(json.dumps(doc, indent=json_indent, separators=json_separators))
 
 
 # noinspection PyUnusedLocal
@@ -349,22 +348,22 @@ def do_answer_file_list(args, db):
     if not found:
         os.rmdir(target_dir)
 
-    print u'{} files found'.format(found)
+    print('{} files found'.format(found))
 
 
 # noinspection PyUnusedLocal
 def do_import_file_store(args, db):
     def insert_files(file_list):
-        print u'Inserting {} files'.format(len(file_list))
+        print('Inserting {} files'.format(len(file_list)))
         result = pydb.pyrosetup.fileserver().add_files_from_local_disk(file_list)
         succeeded_imports = 0
         failed_imports = 0
-        for fn, file_result in result.iteritems():
+        for fn, file_result in list(result.items()):
             if file_result:
                 succeeded_imports += 1
             else:
                 failed_imports += 1
-                print u'Error while importing {}'.format(fn)
+                print('Error while importing {}'.format(fn))
         return succeeded_imports, failed_imports
 
     source_dir = os.path.abspath(args.source_directory)
@@ -378,7 +377,7 @@ def do_import_file_store(args, db):
     for root, sub_folders, files in os.walk(source_dir):
         files.sort()
         sub_folders.sort()
-        print u'adding {} files from {}'.format(len(files), root)
+        print('adding {} files from {}'.format(len(files), root))
         for filename in files:
             file_hash, extension = os.path.splitext(filename)
 
@@ -401,10 +400,10 @@ def do_import_file_store(args, db):
         success_imports += succeeded
         errors += failed
 
-    print u'Successfully imported {} files.'.format(success_imports)
+    print('Successfully imported {} files.'.format(success_imports))
 
     if errors:
-        print u'There have been {} errors while importing.'.format(errors)
+        print('There have been {} errors while importing.'.format(errors))
         return False
     return True
 
@@ -415,9 +414,9 @@ def do_delete_file(args, db):
     file_server = pydb.pyrosetup.fileserver()
     deleted = file_server.delete_file(file_hash)
     if deleted:
-        print "Sucessfully deleted file"
+        print("Sucessfully deleted file")
     else:
-        print "No such file"
+        print("No such file")
 
 
 def do_fetch_updates(args, db):
@@ -425,7 +424,7 @@ def do_fetch_updates(args, db):
     friend_name = args.friend_name
     friend = main_db.get_friend_by_name(friend_name)
     if not friend:
-        print >> sys.stderr, 'No friend by that name, check your spelling or create a new friend using add_friend'
+        print('No friend by that name, check your spelling or create a new friend using add_friend', file=sys.stderr)
         return False
     friend_id = friend['id']
 
@@ -458,15 +457,15 @@ def do_recalculate_tome_merge_db_entry(args, db):
 
 # noinspection PyUnusedLocal
 def do_rebuild_merge_db(args, db):
-    print "Do not forget to rebuild the search index after this command completed."
-    print "You can achieve this by deleting whoosh* in the db folder an restarting the index server."
+    print("Do not forget to rebuild the search index after this command completed.")
+    print("You can achieve this by deleting whoosh* in the db folder an restarting the index server.")
     db().rebuild_merge_db()
 
 
 # noinspection PyUnusedLocal
 def do_remove_local_tome_links_to_missing_files(args, db):
     removed = db().remove_local_tome_links_to_missing_files()
-    print "Removed {} ghost files links".format(removed)
+    print("Removed {} ghost files links".format(removed))
 
 
 def do_create_satellite(args, db):
@@ -478,7 +477,7 @@ def do_create_satellite(args, db):
 
     with server.Server(target_dir, port=4511, sync_mode=False, debug=False) as satellite:
         if satellite.ping() != "pong":
-            print >> sys.stderr, "Unable to talk to satellite server, is it running?`"
+            print("Unable to talk to satellite server, is it running?`", file=sys.stderr)
             sys.exit(-1)
 
         friend_id = satellite.add_friend("source")
@@ -490,10 +489,10 @@ def do_create_satellite(args, db):
             authors_to_insert.append(author)
 
             if len(authors_to_insert) >= insert_bulk_size:
-                print "Inserting %d authors into satellite" % (len(authors_to_insert))
+                print("Inserting %d authors into satellite" % (len(authors_to_insert)))
                 satellite.load_author_documents_from_friend(friend_id, authors_to_insert)
                 authors_to_insert = []
-        print "Inserting %d authors into satellite" % (len(authors_to_insert))
+        print("Inserting %d authors into satellite" % (len(authors_to_insert)))
         satellite.load_author_documents_from_friend(friend_id, authors_to_insert)
 
         all_tome_guids = db().get_all_tome_guids()
@@ -504,14 +503,14 @@ def do_create_satellite(args, db):
 
             tomes_to_insert.append(tome)
             if len(tomes_to_insert) >= insert_bulk_size:
-                print "Inserting %d tomes into satellite" % (len(tomes_to_insert))
+                print("Inserting %d tomes into satellite" % (len(tomes_to_insert)))
                 satellite.load_tome_documents_from_friend(friend_id, tomes_to_insert)
                 tomes_to_insert = []
 
-        print "Inserting {} tomes into satellite".format(len(tomes_to_insert))
+        print("Inserting {} tomes into satellite".format(len(tomes_to_insert)))
         satellite.load_tome_documents_from_friend(friend_id, tomes_to_insert)
 
-    print "Created satellite db in {}".format(args.target_dir)
+    print("Created satellite db in {}".format(args.target_dir))
 
 
 # noinspection PyUnusedLocal
@@ -520,14 +519,14 @@ def do_encrypt_comm_data(args, db):
 
     is_locking_active = cds.is_locking_active()
     if is_locking_active:
-        print >> sys.stderr, "Comm data is already encrypted."
+        print("Comm data is already encrypted.", file=sys.stderr)
         sys.exit(-3)
 
     password1 = getpass.getpass("Enter password to encrypt comm data with: ")
     password2 = getpass.getpass("Please repeat the password to encrypt comm data with: ")
 
     if password1 != password2:
-        print >> sys.stderr, "Passwords did not match"
+        print("Passwords did not match", file=sys.stderr)
         sys.exit(-2)
 
     cds.activate_locking(password1)
@@ -539,19 +538,19 @@ def do_unlock_comm_data(args, db):
 
     is_locking_active = cds.is_locking_active()
     if not is_locking_active:
-        print >> sys.stderr, "Comm data is not encrypted, use encrypt_comm_data to encrypt it."
+        print("Comm data is not encrypted, use encrypt_comm_data to encrypt it.", file=sys.stderr)
         sys.exit(-3)
 
     is_locked = cds.is_locked()
     if not is_locked:
-        print >> sys.stderr, "Comm data already unlocked."
+        print("Comm data already unlocked.", file=sys.stderr)
         sys.exit(-2)
 
     password = getpass.getpass("Enter password to unlock comm data: ")
     try:
         cds.unlock(password)
     except Exception as e:
-        print >> sys.stderr, u'Unable to unlock comm data, error was {}'.format(str(e))
+        print('Unable to unlock comm data, error was {}'.format(str(e)), file=sys.stderr)
         sys.exit(-1)
 
 
@@ -561,16 +560,16 @@ def do_show_comm_data_status(args, db):
 
     is_locking_active = cds.is_locking_active()
     if not is_locking_active:
-        print "Not encrypted"
+        print("Not encrypted")
         sys.exit(1)
 
-    print "Encrypted"
+    print("Encrypted")
     is_locked = cds.is_locked()
     if is_locked:
-        print "Locked"
+        print("Locked")
         sys.exit(2)
     else:
-        print "Unlocked"
+        print("Unlocked")
         sys.exit(0)
 
 
@@ -579,9 +578,9 @@ def do_show_disk_usage(args, db):
     total, used, free = pydb.pyrosetup.fileserver().file_store_disk_usage()
 
     gb = 1000 * 1000 * 1000.0
-    print "Total: {} GB".format(round(total / gb, 1))
-    print " Used: {} GB".format(round(used / gb, 1))
-    print " Free: {} GB".format(round(free / gb, 1))
+    print("Total: {} GB".format(round(total / gb, 1)))
+    print(" Used: {} GB".format(round(used / gb, 1)))
+    print(" Free: {} GB".format(round(free / gb, 1)))
 
 
 # noinspection PyUnusedLocal
@@ -814,7 +813,7 @@ def get_db():
         _db = pydb.pyrosetup.pydbserver()
 
         if _db.ping() != "pong":
-            print >> sys.stderr, "Unable to talk to server, is it running?"
+            print("Unable to talk to server, is it running?", file=sys.stderr)
             sys.exit(-1)
     return _db
 

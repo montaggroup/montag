@@ -1,4 +1,3 @@
-# coding=utf-8
 import unittest
 import os
 import time
@@ -21,7 +20,7 @@ class TestFileServer(unittest.TestCase):
                                        pydb.testing.guess_schema_dir())
 
         self.file_server = pydb.fileserver.build(os.path.join(pydb_base_dir, 'filestore'), pydbserver)
-        print "filestore is in ", os.path.join(pydb_base_dir, 'filestore')
+        print("filestore is in ", os.path.join(pydb_base_dir, 'filestore'))
         time.sleep(0.5)
 
         self.test_epub_path = get_book_path('pg1661.epub')

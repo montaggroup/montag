@@ -1,5 +1,3 @@
-# coding=utf-8
-# coding=utf-8
 import unittest
 import copy
 
@@ -90,11 +88,11 @@ class TestSchemaVersion(unittest.TestCase):
 
     def test_after_set_schema_version_to_two_read_schema_version_should_return_two(self):
         self.merge_db._set_schema_version(2)
-        self.assertEquals(2, self.merge_db._get_schema_version())
+        self.assertEqual(2, self.merge_db._get_schema_version())
 
     def test_after_set_schema_version_to_zero_read_schema_version_should_return_zero(self):
         self.merge_db._set_schema_version(0)
-        self.assertEquals(0, self.merge_db._get_schema_version())
+        self.assertEqual(0, self.merge_db._get_schema_version())
 
 
 class TestDataFilesEqual(unittest.TestCase):

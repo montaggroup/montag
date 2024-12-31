@@ -1,6 +1,4 @@
-#!/usr/bin/env python2.7
-# coding=utf-8
-
+#!/usr/bin/env python3
 import Pyro4
 import argparse
 import sys
@@ -50,7 +48,7 @@ def main():
                         help='Deletes all files after processing')
     parser.add_argument('--group_name', '-g',
                         help='A name to be stored as the name of the import group, e.g. "books_from_school 2017"',
-                        type=unicode)
+                        type=str)
     parser.add_argument('--verbose', '-v', action="store_true", default=False,
                         help="Be more verbose")
     parser.add_argument('--basepath', '-b', dest='basepath', help='Sets the basepath for the server', action='store')

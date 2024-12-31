@@ -1,4 +1,3 @@
-# coding=utf-8
 import json
 import time
 import logging
@@ -69,7 +68,7 @@ class JsonAndBinarySession(object):
             self._send_keep_alive()
 
     def _send_message(self, object_to_send):
-        self.lower_layer.send_message(json.dumps(object_to_send))
+        self.lower_layer.send_message(json.dumps(object_to_send).encode('utf-8'))
         self._last_message_sent = time.time()
 
     def message_received(self, message):

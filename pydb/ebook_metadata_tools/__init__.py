@@ -1,12 +1,11 @@
-# coding=utf-8
-import mobi
-import epub
-import pdf
+from pydb.ebook_metadata_tools import mobi
+from pydb.ebook_metadata_tools import epub
+from pydb.ebook_metadata_tools import pdf
 
 import os
 import tempfile
 import subprocess
-import cStringIO
+import io
 
 modules = (mobi, epub, pdf)
 
@@ -84,7 +83,7 @@ def get_cover_image(source_stream, extension):
         return None
 
     with open(path_cover_target, 'rb') as coverfile:
-        result = cStringIO.StringIO(coverfile.read())
+        result = io.StringIO(coverfile.read())
 
     os.remove(path_cover_target)
 
@@ -93,4 +92,4 @@ def get_cover_image(source_stream, extension):
 
 if __name__ == '__main__':
     md = extract_metadata(file('in.epub', 'rb'), "ePuB")
-    print repr(md)
+    print(repr(md))

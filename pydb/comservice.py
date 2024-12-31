@@ -1,14 +1,13 @@
-# coding=utf-8
 from multiprocessing import Process, Array, Value
-import com.client
-import com.master_strategy
-import com.strategies
+import pydb.com.client
+import pydb.com.master_strategy
+import pydb.com.strategies
 import Pyro4
 import sys
 import time
 import logging
-import filedownloadmonitor
-import pyrosetup
+from pydb import filedownloadmonitor
+from pydb import pyrosetup
 
 logger = logging.getLogger('comservice')
 
@@ -126,17 +125,17 @@ class ComService(object):
 
     def get_job_list(self):
         result = []
-        for job_id, job in self.jobs.iteritems():
+        for job_id, job in self.jobs.items():
             result.append({'id': job_id,
                            'name': job.name,
                            'friend_id': job.friend_id,
                            'is_running': job.is_running(),
                            'start_time': job.start_time,
-                           'current_phase': com.strategies.strategy_phase_name(job.current_phase.value)})
+                           'current_phase': pydb.com.strategies.strategy_phase_name(job.current_phase.value)})
         return result
         
     def get_number_of_running_jobs(self):
-        return len([job for job in self.jobs.itervalues() if job.is_running()])
+        return len([job for job in self.jobs.values() if job.is_running()])
 
     def lock_file_for_fetching(self, file_hash):
         """ @returns "locked" for lock successful, "busy" for lock busy, and "completed" for download already completed
@@ -166,7 +165,7 @@ class ComService(object):
 
         self.last_job_id += 1
         self.jobs[self.last_job_id] = job
-        job.current_phase.value = com.strategies.strategy_phase_id('incoming_connection')
+        job.current_phase.value = pydb.com.strategies.strategy_phase_id('incoming_connection')
         return self.last_job_id
 
     def unregister_job(self, job_id):
@@ -209,18 +208,18 @@ def exec_fetch_updates(friend_id, current_phase_store, progress_array):
         raise ValueError("No friend by that id found")
 
     friend_comm_data = comm_data_store.get_comm_data(friend_id)
-    cc = com.client.ComClient(db, friend_id, friend_comm_data, com_service)
+    cc = pydb.com.client.ComClient(db, friend_id, friend_comm_data, com_service)
 
     file_server = pyrosetup.fileserver()
 
-    strategy = com.master_strategy.construct_master_client_strategy(db, com_service, file_server)
+    strategy = pydb.com.master_strategy.construct_master_client_strategy(db, com_service, file_server)
 
     def update_progress(current_phase, progress_arg_1, progress_arg_2):
         current_phase_store.value = current_phase
         progress_array[0] = progress_arg_1
         progress_array[1] = progress_arg_2
 
-    update_progress(com.strategies.strategy_phase_id('connecting'), 0, 0)
+    update_progress(pydb.com.strategies.strategy_phase_id('connecting'), 0, 0)
     strategy.set_progress_callback(update_progress)
 
     cc.connect_and_execute(strategy)

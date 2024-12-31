@@ -1,4 +1,3 @@
-# coding=utf-8
 import logging
 
 default_max_files_to_request = 100000
@@ -22,7 +21,7 @@ def strategy_phase_id(strategy_phase_name_):
 
 
 def strategy_phase_name(strategy_phase_id_):
-    for k, v in strategy_phases.iteritems():
+    for k, v in strategy_phases.items():
         if v == strategy_phase_id_:
             return k
     raise KeyError("No such item found")

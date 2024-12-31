@@ -1,4 +1,3 @@
-# coding=utf-8
 from pydb.testing import test_data
 from pydb import FileType
 import pydb.pyrosetup

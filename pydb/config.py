@@ -1,7 +1,5 @@
-# coding=utf-8
 import os
-
-import ConfigParser
+import configparser
 import logging
 
 logger = logging.getLogger('config')
@@ -11,19 +9,19 @@ parser = None
 
 def read_config(config_path='pydb.conf'):
     global parser
-    parser = ConfigParser.SafeConfigParser()
+    parser = configparser.ConfigParser()
     try:
         logger.debug('Reading {}'.format(config_path))
         parser.read(config_path)
-    except (ConfigParser.NoOptionError, ConfigParser.NoSectionError, ValueError) as e:
-        logger.error('could not read config file: {}'.format(e.message))
+    except (configparser.NoOptionError, configparser.NoSectionError, ValueError) as e:
+        logger.error('could not read config file: {}'.format(e))
 
 
 def get_boolean_option(section, name, default):
     try:
         logger.debug('read [{}] {} '.format(section, name))
         return parser.getboolean(section, name)
-    except (ConfigParser.NoOptionError, ConfigParser.NoSectionError, ValueError):
+    except (configparser.NoOptionError, configparser.NoSectionError, ValueError):
         logger.debug('returning default={}'.format(default))
         return default
 
@@ -32,7 +30,7 @@ def get_int_option(section, name, default):
     try:
         logger.debug('read [{}] {} '.format(section, name))
         return parser.getint(section, name)
-    except (ConfigParser.NoOptionError, ConfigParser.NoSectionError, ValueError):
+    except (configparser.NoOptionError, configparser.NoSectionError, ValueError):
         logger.debug('returning default={}'.format(default))
         return default
 
@@ -41,19 +39,18 @@ def get_string_option(section, name, default):
     try:
         logger.debug('read [{}] {} '.format(section, name))
         return parser.get(section, name)
-    except (ConfigParser.NoOptionError, ConfigParser.NoSectionError, ValueError):
+    except (configparser.NoOptionError, configparser.NoSectionError, ValueError):
         logger.debug('returning default={}'.format(default))
         return default
 
 
 def get_simple_array_option(section, name, default):
     try:
-        string_opt = parser.get(section, name).split()
+        string_opt = parser.get(section, name).split(',')
         if not string_opt:
             return []
-        result_raw = string_opt.split(',')
-        return [opt.strip() for opt in result_raw]
-    except (ConfigParser.NoOptionError, ConfigParser.NoSectionError, ValueError):
+        return [opt.strip() for opt in string_opt]
+    except (configparser.NoOptionError, configparser.NoSectionError, ValueError):
         logger.debug('returning default={}'.format(default))
         return default
 
