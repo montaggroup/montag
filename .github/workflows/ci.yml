@@ -24,17 +24,20 @@ jobs:
         uses: classabbyamp/treeless-checkout-action@v1
 
       - name: Setup virtual environment
+        shell: bash
         run: |
           python3 -m venv venv
           source venv/bin/activate
           pip install -r requirements.txt -r requirements-dev.txt
 
       - name: Run unittests
+        shell: bash
         run: |
           source venv/bin/activate
           ./run_unittests.sh
 
       - name: Run integration-tests
+        shell: bash
         run: |
           source venv/bin/activate
           ./run_integration_tests.sh
