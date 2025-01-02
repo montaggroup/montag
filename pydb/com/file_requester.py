@@ -124,7 +124,7 @@ class FileRequester(object):
                 self._positive_file_reply_received(file_hash, extension, content, more_parts_follow)
 
         except ValueError as e:
-            logger.error("Caught a value error: {} ({}) - {}".format(e.message, str(e), traceback.format_exc()))
+            logger.error("Caught a value error: {} - {}".format(str(e), traceback.format_exc()))
             self._abort_mission()
             return
 

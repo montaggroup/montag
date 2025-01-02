@@ -53,7 +53,7 @@ def build_group_filter(filter_string):
             return value
 
         except (ValueError, KeyError) as e:
-            print "Unable to parse filter string: {}".format(e.message)
+            print("Unable to parse filter string: {}".format(str(e)))
             sys.exit(-2)
 
 

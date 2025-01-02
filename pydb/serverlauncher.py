@@ -4,7 +4,7 @@ import Pyro4
 import sys
 import os
 import platform
-from executionenvironment import using_py2exe
+from pydb.executionenvironment import using_py2exe
 
 sys.excepthook = Pyro4.util.excepthook
 

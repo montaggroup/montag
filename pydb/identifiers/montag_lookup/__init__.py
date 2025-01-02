@@ -1,4 +1,4 @@
-import montag_lookup
+from . import montag_lookup
 
 
 def build(pydb_, file_server):
