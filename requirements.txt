@@ -1,6 +1,7 @@
 argparse
 cryptography
 defusedxml
+Django==5.1.4
 ijson
 lxml
 psutil

@@ -1,0 +1,73 @@
+{% extends "montag_webui/montag_base.html" %}
+
+{% load tome_template_tags %}
+
+{% block content %}
+
+{% if tome is None %}
+Tome not found in database.
+{% else %}
+
+<div class='tome'>
+    <div class='tome_text_container'>
+        <span class="tome_info_block"> {% tome_link tome %} by&nbsp;{% authors_links tome.authors %}
+        { if auth.has_privilege('data_edit') %}
+         <span class="edit"> {% tome_edit_link tome %} </span>
+        { endif}
+        </span><br>
+        {% tome_edition_tags_block tome}
+
+    { relevant_synopses = list(network_params.relevant_items(tome['synopses']
+    if relevant_synopses:
+        best_synopsis = sorted(relevant_synopses, key=itemgetter('fidelity'), reverse=True)[0] }}
+        }
+    {% if best_synposis %}
+        <span class="synopsis" id="synopsis">
+        <pre>{% formatted_synopsis best_synopsis %}</pre>
+    {% endif %}
+            <br>
+        </span>
+    </div>
+
+    { if pydb.config.enable_covers(): }}
+    {% if enable_covers %}
+        <div class='tome_cover_container'>
+
+    {% if has_cover %}
+        <div class='large_cover'>
+            <img src={=URL( 'covers', 'get_best_cover', args=[tome['id']]) }}" alt="Large Cover" />
+        </div>
+        { pass }}
+        {if auth.has_privilege('data_edit'):}}
+        <span class="edit"> { =A("edit covers", _href=URL( 'covers', 'edit_covers',args=[tome['id']] )) }} </span>
+         -
+        <span class="edit"> { =A("upload cover", _href=URL( 'upload', 'upload_cover',args=[tome['id']] )) }} </span>
+        {{pass}}
+        </div>
+    {% endif %}
+    {% endif %}
+
+    <div class="tome_file_info">
+    <br/>
+    { relevant_files = filter(lambda f: f['file_type']==pydb.FileType.Content and network_params.is_relevant(f), tome['files'])}}
+    {if relevant_files: }}
+      {show_tome_file_block(tome)}}
+    {else:}}
+      No file information found
+    {pass}}
+    </div>
+</div>
+{% endif %}
+
+
+<script type="text/javascript">
+$(document).keydown(function(e) {
+    if(e.keyCode === 69) { //e
+        e.stopPropagation();
+        $("#edit_tome")[0].click();
+    }
+});
+</script>
+
+{% endblock %}
+

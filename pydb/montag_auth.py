@@ -17,27 +17,31 @@ RoleConfig = namedtuple('RoleConfig', ['role_anonymous_all',
 
 
 class MontagAuth(object):
-    def __init__(self, web2py_auth, request):
-        self.web2py_auth = web2py_auth
+    def __init__(self, request):
+        self.django_user = request.user
+        client_ip = request.META.get('REMOTE_ADDR')
+        self.is_local_request = client_ip.startswith('127.') or client_ip == '::1'
+
+        self.request = request
         self.role_config = load_auth_config()
-        self.web2py_request = request
-        self.settings = web2py_auth.settings
 
     def logout(self):
+        # @todo PORT
         return self.web2py_auth.logout()
 
     def is_user_logged_in(self):
-        return bool(self.web2py_auth.user)
+        return self.django_user.is_authenticated
 
     def has_privilege(self, privilege):
         if privilege not in valid_privileges:
             raise ValueError("Invalid privilege '{}' specified".format(privilege))
         role = determine_role(self.role_config,
-                              is_user_logged_in=bool(self.web2py_auth.user),
-                              is_local_session=self.web2py_request.is_local)
+                              is_user_logged_in=self.is_user_logged_in(),
+                              is_local_session=self.is_local_request)
         return role_has_privilege(role, privilege)
 
     def _require(self, privilege):
+        # @todo PORT
         return self.web2py_auth.requires(lambda: self.has_privilege(privilege),
                                          requires_login=lambda: not self.has_privilege(privilege))
 

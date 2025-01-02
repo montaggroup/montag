@@ -674,7 +674,7 @@ parser_search.add_argument('query', help='The whoosh query string')
 parser_search.set_defaults(func=do_search)
 
 parser_update_search_index = subparsers.add_parser('update_search_index', help='Requests a search index update.')
-parser_update_search_index.set_defaults(func=do_search)
+parser_update_search_index.set_defaults(func=do_update_search_index)
 
 parser_print_stats = subparsers.add_parser('print_stats', help='prints statistics')
 parser_print_stats.set_defaults(func=do_print_stats)

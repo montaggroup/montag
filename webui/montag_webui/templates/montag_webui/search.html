@@ -1,0 +1,28 @@
+{% extends "montag_webui/montag_base.html" %}
+
+{% load tome_template_tags %}
+{% load pagination_tags %}
+
+{% block content %}
+
+{hide_all_files()}}
+
+<form method="GET" action="{% url 'search' %}">
+    {{ form.as_p }}
+    <button type="submit">Search</button>
+</form>
+
+{% if tome_info is not None %}
+<h1>Results for {{ query }}:</h1>
+
+{% render_pagination page page_start page_end number_results_total %}
+
+<ul class="tomes">
+  {% for tome in tome_info %}
+    {% tome_info_block pdb tome include_change_info=False show_file_edit_button=False %}
+  {% endfor %}
+</ul>
+{% endif %}
+
+{% render_pagination page page_start page_end number_results_total %}
+{% endblock %}

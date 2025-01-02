@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+{% load static %}
+<!-- paulirish.com/2008/conditional-stylesheets-vs-css-hacks-answer-neither/ -->
+<html class="no-js" lang="en">
+<head>
+  <meta charset="utf-8" />
+
+
+  <title>{% block title %}Montag{% endblock %}</title>
+
+  <!-- http://dev.w3.org/html5/markup/meta.name.html -->
+  <meta name="application-name" content="Montag" />
+
+  <!--  Mobile Viewport Fix
+      j.mp/mobileviewport & davidbcalhoun.com/2010/viewport-metatag
+      device-width: Occupy full width of the screen in its current orientation
+      initial-scale = 1.0 retains dimensions instead of zooming out if page height > device height
+      user-scalable = yes allows the user to zoom in -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+  <!-- @fixme: host icon -->
+  <link rel="shortcut icon" href="{% static 'images/favicon.png' %}" type="image/x-icon">
+
+  <!-- All JavaScript at the bottom, except for Modernizr which enables
+       HTML5 elements & feature detects -->
+  <script src="{% static 'js/modernizr.custom.js' %}"></script>
+
+  <!-- @fixme: find usages of extend head and replace by block -->
+    {% block extend_head %}{% endblock %}
+
+  <script src="{% static 'js/dropzone.js' %}"></script>
+  <script src="{% static 'js/superfish.js' %}"></script>
+  <script src="{% static 'js/supersubs.js' %}"></script>
+  <script src="{% static 'js/tooltipsy/tooltipsy.min.js' %}"></script>
+  <script src="{% static 'js/montag.js' %}"></script>
+
+  <link rel="stylesheet" href="{% static 'css/skeleton.css' %}">
+  <link rel="stylesheet" href="{% static 'css/web2py.css' %}">
+  <link rel="stylesheet" href="{% static 'css/montag.css' %}">
+  <link rel="stylesheet" href="{% static 'css/superfish.css' %}">
+
+  <script type="text/javascript">
+    jQuery(function(){ jQuery('ul.sf-menu').supersubs({minWidth:12,maxWidth:30,extraWidth:3}).superfish(); });
+  </script>
+
+      <!-- @fixme: migrate -->
+
+  {
+  # using sidebars need to know what sidebar you want to use
+  left_sidebar_enabled = globals().get('left_sidebar_enabled',False)
+  right_sidebar_enabled = globals().get('right_sidebar_enabled',False)
+  middle_columns = {0:'sixteen',1:'twelve',2:'eight'}[
+     (left_sidebar_enabled and 1 or 0)+(right_sidebar_enabled and 1 or 0)]
+  }}
+
+
+</head>
+<body>
+  <div class="wrapper"><!-- for sticky footer -->
+
+    <div class="topbar">
+      <div class="container">
+        <div class="sixteen columns">
+          {% load menu_tags %}
+          {% render_menu %}
+        </div>
+      </div>
+    </div><!-- topbar -->
+
+    <!-- @fixme: migrate -->
+    <div class="flash">{=response.flash or ''}}</div>
+
+    <div class="header">
+      <div class="container">
+        <div class="sixteen columns">
+          <div class="statusbar clearfix">
+            {% block statusbar %}
+                <!-- @fixme: migrate -->
+
+              <div class="breadcrumbs">{ =response.breadcrumb_bar }}</div>
+            {% endblock %}
+            </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="container">
+        <!-- @fixme: migrate -->
+
+        <div class="four columns left-sidebar">
+          {% block left_sidebar %}
+          {% endblock %}
+        </div>
+        {{pass}}
+
+        <!-- @fixme: migrate -->
+        <div class="{=middle_columns}} columns center">
+          {% block content %} Content Block{% endblock %}
+        </div>
+    <!-- @fixme: migrate -->
+
+        <div class="four columns">
+          {% block right_sidebar %}
+          {% endblock %}
+        </div>
+        {{pass}}
+
+      </div><!-- container -->
+    </div><!-- main -->
+
+    <div class="push"></div>
+  </div><!-- wrapper -->
+
+  <div class="footer">
+    <div class="container">
+      <div class="sixteen columns">
+        {% block footer %} <!-- this is default footer -->
+        <div class="footer-content clearfix">
+          <div class="copyright">Copyright &#169; 2011</div>
+          <div style="float: right;">
+            <a href="http://www.web2py.com/">
+            <img style="padding-bottom: 0;" src="{% static 'images/poweredby.png' %}"/>
+            </a>
+          </div>
+        </div>
+        {% endblock %}
+      </div>
+    </div><!-- container -->
+  </div><!-- footer -->
+
+
+<script type="text/javascript">
+$('.tooltip_trigger').tooltipsy({offset: [-1, -1]});
+</script>
+</body>
+</html>

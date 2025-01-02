@@ -1,0 +1,19 @@
+{% extends "montag_webui/montag_base.html" %}
+
+{% load tome_template_tags %}
+{% load pagination_tags %}
+
+{% block content %}
+
+{hide_all_files()}}
+{% render_pagination page page_start page_end number_results_total %}
+
+<ul class="tomes">
+  {% for tome in tome_info %}
+    {% tome_info_block pdb tome include_change_info=False show_file_edit_button=False %}
+  {% endfor %}
+</ul>
+
+{% render_pagination page page_start page_end number_results_total %}
+
+{% endblock %}

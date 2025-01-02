@@ -1,0 +1,11 @@
+{% if previous_page %}
+<a class="prevlink" href="?page={{ previous_page }}{{ query_params }}">prev</a>
+{% endif %}
+
+{% if number_results_total %}
+<span class="page_info">Showing {{ page_start|add:"1" }} - {{ page_end }} of {{number_results_total}} items.</span>
+{% endif %}
+
+{% if next_page %}
+<a class="nextlink" href="?page={{ next_page }}{{ query_params }}">next</a>
+{% endif %}

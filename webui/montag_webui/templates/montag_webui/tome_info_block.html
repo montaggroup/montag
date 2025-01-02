@@ -1,0 +1,39 @@
+{% load tome_template_tags %}
+
+<li class="tome">
+    {% if include_change_info %}
+
+    <span class="change_info">{{friend}} edited:</span><br>
+    {% endif %}
+    <div class="tome_info_paragraph">
+        <span class="tome_info_block"> {% tome_link tome  %} by {% authors_links tome.authors %}
+        {% if show_edit_button  %} <!-- fixme and auth.has_privilege('data_edit') -->
+            <span class="edit"> {% tome_edit_link tome %} </span>
+        {% endif %}
+        {% if additional_tome_button_html is not None %}
+            {{ additional_tome_button_html|safe }}
+        {% endif %}
+        </span><br>
+
+        <!-- @fixme migrate \
+        {show_tome_edition_tags_block(tome)}}
+    -->
+
+        {% if best_synopsis_short %}
+             <span class="synopsis"> {{ best_synopsis_short }}<br></span>
+        {% endif %}
+
+        {% if relevant_files|length > 0 %}
+            <span class='hide_show_button unselectable' onclick="jQuery('#tome_file_block_{{tome_block_id}}').slideToggle(100)" > Show {{ relevant_files|length }} File{% if relevant_files|length > 1 %}s{% endif %} </span>
+            <div class="clearfix"></div>
+
+    <!-- @ fixme
+    migrate \
+        {show_tome_file_block(tome, show_file_edit_button)}}
+        -->
+        {% else %}
+              No file information found
+        {% endif %}
+    </div>
+    <div class="clearfix"></div>
+</li>

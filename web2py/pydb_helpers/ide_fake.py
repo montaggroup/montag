@@ -6,7 +6,6 @@ if False:
     import web2py.gluon as gluon
     from web2py.applications.montag.models.db import *
     from web2py.applications.montag.models.pydb_connection import *
-    from web2py.applications.montag.models.menu import *
     from web2py.applications.montag.models.validators import *
     from web2py.applications.montag.models.view_elements import *
 
