@@ -52,6 +52,7 @@ class Job(object):
         return str(self)
 
 
+@Pyro4.expose
 class ComService(object):
     def __init__(self, file_download_monitor):
         # job id -> (process, progress_array)

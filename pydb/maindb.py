@@ -57,7 +57,7 @@ def build(db_dir, schema_dir, enable_db_sync=True):
     logger.info(u'DBs initialized')
     return db
 
-
+@Pyro4.expose
 class MainDB(object):
     def __init__(self, local_db, friends_db, merge_db, importer_db, build_foreign_db, index_server):
         """

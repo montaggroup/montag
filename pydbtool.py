@@ -806,6 +806,11 @@ parser_re_strip_file.set_defaults(func=do_re_strip_file)
 cmd_args = parser.parse_args()
 _db = None
 
+if not hasattr(cmd_args, 'func'):
+    print("Error: No subcommand provided")
+    parser.print_help()
+    exit(1)
+
 
 def get_db():
     global _db

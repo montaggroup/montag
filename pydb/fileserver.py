@@ -1,7 +1,10 @@
-import os
-import logging
-from pydb import file_store
 import io
+import logging
+import os
+
+import Pyro4
+
+from pydb import file_store
 
 logger = logging.getLogger('fileserver')
 
@@ -18,7 +21,7 @@ def build(file_store_path, pydb_server):
     fs = FileServer(pydb_server, file_store_)
     return fs
 
-
+@Pyro4.expose
 class FileServer(object):
     def __init__(self, db, file_store_):
         self.db = db

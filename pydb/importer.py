@@ -5,9 +5,9 @@ import logging
 import hashlib
 import json
 
-import sqlitedb
-import importerdb
-import ebook_metadata_tools
+from pydb import sqlitedb
+from pydb import importerdb
+from pydb import ebook_metadata_tools
 
 DELETE_EMPTY_FOLDERS_DELAY = 300  # empty folders will be deleted if they are older than this
 DEFAULT_POLL_INTERVAL = 5  # check import watch every x seconds
@@ -62,7 +62,7 @@ class Importer(object):
                 if self.delete_after_import:
                     delete_file(f)
             except FileRefusedError as e:
-                logger.info('File {} refused by import: {}'.format(f, e.message))
+                logger.info('File {} refused by import: {}'.format(f, str(e)))
                 if self.delete_after_import:
                     delete_file(f)
             except Exception as e:
