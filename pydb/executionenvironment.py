@@ -52,7 +52,7 @@ def is_montag_process(process_info, candidate_names):
                 return srv
 
     else:
-        if name == 'python' or name == 'python2.7' or name == 'python.exe':
+        if name in ('python', 'python3', 'python.exe', 'python3.exe'):
             for arg in process_info['cmdline']:
                 for srv in candidate_names:
                     if srv in arg:
