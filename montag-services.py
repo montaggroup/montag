@@ -58,10 +58,6 @@ def do_stop_services(_, name_filter_fct=lambda x: True):
 
 
 def do_restart_services(args):
-    if args.web2py_only:
-        do_stop_services(args, name_filter_fct=lambda x: 'web2py' in x)
-        do_start_services(args, name_filter_fct=lambda x: 'web2py' in x)
-    else:
         do_stop_services(args)
         do_start_services(args)
 
@@ -69,6 +65,7 @@ def do_restart_services(args):
 def main():
     pydb.config.read_config()
     parser = argparse.ArgumentParser(description='Controls and lists montag services.')
+    parser.set_defaults(func=lambda args: parser.print_help())
 
     subparsers = parser.add_subparsers(help='sub-command help')
 
@@ -86,7 +83,6 @@ def main():
     parser_restart = subparsers.add_parser('restart', help='stop services')
     parser_restart.add_argument('--log-level', '-L', help='Start services with log level', dest='log_level')
     parser_restart.add_argument('--log-path', '-P', help='set services log path', dest='log_path')
-    parser_restart.add_argument('--web2py-only', '-w', action="store_true", default=False, help='only restart web2py')
 
     parser_restart.set_defaults(func=do_restart_services, debug=False, log_level='WARNING', log_path=services.log_path)
 
@@ -97,4 +93,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

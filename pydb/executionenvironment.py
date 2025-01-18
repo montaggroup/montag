@@ -1,4 +1,3 @@
-import imp
 import sys
 import re
 import getpass
@@ -61,8 +60,7 @@ def is_montag_process(process_info, candidate_names):
 
 def using_py2exe():
     return (hasattr(sys, "frozen") or  # new py2exe
-            hasattr(sys, "importers") or  # old py2exe
-            imp.is_frozen("__main__"))  # tools/freeze
+            hasattr(sys, "importers"))  # old py2exe
 
 
 def get_main_dir():

@@ -9,3 +9,4 @@ serpent
 Twisted
 Whoosh
 zope.interface
+rio-ui
