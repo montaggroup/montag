@@ -6,6 +6,7 @@ from pathlib import Path
 from rio import App, Theme, Color, Font, ComponentPage, Session
 
 from pydb import pyrosetup
+from pydb.maindb import MainDB
 from .pages import *
 logger = logging.getLogger("WebUi")
 
@@ -26,7 +27,9 @@ def start_webserver() -> None:
         await session.set_title(BASE_WINDOW_TITLE)
 
     async def on_app_start(a: App) -> None:
-        pass  # @todo: Do check if required services run
+        main_db = next(filter(lambda attachment: isinstance(attachment, MainDB), a.default_attachments), None)
+        if not main_db:
+            logger.warning("It seems like the database is not running.")
 
     app = App(
         name="Montag",
@@ -61,6 +64,3 @@ def start_webserver() -> None:
     )
 
     sys.exit(app.run_as_web_server())
-
-if __name__ == "__main__":
-    start_webserver()
