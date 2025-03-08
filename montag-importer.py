@@ -9,7 +9,7 @@ import pydb.pyrosetup as pyrosetup
 import pydb.importer as importer
 import pydb.identifier_runner as identifier_runner
 import pydb.config as config
-import Queue
+import queue
 import pydb.logconfig
 
 
@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     watch_folder_path = determine_import_watch_folder_path(args.basepath)
 
-    notification_queue = Queue.Queue()
+    notification_queue = queue.Queue()
     imp = importer.build_importer(pyrosetup.fileserver(), db_dir=db_dir, schema_dir=schema_dir,
                                   watch_folder_path=watch_folder_path, notification_queue=notification_queue,
                                   group_name=None, delete_after_import=True)
