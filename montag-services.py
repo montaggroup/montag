@@ -14,7 +14,10 @@ import pydb.config
 def do_list_services(_):
     services_status = services.get_current_services_status()
     for name in services_status.keys():
-        print('service %s is %s (pid=%d)' % (name, services_status[name]['status'], services_status[name]['pid']))
+        if services_status[name]['pid'] != 0:
+            print('service %s is %s (pid=%d)' % (name, services_status[name]['status'], services_status[name]['pid']))
+        else:
+            print('service %s is %s' % (name, services_status[name]['status']))
 
 
 def do_start_services(args, name_filter_fct=lambda x: True):
@@ -91,6 +94,11 @@ def main():
     parser_restart.set_defaults(func=do_restart_services, debug=False, log_level='WARNING', log_path=services.log_path)
 
     args = parser.parse_args()
+
+    if not hasattr(args, 'func'):
+        print("Error: No subcommand provided")
+        parser.print_help()
+        exit(1)
 
     args.func(args)
 

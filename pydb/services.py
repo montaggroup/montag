@@ -126,7 +126,7 @@ def start(service_name_, log_level=DEFAULT_LOG_LEVEL, base_dir_path=None, log_fi
         startargs.append(base_dir_path)
 
     try:
-        with open(logfile_path(service_name_, log_file_base_path=log_file_base_path), 'wb', 1) as logfile:
+        with open(logfile_path(service_name_, log_file_base_path=log_file_base_path), 'w', 1) as logfile:
             p = psutil.Popen(startargs, stdout=logfile, stderr=logfile)
             logfile.flush()
             return_code = p.wait(timeout=1)
